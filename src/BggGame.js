@@ -71,12 +71,15 @@ class BggGame extends Component {
                     <i className="icon-attention"></i>
                     Deze info wordt van <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${this.props.game.id}/`}>boardgamegeek</a> gehaald en is dus in het Engels.
                 </div>
+
+                <h3><i className="icon-info"></i> Beschrijving</h3>
                 <p className="description">{this.props.game.details.descriptionArray.map((part, i) => {
                     if (part.startsWith('http')) {
                         return <a key={i} href={part}>{part}</a>
                     }
                     return <span key={i} >{part}</span>
                 })}</p>
+
                 <dl>
                     <dt><i className="icon-tag"></i> Categorieën</dt>
                     <dd>

@@ -45,7 +45,7 @@ class BggList extends Component {
             'Aantal spelers ↑': (a, b) => a.stats.minPlayers - b.stats.minPlayers,
             'Aantal spelers ↓': (a, b) => b.stats.maxPlayers - a.stats.maxPlayers,
             'Spelduur ↑': (a, b) => a.stats.minPlaytime - b.stats.minPlaytime,
-            'Spelduur ↓': (a, b) => a.stats.maxPlaytime - b.stats.maxPlaytime
+            'Spelduur ↓': (a, b) => b.stats.maxPlaytime - a.stats.maxPlaytime
         };
     }
 

@@ -118,7 +118,7 @@
 
 .games .full-details .description span {
     display: inline-block;
-    padding: 5px 0;
+    padding: 3px 0;
 }
 
 .games .full-details .description span:empty {

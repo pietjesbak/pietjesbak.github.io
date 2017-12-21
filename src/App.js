@@ -1,4 +1,3 @@
-// import Tooltip from "react-simple-tooltip";
 import './css/App.css';
 import { HashRouter, Route, Link, Switch } from 'react-router-dom'
 import BggList from './BggList.js';
@@ -7,6 +6,7 @@ import firebase, { auth, provider } from './Firebase.js';
 import IconButton from './IconButton.js';
 import React, { Component } from 'react';
 import SimpleMap from './SimpleMap.js';
+import Tooltip from "react-simple-tooltip";
 
 class App extends Component {
     constructor() {
@@ -25,7 +25,7 @@ class App extends Component {
             }
         });
 
-        firebase.database().ref('templates').on('value', snapshot => console.log(snapshot.val()));
+        //firebase.database().ref('templates').on('value', snapshot => console.log(snapshot.val()));
     }
 
     logout = () => {
@@ -101,7 +101,9 @@ class App extends Component {
                             {this.state.user ?
                                 <div>
                                     <div className="user-profile">
-                                        <img alt={this.state.user.displayName} src={this.state.user.photoURL} />
+                                        <Tooltip content={`Ingeloged als ${this.state.user.displayName}`}>
+                                            <img alt={this.state.user.displayName} src={this.state.user.photoURL} />
+                                        </Tooltip>
                                     </div>
                                 </div>
                                 :

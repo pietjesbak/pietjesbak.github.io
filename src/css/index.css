@@ -125,3 +125,7 @@ h3 {
 .pointer {
     cursor: pointer;
 }
+
+p {
+    line-height: 1.3;
+}
