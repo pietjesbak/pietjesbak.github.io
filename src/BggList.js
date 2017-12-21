@@ -10,6 +10,14 @@ class BggList extends Component {
     constructor() {
         super();
         this.url = new URL(window.location);
+
+        // Fuck you, Edge
+        // This won't work but at least it doesn't crash.
+        if (this.url.searchParams === undefined) {
+            console.log('Please use a real browser ლ(ಠ益ಠლ)');
+            this.url.searchParams = new Map();
+        }
+
         this.gamesPerLazyLoad = 5;
 
         this.state = {
@@ -72,7 +80,7 @@ class BggList extends Component {
 
     lazyLoader = () => {
         if (this.state.gamesPerPage < this.state.filteredGames.length &&
-            (document.documentElement.scrollTop + document.documentElement.clientHeight >= document.documentElement.scrollHeight * 0.9 ||
+            ((document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight >= document.documentElement.scrollHeight * 0.9 ||
             document.documentElement.scrollHeight === document.documentElement.clientHeight)
         ) {
             this.setState({ gamesPerPage: this.state.gamesPerPage + this.gamesPerLazyLoad });
