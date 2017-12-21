@@ -1,0 +1,191 @@
+.bgg-list {
+    display: flex;
+}
+
+.bgg-list .searchbar {
+    margin-right: 10px;
+    margin-top: 20px;
+    width: 200px;
+    border-right: 3px solid #103D5D;
+    padding-right: 10px;
+}
+
+.bgg-list .searchbar h3 {
+    margin: 0;
+}
+
+.bgg-list .searchbar input, .bgg-list .searchbar select {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 5px;
+    margin: 10px 0;
+}
+
+.bgg-list .content {
+    flex: 1;
+}
+
+.games {
+    margin: 0;
+    padding: 0;
+}
+
+.games>li {
+    position: relative;
+    list-style: none;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: rgb(237, 237, 237);
+    color: #000;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 4px 0 rgba(0, 0, 0, .14), 0 3px 3px -2px rgba(0, 0, 0, .12), 0 1px 8px 0 rgba(0, 0, 0, .2);
+}
+
+.games>li>span {
+    display: flex;
+}
+
+.games .thumb-holder {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    margin-right: 10px;
+}
+
+.games .thumb-holder img {
+    max-width: 150px;
+    max-height: 150px;
+    margin: auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.games .details {
+    flex: 1;
+}
+
+.games .details h3 {
+    color: #103D5D;
+    background: rgb(237, 237, 237);
+    position: relative;
+    z-index: 1;
+}
+
+.games .details .info {
+    width: 70%;
+    line-height: 2;
+}
+
+.games .details .score {
+    width: 8%;
+    height: 100px;
+    position: absolute;
+    right: 10%;
+    top: 35px;
+    padding-left: 5px;
+    text-align: center;
+    line-height: 100px;
+    font-size: 2em;
+    border-left: 3px solid green;
+}
+
+.games .full-details {
+    background: rgb(245, 245, 245);
+    padding: 10px;
+    margin-top: 20px;
+    border-top: 3px solid #103D5D;
+}
+
+.games .full-details.error {
+    border-top: 3px solid rgb(153, 25, 25);
+}
+
+.games .full-details .spinner {
+    font-size: 2em;
+    display: block;
+    text-align: center;
+    color: #103D5D;
+}
+
+.games .full-details .warning {
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #fff;
+}
+
+.games .full-details .description span {
+    display: inline-block;
+    padding: 5px 0;
+}
+
+.games .full-details .description span:empty {
+    display: block;
+}
+
+.games .full-details dd {
+    margin: 5px 0;
+}
+
+.games .full-details dt {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.games .full-details .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.games .full-details .tag-list li {
+    list-style: none;
+    padding: 10px;
+    background: rgb(76, 109, 128);
+    color: #fff;
+    margin: 5px;
+}
+
+.games .full-details .tag-list li a {
+    color: #fff;
+}
+
+@media screen and (max-width: 420px) {
+    .games .thumb-holder {
+        width: 100px;
+    }
+    .games .thumb-holder img {
+        max-width: 100px;
+    }
+}
+
+@media screen and (max-width: 1100px) {
+    .bgg-list {
+        display: block;
+    }
+    .bgg-list .searchbar {
+        width: calc(100% - 40px);
+        margin: 0 20px;
+        border: none;
+    }
+    .bgg-list .searchbar h3 {
+        display: inline-block;
+    }
+    .bgg-list .searchbar input {
+        margin: 10px;
+    }
+    .bgg-list .searchbar input, .bgg-list .searchbar select {
+        width: 200px;
+    }
+}
+
+@media screen and (max-width: 580px) {
+    .bgg-list .searchbar input {
+        margin: 10px 0;
+    }
+    .bgg-list .searchbar input, .bgg-list .searchbar select {
+        width: 100%;
+    }
+}

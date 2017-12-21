@@ -1,0 +1,36 @@
+.facebook-card>div {
+    max-width: 700px;
+    display: inline-block;
+}
+
+.facebook-card h2 {
+    display: inline-block;
+}
+
+.facebook-card .date {
+    display: inline-block;
+    background: #f7f7f7;
+    padding: 10px;
+    margin-bottom: 10px;
+    margin-top: -10px;
+    border-left: 3px solid #666;
+}
+
+.facebook-card .date.valid {
+    border-left: 3px solid #103D5D;
+}
+
+.facebook-card .date.ongoing {
+    border-left: 3px solid rgb(202, 139, 25);
+}
+
+.facebook-card .date.expired {
+    border-left: 3px solid rgb(153, 25, 25);
+}
+
+.facebook-card .facebook {
+    display: inline-block;
+    font-size: 100px;
+    vertical-align: top;
+    color: #666;
+}
