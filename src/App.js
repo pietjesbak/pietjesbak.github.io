@@ -112,7 +112,7 @@ class App extends Component {
                             <Switch>
                                 <Route exact path="/" component={this.home} />
                                 <Route path="/games" render={() => <BggList></BggList>} />
-                                {/* <Route render={this.noRoute} /> */}
+                                <Route render={this.noRoute} />
                             </Switch>
                         </div>
                     </div>
