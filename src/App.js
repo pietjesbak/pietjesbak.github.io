@@ -1,6 +1,6 @@
 // import Tooltip from "react-simple-tooltip";
 import './css/App.css';
-import { BrowserRouter, Route, Link, Switch } from 'react-router-dom'
+import { HashRouter, Route, Link, Switch } from 'react-router-dom'
 import BggList from './BggList.js';
 import Facebook from './Facebook.js';
 import firebase, { auth, provider } from './Firebase.js';
@@ -75,7 +75,7 @@ class App extends Component {
 
     render() {
         return (
-            <BrowserRouter className='app'>
+            <HashRouter className='app'>
                 <div className="full-height">
                     <div className="page-wrap">
                         <header>
@@ -132,7 +132,7 @@ class App extends Component {
                         <span>&copy; Spellenclub De Pietjesbak &#9679; Lennert Claeys</span>
                     </footer>
                 </div>
-            </BrowserRouter>
+            </HashRouter>
         );
     }
 }
