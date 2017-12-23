@@ -152,13 +152,15 @@ class Inventory {
      */
     login() {
         return new Promise((resolve, reject) => {
-            auth.signInWithRedirect(provider);
-            auth.getRedirectResult().then(result => {
-                this.user_ = result.user;
-                resolve(this.user_);
-            }).catch(e => {
-                console.log(e);
-                reject();
+            auth.signInWithRedirect(provider).then(() => {
+                auth.getRedirectResult().then(result => {
+                    this.user_ = result.user;
+
+                    resolve(this.user_);
+                }).catch(e => {
+                    console.error(e);
+                    reject();
+                });
             });
         });
     }

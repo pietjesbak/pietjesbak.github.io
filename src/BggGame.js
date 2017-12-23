@@ -186,7 +186,8 @@ class BggGame extends Component {
             }
         } else {
             if (this.state.game.requestedByMe === true) {
-                text = `Jij en ${this.state.game.requestsThisMonth - 1} andere(n) willen dit spelen`;
+                let other = (this.state.game.requestsThisMonth > 2) ? 'anderen' : 'andere';
+                text = `Jij en ${this.state.game.requestsThisMonth - 1} ${other} willen dit spelen`;
             } else {
                 text = `${this.state.game.requestsThisMonth} anderen willen dit spelen`;
             }
