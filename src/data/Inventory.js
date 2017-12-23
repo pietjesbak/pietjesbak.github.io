@@ -19,8 +19,6 @@ class Inventory {
         this.firebaseWaitForAuthChange_();
         this.getFirebaseRequests_();
         this.getFirebaseUsers_();
-
-        console.log(this);
     }
 
     /**

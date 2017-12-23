@@ -86,19 +86,10 @@ class BggGame extends Component {
                 })}</p>
 
                 <dl>
-                    <dt><i className="icon-tag"></i> Categorieën</dt>
-                    <dd>
-                        <ul className="tag-list">{this.state.game.details.categories.map(category => <li key={category}>{category}</li>)}</ul>
-                    </dd>
-
-                    <dt><i className="icon-cog"></i> Mechanics</dt>
-                    <dd>
-                        <ul className="tag-list">{this.state.game.details.mechanics.map(mechanic => <li key={mechanic}>{mechanic}</li>)}</ul>
-                    </dd>
-
-                    {this.renderDomain()}
-
-                    {this.renderFamily()}
+                    {this.renderlist('icon-tag', 'Categorieën', 'categories')}
+                    {this.renderlist('icon-cog', 'Mechanics', 'mechanics')}
+                    {this.renderlist('icon-users', 'Soort', 'domain')}
+                    {this.renderlist('icon-globe', 'Thema', 'family')}
                 </dl>
 
                 {this.renderExpansions()}
@@ -106,33 +97,28 @@ class BggGame extends Component {
         );
     }
 
-    renderDomain() {
-        if (this.state.game.details.domain === undefined) {
+    /**
+     * Renders a list of tag like objects.
+     *
+     * @param {string} icon Icon for this section.
+     * @param {string} name Title for this section.
+     * @param {string} key variable name of where the items are stored.
+     */
+    renderlist(icon, name, key) {
+        let items = this.state.game.details[key];
+        if (items === undefined) {
             return;
+        }
+
+        if (Array.isArray(items) === false) {
+            items = [items];
         }
 
         return (
             <div>
-                <dt><i className="icon-users"></i> Soort</dt>
+                <dt><i className={icon}></i> {name}</dt>
                 <dd>
-                    <ul className="tag-list">{this.state.game.details.domain.map(domain => <li key={domain}>{domain}</li>)}</ul>
-                </dd>
-            </div>
-        );
-    }
-
-    renderFamily() {
-        if (this.state.game.details.family === undefined) {
-            return;
-        }
-
-        return (
-            <div>
-                <dt><i className="icon-globe"></i> Thema</dt>
-                <dd>
-                    <ul className="tag-list">
-                        <li>{this.state.game.details.family}</li>
-                    </ul>
+                    <ul className="tag-list">{items.map(item => <li key={item}>{item}</li>)}</ul>
                 </dd>
             </div>
         );

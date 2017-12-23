@@ -37,9 +37,13 @@ class BggGameData {
         /**
          * The publish year.
          *
-         * @type {number}
+         * @type {number=}
          */
-        this.year = Number(node.getElementsByTagName('yearpublished')[0].childNodes[0].nodeValue);
+        this.year = undefined;
+        const yearNodes = node.getElementsByTagName('yearpublished');
+        if (yearNodes.length === 1) {
+            this.year = Number(yearNodes[0].childNodes[0].nodeValue);
+        }
 
         /**
          * Game image.
@@ -109,16 +113,16 @@ class BggStatsData {
         /**
          * Min play time.
          *
-         * @type {number}
+         * @type {number=}
          */
-        this.minPlaytime = Number(node.attributes['minplaytime'].nodeValue);
+        this.minPlaytime = node.attributes['minplaytime'] !== undefined ? Number(node.attributes['minplaytime'].nodeValue) : undefined;
 
         /**
          * Max play time.
          *
-         * @type {number}
+         * @type {number=}
          */
-        this.maxPlaytime = Number(node.attributes['maxplaytime'].nodeValue);
+        this.maxPlaytime = node.attributes['maxplaytime'] !== undefined ? Number(node.attributes['maxplaytime'].nodeValue) : undefined;
 
         /**
          * Game rating.
@@ -147,6 +151,18 @@ class BggStatsData {
      * @returns {string}
      */
     get playtime() {
+        if (this.minPlaytime === undefined && this.maxPlaytime === undefined) {
+            return '???';
+        }
+
+        if (this.minPlaytime === undefined) {
+            return `${this.maxPlaytime} minuten`;
+        }
+
+        if (this.maxPlaytime === undefined) {
+            return `${this.minPlaytime} minuten`;
+        }
+
         if (this.minPlaytime === this.maxPlaytime) {
             return `${this.minPlaytime} minuten`;
         }
