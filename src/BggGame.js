@@ -193,15 +193,29 @@ class BggGame extends Component {
         }
 
         if (inventory.user === null) {
-            return <div className="info pointer"><Tooltip content="Log in om aan te geven dat je dit spel wil spelen"><i className={icon}></i> <span className="whitespace-normal">{text}</span></Tooltip></div>
+            return (
+                <div className="info pointer">
+                    <span className="hover" onClick={e => e.stopPropagation()}>
+                        <Tooltip content="Log in om aan te geven dat je dit spel wil spelen">
+                            <i className={icon}></i> <span className="whitespace-normal">{text}</span>
+                        </Tooltip>
+                    </span>
+                </div>
+            );
         } else {
-            return <div className="info pointer hover" onClick={this.requestClick} ><i className={icon}></i> <span className="whitespace-normal">{text}</span></div>
+            return (
+                <div className="info pointer" >
+                    <span className="hover" onClick={this.requestClick}>
+                        <i className={icon}></i> <span className="whitespace-normal">{text}</span>
+                    </span>
+                </div>
+            );
         }
     }
 
     render() {
         return (
-            <li key={this.state.game.id}>
+            <li className={this.state.expanded ? "expanded" : ""} key={this.state.game.id}>
                 <span className="pointer" onClick={this.showFullDetails}>
                     <div className="thumb-holder">
                         <img src={this.state.game.thumbnail} alt={this.state.game.name}></img>

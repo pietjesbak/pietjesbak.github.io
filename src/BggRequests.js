@@ -26,7 +26,7 @@ class BggRequests extends Component {
     }
 
     updateGames = (games) => {
-        const requestedGames = [...games.values()].filter(game => game.requestsThisMonth > 0);
+        const requestedGames = [...games.values()].filter(game => game.requestsThisMonth > 0).sort((a, b) => b.requestsThisMonth - a.requestsThisMonth || b.stats.rating - a.stats.rating);
         this.setState({ requestedGames });
     }
 

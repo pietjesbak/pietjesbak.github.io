@@ -140,3 +140,7 @@ span.whitespace-normal {
     text-align: center;
     color: #103D5D;
 }
+
+i {
+    vertical-align: middle;
+}
