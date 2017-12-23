@@ -69,25 +69,30 @@
 
 .games .details h3 {
     color: #103D5D;
-    background: rgb(237, 237, 237);
-    position: relative;
-    z-index: 1;
+    margin: 10px 0;
+}
+
+.games .details .info-holder {
+    display: table;
 }
 
 .games .details .info {
-    width: 70%;
+    width: 65%;
     line-height: 2;
+    white-space: nowrap;
+}
+
+.games .details .info.hover:hover .icon-heart-empty:before {
+    content: '\e805';
 }
 
 .games .details .score {
     width: 8%;
-    height: 100px;
-    position: absolute;
-    right: 10%;
-    top: 35px;
-    padding-left: 5px;
+    display: table-cell;
+    vertical-align: middle;
+    padding-right: 10px;
+    padding-left: 10px;
     text-align: center;
-    line-height: 100px;
     font-size: 2em;
     border-left: 3px solid green;
 }
@@ -101,13 +106,6 @@
 
 .games .full-details.error {
     border-top: 3px solid rgb(153, 25, 25);
-}
-
-.games .full-details .spinner {
-    font-size: 2em;
-    display: block;
-    text-align: center;
-    color: #103D5D;
 }
 
 .games .full-details .warning {
@@ -150,6 +148,10 @@
 
 .games .full-details .tag-list li a {
     color: #fff;
+}
+
+.bgg-list .no-results {
+    text-align: center;
 }
 
 @media screen and (max-width: 420px) {

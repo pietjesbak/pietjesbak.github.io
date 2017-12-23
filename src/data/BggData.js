@@ -69,7 +69,19 @@ class BggGameData {
          */
         this.details = undefined;
 
-        window.PIETJESBAK.games.set(this.id, this);
+        /**
+         * The amount of requests this month, not part of boardgame geek.
+         * This should be filled in by firebase.
+         *
+         * @type {number}
+         */
+        this.requestsThisMonth = 0;
+
+        /**
+         * If this game was requested this month by the current use.
+         * This should be filled in by firebase.
+         */
+        this.requestedByMe = false;
     }
 }
 

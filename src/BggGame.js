@@ -1,44 +1,49 @@
 import { blendColors } from './index.js';
-import * as constants from './data/Constants.js';
-import * as data from './data/BggData.js';
+import inventory from './data/Inventory';
 import React, { Component } from 'react';
+import Tooltip from 'react-simple-tooltip';
 
 class BggGame extends Component {
-    constructor() {
+    constructor(data) {
         super();
 
         this.state = {
             error: false,
-            expanded: false
+            expanded: false,
+            game: data.game
         };
     }
 
     static defaultProps = {
-        game: null
+        game: null,
+    }
+
+    componentWillReceiveProps(props) {
+        this.setState({ game: props.game });
     }
 
     showFullDetails = async (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
-        let game = window.PIETJESBAK.games.get(Number(e.currentTarget.dataset.game));
-        if (game.details !== undefined) {
-            this.setState({ expanded: !this.state.expanded });
-            return;
+        const newState = !this.state.expanded;
+        this.setState({ expanded: newState });
+        if (newState === true) {
+            try {
+                await inventory.fetchGameDetails(this.state.game);
+                this.setState(this.state);
+            } catch (e) {
+                console.error(e);
+                this.setState({ error: true });
+            }
         }
+    }
 
-        game.details = null;
-        this.setState({ expanded: !this.state.expanded });
-        try {
-            let response = await fetch(constants.CORS_ANYWHERE_DYNO + constants.BBG_GAME_API + game.id);
-            let xml = new DOMParser().parseFromString(await response.text(), 'text/xml');
+    requestClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-            game.details = new data.BggDetailsData(xml.children[0].children[0]);
-            this.setState(this.state);
-        } catch (e) {
-            console.error(e);
-            game.details = undefined;
-            this.setState({ error: true });
-        }
+        inventory.toggleGame(this.state.game);
     }
 
     renderDetails() {
@@ -55,7 +60,7 @@ class BggGame extends Component {
             );
         }
 
-        if (this.props.game.details === null) {
+        if (this.state.game.details === null || this.state.game.details === undefined) {
             return (
                 <div className="full-details">
                     <div className="spinner">
@@ -69,11 +74,11 @@ class BggGame extends Component {
             <div className="full-details">
                 <div className="warning">
                     <i className="icon-attention"></i>
-                    Deze info wordt van <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${this.props.game.id}/`}>boardgamegeek</a> gehaald en is dus in het Engels.
+                    Deze info wordt van <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${this.state.game.id}/`}>boardgamegeek</a> gehaald en is dus in het Engels.
                 </div>
 
                 <h3><i className="icon-info"></i> Beschrijving</h3>
-                <p className="description">{this.props.game.details.descriptionArray.map((part, i) => {
+                <p className="description">{this.state.game.details.descriptionArray.map((part, i) => {
                     if (part.startsWith('http')) {
                         return <a key={i} href={part}>{part}</a>
                     }
@@ -83,17 +88,17 @@ class BggGame extends Component {
                 <dl>
                     <dt><i className="icon-tag"></i> Categorieën</dt>
                     <dd>
-                        <ul className="tag-list">{this.props.game.details.categories.map(category => <li key={category}>{category}</li>)}</ul>
+                        <ul className="tag-list">{this.state.game.details.categories.map(category => <li key={category}>{category}</li>)}</ul>
                     </dd>
 
                     <dt><i className="icon-cog"></i> Mechanics</dt>
                     <dd>
-                        <ul className="tag-list">{this.props.game.details.mechanics.map(mechanic => <li key={mechanic}>{mechanic}</li>)}</ul>
+                        <ul className="tag-list">{this.state.game.details.mechanics.map(mechanic => <li key={mechanic}>{mechanic}</li>)}</ul>
                     </dd>
 
                     <dt><i className="icon-users"></i> Soort</dt>
                     <dd>
-                        <ul className="tag-list">{this.props.game.details.domain.map(domain => <li key={domain}>{domain}</li>)}</ul>
+                        <ul className="tag-list">{this.state.game.details.domain.map(domain => <li key={domain}>{domain}</li>)}</ul>
                     </dd>
 
                     {this.renderFamily()}
@@ -105,7 +110,7 @@ class BggGame extends Component {
     }
 
     renderFamily() {
-        if (this.props.game.details.family === undefined) {
+        if (this.state.game.details.family === undefined) {
             return;
         }
 
@@ -114,7 +119,7 @@ class BggGame extends Component {
                 <dt><i className="icon-globe"></i> Thema</dt>
                 <dd>
                     <ul className="tag-list">
-                        <li>{this.props.game.details.family}</li>
+                        <li>{this.state.game.details.family}</li>
                     </ul>
                 </dd>
             </div>
@@ -122,7 +127,7 @@ class BggGame extends Component {
     }
 
     renderExpansions() {
-        if (this.props.game.details.expansions.size === 0) {
+        if (this.state.game.details.expansions.size === 0) {
             return;
         }
 
@@ -130,7 +135,7 @@ class BggGame extends Component {
             <section>
                 <h3><i className="icon-puzzle"></i> Uitbreidingen</h3>
                 <ul className="tag-list">
-                    {this.props.game.details.ownedExpansions.map(game => {
+                    {this.state.game.details.ownedExpansions.map(game => {
                         return (
                             <li key={game.id}>
                                 <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${game.id}/`}>
@@ -140,7 +145,7 @@ class BggGame extends Component {
                             </li>
                         )
                     })}
-                    {[...this.props.game.details.otherExpansions].map(([id, name]) => {
+                    {[...this.state.game.details.otherExpansions].map(([id, name]) => {
                         return (
                             <li key={id}>
                                 <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`}>
@@ -155,20 +160,50 @@ class BggGame extends Component {
         );
     }
 
+    renderRequestButton() {
+        let text, icon;
+
+        icon = this.state.game.requestedByMe ? 'icon-heart' : 'icon-heart-empty';
+        if (this.state.game.requestsThisMonth === 0) {
+            text = 'Speel dit spel volgende keer';
+        } else if (this.state.game.requestsThisMonth === 1) {
+            if (this.state.game.requestedByMe === true) {
+                text = 'Jij wil dit spelen';
+            } else {
+                text = 'Iemand wil dit spelen';
+            }
+        } else {
+            if (this.state.game.requestedByMe === true) {
+                text = `Jij en ${this.state.game.requestsThisMonth - 1} andere(n) willen dit spelen`;
+            } else {
+                text = `${this.state.game.requestsThisMonth} anderen willen dit spelen`;
+            }
+        }
+
+        if (inventory.user === null) {
+            return <div className="info pointer"><Tooltip content="Log in om aan te geven dat je dit spel wil spelen"><i className={icon}></i> <span className="whitespace-normal">{text}</span></Tooltip></div>
+        } else {
+            return <div className="info pointer hover" onClick={this.requestClick} ><i className={icon}></i> <span className="whitespace-normal">{text}</span></div>
+        }
+    }
+
     render() {
         return (
-            <li key={this.props.game.id}>
-                <span className="pointer" data-game={this.props.game.id} onClick={this.showFullDetails}>
+            <li key={this.state.game.id}>
+                <span className="pointer" onClick={this.showFullDetails}>
                     <div className="thumb-holder">
-                        <img src={this.props.game.thumbnail} alt={this.props.game.name}></img>
+                        <img src={this.state.game.thumbnail} alt={this.state.game.name}></img>
                     </div>
                     <div className="details">
-                        <h3>{this.props.game.name}</h3>
-                        <div>
-                            <div className="info"><i className="icon-users"></i> {this.props.game.stats.players}</div>
-                            <div className="info"><i className="icon-clock"></i> {this.props.game.stats.playtime}</div>
+                        <h3>{this.state.game.name}</h3>
+                        <div className="info-holder">
+                            <div>
+                                <div className="info"><i className="icon-users"></i> {this.state.game.stats.players}</div>
+                                <div className="info"><i className="icon-clock"></i> {this.state.game.stats.playtime}</div>
+                                {this.renderRequestButton()}
+                            </div>
+                            <div className="score" style={{ borderColor: blendColors('#FF0000', '#00FF00', this.state.game.stats.rating / 12) }}>{this.state.game.stats.rating.toFixed(1)}</div>
                         </div>
-                        <div className="score" style={{ borderColor: blendColors('#FF0000', '#00FF00', this.props.game.stats.rating / 12) }}>{Math.round(this.props.game.stats.rating * 10) / 10}</div>
                     </div>
                 </span>
                 {this.renderDetails()}

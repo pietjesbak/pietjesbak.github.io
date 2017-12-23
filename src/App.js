@@ -2,49 +2,42 @@ import './css/App.css';
 import { BrowserRouter, Route, Link, Switch } from 'react-router-dom'
 import BggList from './BggList.js';
 import Facebook from './Facebook.js';
-import firebase, { auth, provider } from './Firebase.js';
 import IconButton from './IconButton.js';
 import React, { Component } from 'react';
 import SimpleMap from './SimpleMap.js';
-import Tooltip from "react-simple-tooltip";
+import Tooltip from 'react-simple-tooltip';
+import BggRequests from './BggRequests.js';
+import inventory from './data/Inventory.js';
+import { auth } from './Firebase.js';
 
 class App extends Component {
     constructor() {
         super();
         this.state = {
-            currentItem: '',
-            username: '',
-            user: null
-        }
+            username: ''
+        };
     }
 
     componentDidMount() {
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(user => {
             if (user) {
-                this.setState({ user });
+                this.setState({ username: user.displayName });
             }
         });
-
-        //firebase.database().ref('templates').on('value', snapshot => console.log(snapshot.val()));
     }
 
-    logout = () => {
-        auth.signOut()
-            .then(() => {
-                this.setState({
-                    user: null
-                });
-            });
+    logout = async () => {
+        await inventory.logout();
+        this.setState({
+            nameuser: ''
+        });
     }
 
-    login = () => {
-        auth.signInWithRedirect(provider)
-            .then((result) => {
-                const user = result.user;
-                this.setState({
-                    user
-                });
-            }).catch(e => console.log(e));
+    login = async () => {
+        const user = await inventory.login();
+        this.setState({
+            username: user.displayName
+        });
     }
 
     home() {
@@ -52,6 +45,7 @@ class App extends Component {
             <div>
                 <Facebook></Facebook>
                 <SimpleMap></SimpleMap>
+                <BggRequests></BggRequests>
             </div>
         );
     }
@@ -66,7 +60,7 @@ class App extends Component {
     }
 
     renderLoginButton() {
-        if (this.state.user) {
+        if (inventory.user !== null) {
             return <IconButton subClass="logout" icon="logout" text="Log uit" placement="left" action={this.logout}></IconButton>
         } else {
             return <IconButton subClass="login" icon="login" text="Log in" placement="left" action={this.login}></IconButton>
@@ -98,11 +92,11 @@ class App extends Component {
                                     </li>
                                 </ul>
                             </nav>
-                            {this.state.user ?
+                            {inventory.user !== null ?
                                 <div>
                                     <div className="user-profile">
-                                        <Tooltip content={`Ingeloged als ${this.state.user.displayName}`}>
-                                            <img alt={this.state.user.displayName} src={this.state.user.photoURL} />
+                                        <Tooltip content={`Ingeloged als ${this.state.username}`} placement="left">
+                                            <img alt={this.state.username} src={inventory.user.photoURL} />
                                         </Tooltip>
                                     </div>
                                 </div>
@@ -138,4 +132,5 @@ class App extends Component {
         );
     }
 }
+
 export default App;

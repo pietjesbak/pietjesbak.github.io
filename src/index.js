@@ -8,10 +8,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import registerServiceWorker from './registerServiceWorker';
 
-// TODO: don't
-window.PIETJESBAK = {};
-window.PIETJESBAK.games = new Map();
-
 ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
 

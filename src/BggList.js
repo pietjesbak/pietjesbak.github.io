@@ -1,9 +1,9 @@
 //import Pager from 'react-pager';
 import './css/Games.css';
-import * as constants from './data/Constants.js';
-import * as data from './data/BggData.js';
+import { CORS_ANYWHERE_DYNO } from './data/Constants';
 import BggGame from './BggGame.js';
 import escapeStringRegexp from 'escape-string-regexp';
+import inventory from './data/Inventory.js';
 import React, { Component } from 'react';
 
 class BggList extends Component {
@@ -33,12 +33,10 @@ class BggList extends Component {
             loaderDots: ''
         };
 
-
-        this.fetchInterval = null;
         this.loaderInterval = null;
 
         // Make sure the dyno is running.
-        fetch(constants.CORS_ANYWHERE_DYNO);
+        fetch(CORS_ANYWHERE_DYNO);
     }
 
     /**
@@ -59,7 +57,7 @@ class BggList extends Component {
 
     componentDidMount() {
         this.progressDots();
-        this.fetchItems();
+        inventory.addChangeListener(this.updateGames);
 
         window.addEventListener('scroll', this.lazyLoader);
         window.addEventListener('resize', this.lazyLoader);
@@ -71,6 +69,8 @@ class BggList extends Component {
 
         window.removeEventListener('scroll', this.lazyLoader);
         window.removeEventListener('resize', this.lazyLoader);
+
+        inventory.removeChangeListener(this.updateGames);
     }
 
     componentDidUpdate() {
@@ -78,36 +78,17 @@ class BggList extends Component {
         this.lazyLoader();
     }
 
+    updateGames = (games) => {
+        this.setState({ games: games });
+        this.onPageChanged(this.state.page);
+    }
+
     lazyLoader = () => {
         if (this.state.gamesPerPage < this.state.filteredGames.length &&
             ((document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight >= document.documentElement.scrollHeight * 0.9 ||
-            document.documentElement.scrollHeight === document.documentElement.clientHeight)
+                document.documentElement.scrollHeight === document.documentElement.clientHeight)
         ) {
             this.setState({ gamesPerPage: this.state.gamesPerPage + this.gamesPerLazyLoad });
-        }
-    }
-
-    async fetchItems() {
-        try {
-            let response = await fetch(constants.PIETJESBAK_BBG_COLLECTION);
-            if (response.status !== 200) {
-                this.fetchInterval = window.setTimeout(this.fetchItems.bind(this), 2000);
-                return;
-            }
-
-            let xml = new DOMParser().parseFromString(await response.text(), 'text/xml');
-
-            let games = new Map();
-            for (let child of xml.children[0].children) {
-                let game = new data.BggGameData(child);
-                games.set(game.id, game);
-            }
-
-            this.setState({ games: games });
-            this.onPageChanged(this.state.page);
-        } catch (e) {
-            this.setState({ error: true });
-            console.error(e);
         }
     }
 
@@ -127,7 +108,7 @@ class BggList extends Component {
         }
 
         this.url.searchParams.set('p', String(page));
-        window.history.replaceState(null, null, this.url.toString());
+        // window.history.replaceState(null, null, this.url.toString());
 
         this.setState({
             page: page,
@@ -144,7 +125,7 @@ class BggList extends Component {
 
             loaderDots += '.';
             this.setState({ loaderDots: loaderDots });
-            this.loaderInterval = window.setTimeout(this.progressDots.bind(this), 500);
+            this.loaderInterval = window.setTimeout(this.progressDots.bind(this), 300);
         }
     }
 
@@ -154,7 +135,7 @@ class BggList extends Component {
         await this.setState({
             search: search,
             gamesPerPage: this.gamesPerLazyLoad
-         });
+        });
         this.onPageChanged(this.state.page);
     }
 
@@ -201,7 +182,7 @@ class BggList extends Component {
         let gamesOnPage = this.state.filteredGames.slice(this.state.page * this.state.gamesPerPage, this.state.page * this.state.gamesPerPage + this.state.gamesPerPage);
         let list;
         if (this.state.filteredGames.length === 0) {
-            list = <p className="no-results">Geen resultaten!</p>
+            list = <h3 className="no-results">Geen resultaten!</h3>
         } else {
             list = <ul className="games">{gamesOnPage.map(game => <BggGame key={game.id} game={game}></BggGame>)}</ul>
         }
