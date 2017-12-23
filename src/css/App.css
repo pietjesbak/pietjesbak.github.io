@@ -73,7 +73,7 @@ nav.menu ul li {
     display: inline-block;
 }
 
-nav.menu ul li:first-child {
+nav.menu ul li:not(:last-child) {
     margin-right: 10px;
 }
 
@@ -85,7 +85,7 @@ nav.menu ul li.right.small {
     width: 40px;
 }
 
-button, .button {
+button, .button, .small-button {
     display: inline-block;
     text-align: center;
     text-decoration: none;
@@ -98,6 +98,12 @@ button, .button {
     font-size: 14px;
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
     padding: 10px 6px;
+}
+
+button:hover, .button:hover, .small-button:hover, .button.active {
+    position: relative;
+    top: 2px;
+    box-shadow: 0 -2px 5px 0 rgba(0, 0, 0, .26);
 }
 
 .small-button {
@@ -117,4 +123,12 @@ button, .button {
 .user-profile img {
     border-radius: 50%;
     max-width: 100%;
+}
+
+.location {
+    padding: 10px 5px;
+    background: #fff;
+    margin: 10px 0;
+    display: inline-block;
+    border-radius: 5px;
 }

@@ -185,12 +185,18 @@
     margin: 10px 0;
 }
 
-@media screen and (max-width: 420px) {
+@media screen and (max-width: 450px) {
     .games .thumb-holder {
         width: 100px;
     }
     .games .thumb-holder img {
         max-width: 100px;
+    }
+}
+
+@media screen and (max-width: 420px) {
+    .games .details .info {
+        max-width: 130px;
     }
 }
 

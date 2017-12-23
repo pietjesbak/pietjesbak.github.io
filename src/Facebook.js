@@ -40,7 +40,7 @@ class Facebook extends Component {
 
         return <div className="date expired">
             <span>Op {readable}</span><br />
-            <span>Dit event is voorbij, nieuwe events worden meestal 2 weken op voorhand geplant.</span>
+            <span>Dit event is voorbij, nieuwe events worden meestal 2 weken op voorhand gepland.</span>
         </div>
     }
 

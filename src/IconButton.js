@@ -1,5 +1,6 @@
+import { ICONBUTTON_MIN_SCREEN_WIDTH } from './data/Constants.js';
 import React, { Component } from 'react';
-import Tooltip from "react-simple-tooltip";
+import Tooltip from 'react-simple-tooltip';
 
 class IconButton extends Component {
     constructor(props) {
@@ -25,7 +26,7 @@ class IconButton extends Component {
     }
 
     render() {
-        if (this.state.windowWidth <= 500) {
+        if (this.state.windowWidth <= ICONBUTTON_MIN_SCREEN_WIDTH) {
             return (
                 <Tooltip content={this.props.text} placement={this.props.placement}>
                     <button className={"small-button " + this.props.subClass} onClick={this.props.action}>
@@ -36,7 +37,7 @@ class IconButton extends Component {
         } else {
             return (
                 <button className={"button " + this.props.subClass} onClick={this.props.action}>
-                    {this.props.text}
+                    <i className={"icon-" + this.props.icon}></i> {this.props.text}
                 </button>
             );
         }

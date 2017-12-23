@@ -39,3 +39,11 @@ export const FACEBOOK_PIETJESBAK_EVENTS = 'https://graph.facebook.com/v2.10/geze
  * @type {string}
  */
 export const GOOGLE_MAPS_KEY = 'AIzaSyBMBP0S071zw1cg6l2F7fdffYmls888LyY';
+
+/**
+ * Minimum width to also show the text for the icon buttons.
+ *
+ * @const
+ * @type {number}
+ */
+export const ICONBUTTON_MIN_SCREEN_WIDTH = 575;

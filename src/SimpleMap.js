@@ -5,7 +5,7 @@ import Tooltip from 'react-simple-tooltip';
 
 const Pietjesbak = () => {
     return (
-        <Tooltip style={{ position: 'relative', top: '-26px', left: '-28px' }} content={<span className="nobreak">Zandloperstraat 83<br />9030 Mariakerke</span>}>
+        <Tooltip style={{ position: 'relative', top: '-26px', left: '-28px' }} content={<span className="nobreak">'t Geestje<br />Zandloperstraat 83<br />9030 Mariakerke</span>}>
             <svg id="pietjesbak-marker" width="57" height="52">
                 <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee"></path>
             </svg>

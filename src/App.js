@@ -1,10 +1,11 @@
 import './css/App.css';
 import { auth } from './Firebase.js';
-import { BrowserRouter, Route, Link, Switch } from 'react-router-dom'
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import BggList from './BggList.js';
 import BggRequests from './BggRequests.js';
 import Facebook from './Facebook.js';
 import IconButton from './IconButton.js';
+import IconLink from './IconLink.js';
 import inventory from './data/Inventory.js';
 import React, { Component } from 'react';
 import SimpleMap from './SimpleMap.js';
@@ -44,8 +45,30 @@ class App extends Component {
         return (
             <div>
                 <Facebook></Facebook>
-                <SimpleMap></SimpleMap>
                 <BggRequests></BggRequests>
+            </div>
+        );
+    }
+
+    info() {
+        return (
+            <div>
+                <div className="card">
+                    <h3>Wie zijn wij?</h3>
+                    Spellenclub De pietjesbak is een spellenclub in Gent / Mariakerke. <br />
+                    Elke derde vrijdag van de maand (behalve in juli en augustus) <br /><br />
+
+                    Voor 1 € inkom is iedereen welkom om een nieuw of oud spel mee te komen spelen. <br />
+                    Oud of Jong, moeilijk of makkelijk, we brengen steeds een grote variatie aan spellen mee die ter plaatse uitgelegd worden. <br />
+                    We starten rond 19u30 en gaan door tot ± 23 a 24u.
+
+                    <h3>In 't Geestje</h3>
+                    <span className="location">
+                        Zandloperstraat 83 <br />
+                        9030 Mariakerke
+                    </span>
+                    <SimpleMap></SimpleMap>
+                </div>
             </div>
         );
     }
@@ -85,8 +108,9 @@ class App extends Component {
                         <div className="wrapper">
                             <nav className="menu">
                                 <ul>
-                                    <li><Link className="button" to="/">Over</Link></li>
-                                    <li><Link className="button" to="/games">Games</Link></li>
+                                    <li><IconLink icon="globe" to="/" text="Home"></IconLink></li>
+                                    <li><IconLink icon="megaphone" to="/info" text="Info"></IconLink></li>
+                                    <li><IconLink icon="puzzle" to="/games" text="Games"></IconLink></li>
                                     <li className="right">
                                         {this.renderLoginButton()}
                                     </li>
@@ -106,6 +130,7 @@ class App extends Component {
                             <Switch>
                                 <Route exact path="/" component={this.home} />
                                 <Route path="/games" render={() => <BggList></BggList>} />
+                                <Route path="/info" component={this.info} />
                                 <Route render={this.noRoute} />
                             </Switch>
                         </div>
