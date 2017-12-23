@@ -96,15 +96,27 @@ class BggGame extends Component {
                         <ul className="tag-list">{this.state.game.details.mechanics.map(mechanic => <li key={mechanic}>{mechanic}</li>)}</ul>
                     </dd>
 
-                    <dt><i className="icon-users"></i> Soort</dt>
-                    <dd>
-                        <ul className="tag-list">{this.state.game.details.domain.map(domain => <li key={domain}>{domain}</li>)}</ul>
-                    </dd>
+                    {this.renderDomain()}
 
                     {this.renderFamily()}
                 </dl>
 
                 {this.renderExpansions()}
+            </div>
+        );
+    }
+
+    renderDomain() {
+        if (this.state.game.details.domain === undefined) {
+            return;
+        }
+
+        return (
+            <div>
+                <dt><i className="icon-users"></i> Soort</dt>
+                <dd>
+                    <ul className="tag-list">{this.state.game.details.domain.map(domain => <li key={domain}>{domain}</li>)}</ul>
+                </dd>
             </div>
         );
     }
@@ -135,7 +147,7 @@ class BggGame extends Component {
             <section>
                 <h3><i className="icon-puzzle"></i> Uitbreidingen</h3>
                 <ul className="tag-list">
-                    {this.state.game.details.ownedExpansions.map(game => {
+                    {[...this.state.game.details.ownedExpansions.values()].map(game => {
                         return (
                             <li key={game.id}>
                                 <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${game.id}/`}>

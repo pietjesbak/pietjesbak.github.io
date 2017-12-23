@@ -73,10 +73,11 @@ class Inventory {
         game.details = null;
 
         try {
+            let games = await this.getGames();
             let response = await fetch(constants.CORS_ANYWHERE_DYNO + constants.BBG_GAME_API + game.id);
             let xml = new DOMParser().parseFromString(await response.text(), 'text/xml');
 
-            game.details = new data.BggDetailsData(xml.children[0].children[0]);
+            game.details = new data.BggDetailsData(xml.children[0].children[0], games);
         } catch (e) {
             game.details = undefined; // Reset
             throw e;

@@ -159,9 +159,10 @@ class BggDetailsData {
     /**
      * Data class that represents boardgamegeek details.
      *
-     * @param {item} node An xml node containing the details.
+     * @param {item}                      node  An xml node containing the details.
+     * @param {Map.<number, BggGameData>} games All games.
      */
-    constructor(node) {
+    constructor(node, games) {
         /**
          * Game description.
          *
@@ -208,35 +209,42 @@ class BggDetailsData {
          * @type {Array.<string>}
          */
         this.domain = [...node.getElementsByTagName('boardgamesubdomain')].filter(filter).map(element => element.childNodes[0].nodeValue);
-        if (this.domain.length === 0) {
-            this.domain.push('/');
-        }
+
+        /**
+         * Owned expansions.
+         *
+         * @type {Map.<number, BggGameData>}
+         */
+        this.ownedExpansions = new Map();
+
+        /**
+         * Not owned expansions.
+         *
+         * @type {Map.<number, BggGameData>}
+         */
+        this.otherExpansions = new Map();
+
+        this.updateOwnedExpansions(games);
     }
 
     /**
-     * Retuns game references to the owned expansions.
+     * Updates the owned and other expansion maps.
      *
-     * @return {Array.<BggGameData>}
+     * @param {Map.<number, BggGameData>} games All games.
      */
-    get ownedExpansions() {
-        return [...this.expansions.entries()]
-            .filter(id => window.PIETJESBAK.games.has(id))
-            .map(id => window.PIETJESBAK.get(id));
+    updateOwnedExpansions(games) {
+        const entries = [...this.expansions.entries()];
+
+        this.ownedExpansions = new Map();
+        entries
+            .filter(id => games.has(id))
+            .forEach(([id, name]) => this.ownedExpansions.set(id, name));
+
+        this.otherExpansions = new Map();
+        entries
+            .filter(id => games.has(id) === false)
+            .forEach(([id, name]) => this.otherExpansions.set(id, name));
     }
-
-    /**
-     * Returns a map of not owned expansions.
-     *
-     * @return {Map.<number, string>}
-     */
-    get otherExpansions() {
-        const map = new Map();
-        [...this.expansions.entries()]
-            .filter(id => window.PIETJESBAK.games.has(id) === false)
-            .forEach(([id, name]) => map.set(id, name));
-
-        return map;
-    };
 
     /**
      * Get the description as an array of strings without html bits.
