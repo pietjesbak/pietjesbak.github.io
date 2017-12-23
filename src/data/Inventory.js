@@ -5,20 +5,57 @@ import * as constants from './Constants.js';
 
 class Inventory {
     constructor() {
+        /**
+         * A promise for all board game geek games.
+         *
+         * @private
+         * @type {?Promise.<Map.<number, BggGameData>>}
+         */
         this.fetchGamePromise_ = null;
 
+        /**
+         * A map of games you requested and their firebase key.
+         *
+         * @private
+         * @type {?Map.<number, string>}
+         */
         this.ownRequestedGames_ = null;
+
+        /**
+         * A map of all requested games and the amount of times they were requested this month.
+         *
+         * @private
+         * @type {?Map.<number, number>}
+         */
         this.requestedGames_ = null;
 
+        /**
+         * An array of callbacks for when the game lists update.
+         *
+         * @private
+         * @type {Array.<function(Map.<number, BggGameData>)>}
+         */
         this.changeListeners_ = [];
 
+        /**
+         * Your user object when logged in to firebase.
+         *
+         * @private
+         * @type {?Object}
+         */
         this.user_ = null;
 
+        /**
+         * All users of the pietjesbak. uid => name
+         *
+         * @private
+         * @type {Map.<string, string>}
+         */
         this.users_ = new Map();
 
         this.firebaseWaitForAuthChange_();
         this.getFirebaseRequests_();
-        this.getFirebaseUsers_();
+        // this.getFirebaseUsers_();
     }
 
     /**
