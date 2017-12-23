@@ -1,7 +1,7 @@
 import { PIETJESBAK_BBG_COLLECTION } from './Constants';
+import * as constants from './Constants.js';
 import * as data from './BggData.js';
 import firebase, { auth, provider } from '../Firebase.js';
-import * as constants from './Constants.js';
 
 class Inventory {
     constructor() {
@@ -53,6 +53,14 @@ class Inventory {
          */
         this.users_ = new Map();
 
+        /**
+         * A promise to get the most recent facebook event.
+         *
+         * @private
+         * @type {Promise.<Object>}
+         */
+        this.facebookEventPromise_ = this.fetchFacebookEvent_();
+
         this.firebaseWaitForAuthChange_();
         this.getFirebaseRequests_();
         // this.getFirebaseUsers_();
@@ -78,7 +86,7 @@ class Inventory {
      * @return {Promise}
      */
     async toggleGame(game) {
-        const date = new Date();
+        const date = (await this.getNextEventDate()).date;
         const key = this.ownRequestedGames_.get(game.id);
 
         if (this.user_ === null) {
@@ -160,6 +168,50 @@ class Inventory {
      */
     get users() {
         return this.users_;
+    }
+
+    /**
+     * Get a promise containing the most recent facebook event.
+     *
+     * @return {Promise.<Object>}
+     */
+    async getFacebookEvent() {
+        return await this.facebookEventPromise_;
+    }
+
+    /**
+     * Get a promise containing the next event date and if this date has been confirmed.
+     *
+     * @return {Promise.<{date: Date, confirmed: boolean>}
+     */
+    async getNextEventDate() {
+        let confirmed = true;
+        let startTime;
+
+        try {
+            const events = await this.getFacebookEvent();
+            startTime = new Date(events[0].start_time);
+        } catch (r) {
+            console.error('Failed to get next event date.');
+            startTime = new Date(0);
+        }
+
+
+        const thresholdDate = new Date();
+        thresholdDate.setDate(thresholdDate.getDate() + 1);
+
+        // Adjust the start time if the event has passed.
+        if (thresholdDate > startTime) {
+            confirmed = false;
+            startTime.setMonth(startTime.getMonth() + 1); // Go to the next month.
+            startTime.setDate(1); // Set to first day of this month.
+            startTime.setDate(2 * 7 + (6 - startTime.getDay() + 7) % 7); // Figure out when the 3rd friday is from here.
+        }
+
+        return {
+            date: startTime,
+            confirmed: confirmed
+        };
     }
 
     /***************************************************************
@@ -263,7 +315,7 @@ class Inventory {
      * @private
      */
     async getFirebaseRequests_() {
-        const date = new Date();
+        const date = (await this.getNextEventDate()).date;
         firebase.database().ref(`requests/${date.getFullYear()}/${date.getMonth()}/`).on('value', async snapshot => {
             const value = snapshot.val();
             const ownUid = this.user !== null ? this.user.uid : undefined;
@@ -312,6 +364,22 @@ class Inventory {
                 firebase.database().ref(`users/${this.user.uid}/`).set(this.user.displayName);
             }
         });
+    }
+
+    /**
+     * Get the most recent facebook event and figure out which month requests should be fetched for.
+     *
+     * @private
+     * @return {Promise.<Object>}
+     */
+    async fetchFacebookEvent_() {
+        const response = await fetch(constants.FACEBOOK_PIETJESBAK_EVENTS);
+        if (response.ok === false) {
+            throw Error("Incorrect response");
+        }
+
+        let json = await response.json();
+        return json.data;
     }
 }
 

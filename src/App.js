@@ -1,14 +1,14 @@
 import './css/App.css';
+import { auth } from './Firebase.js';
 import { BrowserRouter, Route, Link, Switch } from 'react-router-dom'
 import BggList from './BggList.js';
+import BggRequests from './BggRequests.js';
 import Facebook from './Facebook.js';
 import IconButton from './IconButton.js';
+import inventory from './data/Inventory.js';
 import React, { Component } from 'react';
 import SimpleMap from './SimpleMap.js';
 import Tooltip from 'react-simple-tooltip';
-import BggRequests from './BggRequests.js';
-import inventory from './data/Inventory.js';
-import { auth } from './Firebase.js';
 
 class App extends Component {
     constructor() {

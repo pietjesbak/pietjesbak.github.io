@@ -144,3 +144,10 @@ span.whitespace-normal {
 i {
     vertical-align: middle;
 }
+
+.mute {
+    font-size: smaller;
+    font-weight: normal;
+    font-style: italic;
+    color: #666;
+}

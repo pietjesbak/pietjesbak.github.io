@@ -1,6 +1,7 @@
 import './css/Facebook.css';
+import { readableDate } from './index';
+import inventory from './data/Inventory';
 import React, { Component } from 'react';
-import { FACEBOOK_PIETJESBAK_EVENTS } from './data/Constants.js'
 
 class Facebook extends Component {
     constructor() {
@@ -9,53 +10,36 @@ class Facebook extends Component {
             events: null,
             error: false
         };
+    }
 
-        fetch(FACEBOOK_PIETJESBAK_EVENTS)
-            .then(response => {
-                if (response.ok === false) {
-                    throw Error("Incorrect response");
-                }
-
-                return response;
-            })
-            .then(response => response.json())
-            .then(json => {
-                this.setState({
-                    events: json.data
-                });
-            })
-            .catch(() => {
-                this.setState({
-                    error: true
-                });
-            });
+    async componentDidMount() {
+        try {
+            const events = await inventory.getFacebookEvent();
+            this.setState({ events: events });
+        } catch (e) {
+            console.error(e);
+            this.setState({ error: true });
+        }
     }
 
     renderDate(date) {
-        let readableDate = date.toLocaleString(undefined, {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric'
-        });
+        let readable = readableDate(date, true);
 
         if (Date.now() - date < 0) {
             return <div className="date valid">
-                <span>Op {readableDate}</span>
+                <span>Op {readable}</span>
             </div>
         }
 
         if (Date.now() - date < 1000 * 60 * 60 * 5) {
             return <div className="date ongoing">
-                <span>Op {readableDate}</span><br />
+                <span>Op {readable}</span><br />
                 <span><strong>Nu aan de gang!</strong></span>
             </div>
         }
 
         return <div className="date expired">
-            <span>Op {readableDate}</span><br />
+            <span>Op {readable}</span><br />
             <span>Dit event is voorbij, nieuwe events worden meestal 2 weken op voorhand geplant.</span>
         </div>
     }

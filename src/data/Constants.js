@@ -33,7 +33,7 @@ export const BBG_GAME_API = 'https://www.boardgamegeek.com/xmlapi/boardgame/';
 export const FACEBOOK_PIETJESBAK_EVENTS = 'https://graph.facebook.com/v2.10/gezelschapsspellenpietjesbak/events?access_token=874889636002007|788af4e5d543244dff7ee209987a2a57&format=json&limit=1';
 
 /**
- * Googles maps key.
+ * Google maps key.
  *
  * @const
  * @type {string}
