@@ -10,6 +10,7 @@ import inventory from './data/Inventory.js';
 import React, { Component } from 'react';
 import SimpleMap from './SimpleMap.js';
 import Tooltip from 'react-simple-tooltip';
+import ScrollToTop from './ScrollToTop';
 
 class App extends Component {
     constructor() {
@@ -92,67 +93,69 @@ class App extends Component {
 
     render() {
         return (
-            <BrowserRouter className='app'>
-                <div className="full-height">
-                    <div className="page-wrap">
-                        <header>
-                            <div className="wrapper">
-                                <h1>
-                                    <svg id="logo" width="57" height="52">
-                                        <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee"></path>
-                                    </svg>
-                                    Spellenclub De Pietjesbak
+            <BrowserRouter className="app">
+                <ScrollToTop>
+                    <div className="full-height">
+                        <div className="page-wrap">
+                            <header>
+                                <div className="wrapper">
+                                    <h1>
+                                        <svg id="logo" width="57" height="52">
+                                            <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee"></path>
+                                        </svg>
+                                        Spellenclub De Pietjesbak
                                 </h1>
-                            </div>
-                        </header>
-                        <div className="wrapper">
-                            <nav className="menu">
-                                <ul>
-                                    <li><IconLink icon="globe" to="/" text="Home"></IconLink></li>
-                                    <li><IconLink icon="megaphone" to="/info" text="Info"></IconLink></li>
-                                    <li><IconLink icon="puzzle" to="/games" text="Games"></IconLink></li>
-                                    <li className="right">
-                                        {this.renderLoginButton()}
-                                    </li>
-                                </ul>
-                            </nav>
-                            {inventory.user !== null ?
-                                <div>
-                                    <div className="user-profile">
-                                        <Tooltip content={`Ingeloged als ${this.state.username}`} placement="left">
-                                            <img alt={this.state.username} src={inventory.user.photoURL} />
-                                        </Tooltip>
-                                    </div>
                                 </div>
-                                :
-                                <div></div>
-                            }
-                            <Switch>
-                                <Route exact path="/" component={this.home} />
-                                <Route path="/games" render={() => <BggList></BggList>} />
-                                <Route path="/info" component={this.info} />
-                                <Route render={this.noRoute} />
-                            </Switch>
+                            </header>
+                            <div className="wrapper">
+                                <nav className="menu">
+                                    <ul>
+                                        <li><IconLink icon="globe" to="/" text="Home"></IconLink></li>
+                                        <li><IconLink icon="megaphone" to="/info" text="Info"></IconLink></li>
+                                        <li><IconLink icon="puzzle" to="/games" text="Games"></IconLink></li>
+                                        <li className="right">
+                                            {this.renderLoginButton()}
+                                        </li>
+                                    </ul>
+                                </nav>
+                                {inventory.user !== null ?
+                                    <div>
+                                        <div className="user-profile">
+                                            <Tooltip content={`Ingeloged als ${this.state.username}`} placement="left">
+                                                <img alt={this.state.username} src={inventory.user.photoURL} />
+                                            </Tooltip>
+                                        </div>
+                                    </div>
+                                    :
+                                    <div></div>
+                                }
+                                <Switch>
+                                    <Route exact path="/" component={this.home} />
+                                    <Route path="/games" render={() => <BggList></BggList>} />
+                                    <Route path="/info" component={this.info} />
+                                    <Route render={this.noRoute} />
+                                </Switch>
+                            </div>
                         </div>
+                        <footer>
+                            <ul className="wrapper">
+                                <li>
+                                    <a href="https://www.facebook.com/gezelschapsspellenpietjesbak/">
+                                        <i className="icon-facebook-squared"></i>
+                                        Like
+                                </a>
+                                </li>
+                                <li>
+                                    <a href="mailto:pietdecoensel@gmail.com">
+                                        <i className="icon-mail-alt"></i>
+                                        Contact
+                                </a>
+                                </li>
+                            </ul>
+                            <span>&copy; Spellenclub De Pietjesbak &#9679; Lennert Claeys</span>
+                        </footer>
                     </div>
-                    <footer>
-                        <ul className="wrapper">
-                            <li>
-                                <a href="https://www.facebook.com/gezelschapsspellenpietjesbak/">
-                                    <i className="icon-facebook-squared"></i>
-                                    Like
-                                </a>
-                            </li>
-                            <li>
-                                <a href="mailto:pietdecoensel@gmail.com">
-                                    <i className="icon-mail-alt"></i>
-                                    Contact
-                                </a>
-                            </li>
-                        </ul>
-                        <span>&copy; Spellenclub De Pietjesbak &#9679; Lennert Claeys</span>
-                    </footer>
-                </div>
+                </ScrollToTop>
             </BrowserRouter>
         );
     }
