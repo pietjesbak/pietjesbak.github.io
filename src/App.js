@@ -1,6 +1,6 @@
 import './css/App.css';
 import { auth } from './Firebase.js';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { HashRouter, Route, Switch } from 'react-router-dom';
 import BggList from './BggList.js';
 import BggRequests from './BggRequests.js';
 import Facebook from './Facebook.js';
@@ -93,7 +93,7 @@ class App extends Component {
 
     render() {
         return (
-            <BrowserRouter className="app">
+            <HashRouter className="app">
                 <ScrollToTop>
                     <div className="full-height">
                         <div className="page-wrap">
@@ -156,7 +156,7 @@ class App extends Component {
                         </footer>
                     </div>
                 </ScrollToTop>
-            </BrowserRouter>
+            </HashRouter>
         );
     }
 }
