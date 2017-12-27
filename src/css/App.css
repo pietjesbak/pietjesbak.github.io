@@ -100,7 +100,7 @@ button, .button, .small-button {
     padding: 10px 6px;
 }
 
-button:hover, .button:hover, .small-button:hover, .button.active {
+button:hover, .button:hover, .small-button:hover, .button.active, .small-button.active {
     position: relative;
     top: 2px;
     box-shadow: 0 -2px 5px 0 rgba(0, 0, 0, .26);
@@ -131,4 +131,13 @@ button:hover, .button:hover, .small-button:hover, .button.active {
     margin: 10px 0;
     display: inline-block;
     border-radius: 5px;
+}
+
+@media screen and (max-width: 580px) {
+    .user-profile {
+        width: 60px;
+        height: 60px;
+        bottom: 10px;
+        right: 10px;
+    }
 }

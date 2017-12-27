@@ -58,7 +58,7 @@ class BggRequests extends Component {
                     <h3>Aanvragen voor {date}</h3>
                     <p>
                         Er zijn nog geen aanvragen. <br />
-                        Geef aan welk spel je volgende keer graag wil spelen op de <Link to="/games">games</Link> pagina! <br />
+                        Geef aan welk spel je volgende keer graag wil spelen op de <Link to="/games">games</Link> pagina! <br /><br />
                         Of neem gerust enkele van je eigen spellen mee.
                     </p>
                 </div>

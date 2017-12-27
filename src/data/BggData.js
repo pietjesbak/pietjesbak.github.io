@@ -253,12 +253,12 @@ class BggDetailsData {
 
         this.ownedExpansions = new Map();
         entries
-            .filter(id => games.has(id))
+            .filter(([id, name]) => games.has(id))
             .forEach(([id, name]) => this.ownedExpansions.set(id, name));
 
         this.otherExpansions = new Map();
         entries
-            .filter(id => games.has(id) === false)
+            .filter(([id, name]) => games.has(id) === false)
             .forEach(([id, name]) => this.otherExpansions.set(id, name));
     }
 

@@ -133,12 +133,12 @@ class BggGame extends Component {
             <section>
                 <h3><i className="icon-puzzle"></i> Uitbreidingen</h3>
                 <ul className="tag-list">
-                    {[...this.state.game.details.ownedExpansions.values()].map(game => {
+                    {[...this.state.game.details.ownedExpansions].map(([id, name] )=> {
                         return (
-                            <li key={game.id}>
-                                <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${game.id}/`}>
+                            <li key={id}>
+                                <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`}>
                                     <i className="icon-ok"></i>
-                                    {game.name}
+                                    {name}
                                 </a>
                             </li>
                         )

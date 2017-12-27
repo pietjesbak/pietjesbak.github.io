@@ -277,11 +277,16 @@ class Inventory {
     async fetchGames_() {
         let response;
         do {
-            response = await fetch(PIETJESBAK_BBG_COLLECTION);
-            if (response.status !== 200) {
-                await this.sleep_(2000);
+            try {
+                response = await fetch(PIETJESBAK_BBG_COLLECTION);
+                if (response.status !== 200) {
+                    throw new Error('Collection not yet available.');
+                }
+            } catch(e) {
+                console.log(`Trying again in 3 seconds: ${e}`);
+                await this.sleep_(3000);
             }
-        } while (response.status !== 200);
+        } while (response === undefined || response.status !== 200);
 
         let xml = new DOMParser().parseFromString(await response.text(), 'text/xml');
 

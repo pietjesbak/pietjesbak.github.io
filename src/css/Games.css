@@ -21,6 +21,13 @@
     margin: 10px 0;
 }
 
+.bgg-list .searchbar .matches {
+    background: rgb(237, 237, 237);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
 .bgg-list .content {
     flex: 1;
 }
@@ -105,7 +112,6 @@
     width: 50px;
     display: table-cell;
     vertical-align: middle;
-    padding-right: 10px;
     padding-left: 10px;
     text-align: center;
     font-size: 2em;
@@ -192,11 +198,14 @@
     .games .thumb-holder img {
         max-width: 100px;
     }
-}
-
-@media screen and (max-width: 420px) {
     .games .details .info {
         max-width: 130px;
+    }
+    .bgg-requests .games {
+        /** hack to get the games list to be full width */
+        position: relative;
+        left: -20px;
+        width: calc(100% + 40px);
     }
 }
 

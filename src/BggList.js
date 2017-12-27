@@ -85,7 +85,7 @@ class BggList extends Component {
 
     lazyLoader = () => {
         if (this.state.gamesPerPage < this.state.filteredGames.length &&
-            ((document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight >= document.documentElement.scrollHeight * 0.9 ||
+            ((document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 150 ||
                 document.documentElement.scrollHeight === document.documentElement.clientHeight)
         ) {
             this.setState({ gamesPerPage: this.state.gamesPerPage + this.gamesPerLazyLoad });
@@ -195,6 +195,7 @@ class BggList extends Component {
                     <select className="order" data-key="o" onChange={this.searchChange}>
                         {Object.keys(BggList.gameOrder()).map((order, i) => <option key={i} value={i}>{order}</option>)}
                     </select>
+                    <p className="matches">{this.state.filteredGames.length} resultaten</p>
                 </div>
                 <div className="content">
                     {list}
