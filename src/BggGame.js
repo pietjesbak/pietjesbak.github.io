@@ -15,16 +15,36 @@ class BggGame extends Component {
     }
 
     static defaultProps = {
+        expanded: false,
         game: null,
+        expansionClick: null
+    }
+
+    componentDidMount() {
+        if (this.props.expanded !== this.state.expanded) {
+            this.showFullDetails();
+        }
+    }
+
+    componentDidUpdate() {
+        if (this.props.expanded === true) {
+            window.scrollTo(0, this.refs.element.offsetTop);
+        }
     }
 
     componentWillReceiveProps(props) {
         this.setState({ game: props.game });
+
+        if (props.expanded !== this.state.expanded) {
+            this.showFullDetails();
+        }
     }
 
     showFullDetails = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e !== undefined) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
 
         const newState = !this.state.expanded;
         this.setState({ expanded: newState });
@@ -44,6 +64,15 @@ class BggGame extends Component {
         e.stopPropagation();
 
         inventory.toggleGame(this.state.game);
+    }
+
+    expansionClick = (e) => {
+        if (this.props.expansionClick !== null) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            this.props.expansionClick(Number(e.target.dataset.expansion));
+        }
     }
 
     renderDetails() {
@@ -106,7 +135,7 @@ class BggGame extends Component {
      */
     renderlist(icon, name, key) {
         let items = this.state.game.details[key];
-        if (items === undefined) {
+        if (items === undefined || items.length === 0) {
             return;
         }
 
@@ -125,7 +154,7 @@ class BggGame extends Component {
     }
 
     renderExpansions() {
-        if (this.state.game.details.expansions.size === 0) {
+        if (this.state.game.details.ownedExpansions.size === 0) {
             return;
         }
 
@@ -136,14 +165,14 @@ class BggGame extends Component {
                     {[...this.state.game.details.ownedExpansions].map(([id, name] )=> {
                         return (
                             <li key={id}>
-                                <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`}>
+                                <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`} onClick={this.expansionClick} data-expansion={id}>
                                     <i className="icon-ok"></i>
                                     {name}
                                 </a>
                             </li>
                         )
                     })}
-                    {[...this.state.game.details.otherExpansions].map(([id, name]) => {
+                    {/* {[...this.state.game.details.otherExpansions].map(([id, name]) => {
                         return (
                             <li key={id}>
                                 <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`}>
@@ -152,7 +181,7 @@ class BggGame extends Component {
                                 </a>
                             </li>
                         );
-                    })}
+                    })} */}
                 </ul>
             </section>
         );
@@ -202,13 +231,13 @@ class BggGame extends Component {
 
     render() {
         return (
-            <li className={this.state.expanded ? "expanded" : ""} key={this.state.game.id}>
-                <span className="pointer" onClick={this.showFullDetails}>
-                    <div className="thumb-holder">
+            <li className={this.state.expanded ? "expanded" : ""} key={this.state.game.id} ref="element">
+                <span>
+                    <div className="thumb-holder pointer" onClick={this.showFullDetails}>
                         <img src={this.state.game.thumbnail} alt={this.state.game.name}></img>
                     </div>
                     <div className="details">
-                        <h3>{this.state.game.name}</h3>
+                        <h3 className="pointer" onClick={this.showFullDetails}>{this.state.game.name}</h3>
                         <div className="info-holder">
                             <div>
                                 <div className="info"><i className="icon-users"></i> {this.state.game.stats.players}</div>

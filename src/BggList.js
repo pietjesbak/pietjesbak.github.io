@@ -30,6 +30,7 @@ class BggList extends Component {
                 o: 0
             },
             error: false,
+            defaultExpands: [],
             loaderDots: ''
         };
 
@@ -135,9 +136,24 @@ class BggList extends Component {
         search[e.target.dataset.key] = e.target.value;
         await this.setState({
             search: search,
-            gamesPerPage: this.gamesPerLazyLoad
+            gamesPerPage: this.gamesPerLazyLoad,
+            defaultExpands: []
         });
         this.onPageChanged(this.state.page);
+    }
+
+    searchExpansion = async (expansionId) => {
+        let expansion = (await inventory.getGames()).get(expansionId);
+        if (expansion !== undefined) {
+            this.refs.input.value = expansion.name;
+            await this.setState({
+                search: {q: expansion.name, o: 0},
+                gamesPerPage: this.gamesPerLazyLoad,
+                defaultExpands: [expansionId],
+                filteredGames: [expansion],
+                page: 0
+            });
+        }
     }
 
     /**
@@ -185,18 +201,23 @@ class BggList extends Component {
         if (this.state.filteredGames.length === 0) {
             list = <h3 className="no-results">Geen resultaten!</h3>
         } else {
-            list = <ul className="games">{gamesOnPage.map(game => <BggGame key={game.id} game={game}></BggGame>)}</ul>
+            list = <ul className="games">{gamesOnPage.map(game => <BggGame
+                key={game.id}
+                game={game}
+                expanded={this.state.defaultExpands.indexOf(game.id) !== -1}
+                expansionClick={this.searchExpansion}
+            />)}</ul>
         }
 
         return (
             <div className="bgg-list">
                 <div className="searchbar">
                     <h3>Zoeken</h3>
-                    <input type="text" className="search" data-key="q" onChange={this.searchChange} />
+                    <input type="text" className="search" data-key="q" onChange={this.searchChange} ref="input" />
                     <select className="order" data-key="o" onChange={this.searchChange}>
                         {Object.keys(BggList.gameOrder()).map((order, i) => <option key={i} value={i}>{order}</option>)}
                     </select>
-                    <p className="matches">{this.state.filteredGames.length} resultaten</p>
+                    <p className="matches">{this.state.filteredGames.length} {this.state.filteredGames.length === 1 ? "spel" : "spellen"}</p>
                 </div>
                 <div className="content">
                     {list}
