@@ -47,11 +47,12 @@ class BggList extends Component {
     static gameOrder() {
         return {
             'Alfabetisch': (a, b) => a.name.localeCompare(b.name),
-            'Score': (a, b) => b.stats.rating - a.stats.rating,
-            'Aantal spelers ↑': (a, b) => a.stats.minPlayers - b.stats.minPlayers,
-            'Aantal spelers ↓': (a, b) => b.stats.maxPlayers - a.stats.maxPlayers,
-            'Spelduur ↑': (a, b) => a.stats.minPlaytime - b.stats.minPlaytime,
-            'Spelduur ↓': (a, b) => b.stats.maxPlaytime - a.stats.maxPlaytime
+            'Aantal spelers ↑': (a, b) => (a.stats.minPlayers - b.stats.minPlayers) || (a.stats.maxPlayers - b.stats.maxPlayers),
+            'Aantal spelers ↓': (a, b) => (b.stats.maxPlayers - a.stats.maxPlayers) || (b.stats.minPlayers - a.stats.minPlayers),
+            'Spelduur ↑': (a, b) => (a.stats.minPlaytime - b.stats.minPlaytime) || (a.stats.maxPlaytime - b.stats.maxPlaytime),
+            'Spelduur ↓': (a, b) => (b.stats.maxPlaytime - a.stats.maxPlaytime) || (b.stats.minPlaytime - a.stats.minPlaytime),
+            'Publicatie': (a, b) => b.year - a.year,
+            'Score': (a, b) => b.stats.rating - a.stats.rating
         };
     }
 
