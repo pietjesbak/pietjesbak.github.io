@@ -87,7 +87,7 @@ class BggList extends Component {
 
     lazyLoader = () => {
         if (this.state.gamesPerPage < this.state.filteredGames.length &&
-            ((document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 150 ||
+            ((document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 200 ||
                 document.documentElement.scrollHeight === document.documentElement.clientHeight)
         ) {
             this.setState({ gamesPerPage: this.state.gamesPerPage + this.gamesPerLazyLoad });
@@ -147,7 +147,7 @@ class BggList extends Component {
         if (expansion !== undefined) {
             this.refs.input.value = expansion.name;
             await this.setState({
-                search: {q: expansion.name, o: 0},
+                search: { q: expansion.name, o: 0 },
                 gamesPerPage: this.gamesPerLazyLoad,
                 defaultExpands: [expansionId],
                 filteredGames: [expansion],
@@ -201,12 +201,19 @@ class BggList extends Component {
         if (this.state.filteredGames.length === 0) {
             list = <h3 className="no-results">Geen resultaten!</h3>
         } else {
-            list = <ul className="games">{gamesOnPage.map(game => <BggGame
-                key={game.id}
-                game={game}
-                expanded={this.state.defaultExpands.indexOf(game.id) !== -1}
-                expansionClick={this.searchExpansion}
-            />)}</ul>
+            list = <ul className="games">
+                {gamesOnPage.map(game => <BggGame
+                    key={game.id}
+                    game={game}
+                    expanded={this.state.defaultExpands.indexOf(game.id) !== -1}
+                    expansionClick={this.searchExpansion}
+                />)}
+                {this.state.filteredGames.length > this.state.gamesPerPage ? (
+                    <li className="spinner">
+                        <i className="icon-spin1 animate-spin"></i>
+                    </li>
+                ) : ""}
+            </ul>
         }
 
         return (
