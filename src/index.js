@@ -17,7 +17,7 @@ export function blendColors(c0, c1, p) {
 };
 
 export function readableDate(date, withHour) {
-    return  date.toLocaleString(undefined, {
+    return  date.toLocaleString('nl', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
