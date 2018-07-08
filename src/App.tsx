@@ -1,20 +1,26 @@
+import * as React from 'react';
 import './css/App.css';
-import { auth } from './Firebase.js';
-import { HashRouter, Route, Switch } from 'react-router-dom';
-import BggList from './BggList.js';
-import BggRequests from './BggRequests.js';
-import Facebook from './Facebook.js';
-import IconButton from './IconButton.js';
-import IconLink from './IconLink.js';
-import inventory from './data/Inventory.js';
-import React, { Component } from 'react';
-import SimpleMap from './SimpleMap.js';
-import Tooltip from 'react-simple-tooltip';
-import ScrollToTop from './ScrollToTop';
 
-class App extends Component {
-    constructor() {
-        super();
+import Tooltip from 'react-simple-tooltip';
+import BggList from './BggList';
+import BggRequests from './BggRequests';
+import Facebook from './Facebook';
+import IconButton from './IconButton';
+import IconLink from './IconLink';
+import ScrollToTop from './ScrollToTop';
+import SimpleMap from './SimpleMap';
+
+import { HashRouter, Route, Switch } from 'react-router-dom';
+import inventory from './data/Inventory';
+import { auth } from './Firebase';
+
+export interface State {
+    username: string;
+}
+
+class App extends React.Component<React.HTMLAttributes<App>, State> {
+    constructor(props: React.HTMLAttributes<App>) {
+        super(props);
         this.state = {
             username: ''
         };
@@ -23,7 +29,7 @@ class App extends Component {
     componentDidMount() {
         auth.onAuthStateChanged(user => {
             if (user) {
-                this.setState({ username: user.displayName });
+                this.setState({ username: (user as FirebaseUser).displayName });
             }
         });
     }
@@ -31,7 +37,7 @@ class App extends Component {
     logout = async () => {
         await inventory.logout();
         this.setState({
-            nameuser: ''
+            username: ''
         });
     }
 
@@ -45,9 +51,15 @@ class App extends Component {
     home() {
         return (
             <div>
-                <Facebook></Facebook>
-                <BggRequests></BggRequests>
+                <Facebook />
+                <BggRequests />
             </div>
+        );
+    }
+
+    games() {
+        return (
+            <BggList />
         );
     }
 
@@ -68,7 +80,7 @@ class App extends Component {
                         Zandloperstraat 83 <br />
                         9030 Mariakerke
                     </span>
-                    <SimpleMap></SimpleMap>
+                    <SimpleMap />
                 </div>
             </div>
         );
@@ -85,14 +97,15 @@ class App extends Component {
 
     renderLoginButton() {
         if (inventory.user !== null) {
-            return <IconButton subClass="logout" icon="logout" text="Log uit" placement="left" action={this.logout}></IconButton>
+            return <IconButton subClass="logout" icon="logout" text="Log uit" placement="left" action={this.logout} />
         } else {
-            return <IconButton subClass="login" icon="login" text="Log in" placement="left" action={this.login}></IconButton>
+            return <IconButton subClass="login" icon="login" text="Log in" placement="left" action={this.login} />
         }
     }
 
     render() {
         return (
+            // @ts-ignore
             <HashRouter className="app">
                 <ScrollToTop>
                     <div className="full-height">
@@ -101,7 +114,7 @@ class App extends Component {
                                 <div className="wrapper">
                                     <h1>
                                         <svg id="logo" width="57" height="52">
-                                            <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee"></path>
+                                            <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee" />
                                         </svg>
                                         Spellenclub De Pietjesbak
                                 </h1>
@@ -110,9 +123,9 @@ class App extends Component {
                             <div className="wrapper">
                                 <nav className="menu">
                                     <ul>
-                                        <li><IconLink icon="globe" to="/" text="Home"></IconLink></li>
-                                        <li><IconLink icon="megaphone" to="/info" text="Info"></IconLink></li>
-                                        <li><IconLink icon="puzzle" to="/games" text="Games"></IconLink></li>
+                                        <li><IconLink icon="globe" to="/" text="Home" /></li>
+                                        <li><IconLink icon="megaphone" to="/info" text="Info" /></li>
+                                        <li><IconLink icon="puzzle" to="/games" text="Games" /></li>
                                         <li className="right">
                                             {this.renderLoginButton()}
                                         </li>
@@ -127,11 +140,11 @@ class App extends Component {
                                         </div>
                                     </div>
                                     :
-                                    <div></div>
+                                    <div />
                                 }
                                 <Switch>
-                                    <Route exact path="/" component={this.home} />
-                                    <Route path="/games" render={() => <BggList></BggList>} />
+                                    <Route exact={true} path="/" component={this.home} />
+                                    <Route path="/games" component={this.games} />
                                     <Route path="/info" component={this.info} />
                                     <Route render={this.noRoute} />
                                 </Switch>
@@ -141,13 +154,13 @@ class App extends Component {
                             <ul className="wrapper">
                                 <li>
                                     <a href="https://www.facebook.com/gezelschapsspellenpietjesbak/">
-                                        <i className="icon-facebook-squared"></i>
+                                        <i className="icon-facebook-squared" />
                                         Like
                                 </a>
                                 </li>
                                 <li>
                                     <a href="mailto:pietdecoensel@gmail.com">
-                                        <i className="icon-mail-alt"></i>
+                                        <i className="icon-mail-alt" />
                                         Contact
                                 </a>
                                 </li>

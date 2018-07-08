@@ -1,23 +1,36 @@
-import { blendColors } from './index.js';
-import inventory from './data/Inventory';
-import React, { Component } from 'react';
+import * as React from 'react';
 import Tooltip from 'react-simple-tooltip';
+import { blendColors } from '.';
+import { BggGameData } from './data/BggData';
+import inventory from './data/Inventory';
 
-class BggGame extends Component {
-    constructor(data) {
-        super();
+export interface Props extends React.HtmlHTMLAttributes<BggGame> {
+    expanded?: boolean;
+    game: BggGameData;
+    expansionClick?: ((id: number) => void) | null;
+}
 
-        this.state = {
-            error: false,
-            expanded: false,
-            game: data.game
-        };
-    }
+export interface State {
+    error: boolean;
+    expanded: boolean;
+    game: BggGameData;
+}
 
+class BggGame extends React.Component<Props, State> {
     static defaultProps = {
         expanded: false,
         game: null,
         expansionClick: null
+    }
+
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            error: false,
+            expanded: false,
+            game: props.game
+        };
     }
 
     componentDidMount() {
@@ -28,11 +41,11 @@ class BggGame extends Component {
 
     componentDidUpdate() {
         if (this.props.expanded === true) {
-            window.scrollTo(0, this.refs.element.offsetTop);
+            window.scrollTo(0, (this.refs.element as HTMLElement).offsetTop);
         }
     }
 
-    componentWillReceiveProps(props) {
+    componentWillReceiveProps(props: Props) {
         this.setState({ game: props.game });
 
         if (props.expanded !== this.state.expanded) {
@@ -40,7 +53,7 @@ class BggGame extends Component {
         }
     }
 
-    showFullDetails = async (e) => {
+    showFullDetails = async (e?: React.SyntheticEvent) => {
         if (e !== undefined) {
             e.preventDefault();
             e.stopPropagation();
@@ -50,7 +63,7 @@ class BggGame extends Component {
         this.setState({ expanded: newState });
         if (newState === true) {
             try {
-                await inventory.fetchGameDetails(this.state.game);
+                await inventory.fetchGameDetails(this.state.game!);
                 this.setState(this.state);
             } catch (e) {
                 console.error(e);
@@ -59,19 +72,19 @@ class BggGame extends Component {
         }
     }
 
-    requestClick = (e) => {
+    requestClick = (e: React.SyntheticEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        inventory.toggleGame(this.state.game);
+        inventory.toggleGame(this.state.game!);
     }
 
-    expansionClick = (e) => {
+    expansionClick = (e: React.SyntheticEvent) => {
         if (this.props.expansionClick !== null) {
             e.preventDefault();
             e.stopPropagation();
 
-            this.props.expansionClick(Number(e.target.dataset.expansion));
+            this.props.expansionClick!(Number((e.target as HTMLElement).dataset.expansion));
         }
     }
 
@@ -93,7 +106,7 @@ class BggGame extends Component {
             return (
                 <div className="full-details">
                     <div className="spinner">
-                        <i className="icon-spin1 animate-spin"></i>
+                        <i className="icon-spin1 animate-spin" />
                     </div>
                 </div>
             );
@@ -102,11 +115,11 @@ class BggGame extends Component {
         return (
             <div className="full-details">
                 <div className="warning">
-                    <i className="icon-attention"></i>
+                    <i className="icon-attention" />
                     Deze info wordt van <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${this.state.game.id}/`}>boardgamegeek</a> gehaald en is dus in het Engels.
                 </div>
 
-                <h3><i className="icon-info"></i> Beschrijving</h3>
+                <h3><i className="icon-info" /> Beschrijving</h3>
                 <p className="description">{this.state.game.details.descriptionArray.map((part, i) => {
                     if (part.startsWith('http')) {
                         return <a key={i} href={part}>{part}</a>
@@ -129,44 +142,45 @@ class BggGame extends Component {
     /**
      * Renders a list of tag like objects.
      *
-     * @param {string} icon Icon for this section.
-     * @param {string} name Title for this section.
-     * @param {string} key variable name of where the items are stored.
+     * @param icon Icon for this section.
+     * @param name Title for this section.
+     * @param key variable name of where the items are stored.
      */
-    renderlist(icon, name, key) {
-        let items = this.state.game.details[key];
+    renderlist(icon: string, name: string, key: string) {
+        let items: string | string[] = this.state.game.details![key];
+
         if (items === undefined || items.length === 0) {
             return;
         }
 
         if (Array.isArray(items) === false) {
-            items = [items];
+            items = [items as string];
         }
 
         return (
             <div>
-                <dt><i className={icon}></i> {name}</dt>
+                <dt><i className={icon} /> {name}</dt>
                 <dd>
-                    <ul className="tag-list">{items.map(item => <li key={item}>{item}</li>)}</ul>
+                    <ul className="tag-list">{(items as string[]).map(item => <li key={item}>{item}</li>)}</ul>
                 </dd>
             </div>
         );
     }
 
     renderExpansions() {
-        if (this.state.game.details.ownedExpansions.size === 0) {
+        if (this.state.game.details!.ownedExpansions.size === 0) {
             return;
         }
 
         return (
             <section>
-                <h3><i className="icon-puzzle"></i> Uitbreidingen</h3>
+                <h3><i className="icon-puzzle" /> Uitbreidingen</h3>
                 <ul className="tag-list">
-                    {[...this.state.game.details.ownedExpansions].map(([id, name] )=> {
+                    {[...this.state.game.details!.ownedExpansions].map(([id, name] )=> {
                         return (
                             <li key={id}>
                                 <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`} onClick={this.expansionClick} data-expansion={id}>
-                                    <i className="icon-ok"></i>
+                                    <i className="icon-ok" />
                                     {name}
                                 </a>
                             </li>
@@ -187,8 +201,11 @@ class BggGame extends Component {
         );
     }
 
+    stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
+
     renderRequestButton() {
-        let text, icon;
+        let text: string;
+        let icon: string;
 
         icon = this.state.game.requestedByMe ? 'icon-heart' : 'icon-heart-empty';
         if (this.state.game.requestsThisMonth === 0) {
@@ -201,7 +218,7 @@ class BggGame extends Component {
             }
         } else {
             if (this.state.game.requestedByMe === true) {
-                let other = (this.state.game.requestsThisMonth > 2) ? 'anderen' : 'andere';
+                const other = (this.state.game.requestsThisMonth > 2) ? 'anderen' : 'andere';
                 text = `Jij en ${this.state.game.requestsThisMonth - 1} ${other} willen dit spelen`;
             } else {
                 text = `${this.state.game.requestsThisMonth} anderen willen dit spelen`;
@@ -211,9 +228,9 @@ class BggGame extends Component {
         if (inventory.user === null) {
             return (
                 <div className="info pointer">
-                    <span className="hover" onClick={e => e.stopPropagation()}>
+                    <span className="hover" onClick={this.stopPropagation}>
                         <Tooltip content="Log in om aan te geven dat je dit spel wil spelen">
-                            <i className={icon}></i> <span className="whitespace-normal">{text}</span>
+                            <i className={icon} /> <span className="whitespace-normal">{text}</span>
                         </Tooltip>
                     </span>
                 </div>
@@ -222,7 +239,7 @@ class BggGame extends Component {
             return (
                 <div className="info pointer" >
                     <span className="hover" onClick={this.requestClick}>
-                        <i className={icon}></i> <span className="whitespace-normal">{text}</span>
+                        <i className={icon} /> <span className="whitespace-normal">{text}</span>
                     </span>
                 </div>
             );
@@ -234,14 +251,14 @@ class BggGame extends Component {
             <li className={this.state.expanded ? "expanded" : ""} key={this.state.game.id} ref="element">
                 <span>
                     <div className="thumb-holder pointer" onClick={this.showFullDetails}>
-                        <img src={this.state.game.thumbnail} alt={this.state.game.name}></img>
+                        <img src={this.state.game.thumbnail} alt={this.state.game.name} />
                     </div>
                     <div className="details">
                         <h3 className="pointer" onClick={this.showFullDetails}>{this.state.game.name}</h3>
                         <div className="info-holder">
                             <div>
-                                <div className="info"><i className="icon-users"></i> {this.state.game.stats.players}</div>
-                                <div className="info"><i className="icon-clock"></i> {this.state.game.stats.playtime}</div>
+                                <div className="info"><i className="icon-users" /> {this.state.game.stats.players}</div>
+                                <div className="info"><i className="icon-clock" /> {this.state.game.stats.playtime}</div>
                                 {this.renderRequestButton()}
                             </div>
                             <div className="score" style={{ borderColor: blendColors('#FF0000', '#00FF00', this.state.game.stats.rating / 12) }}>{this.state.game.stats.rating.toFixed(1)}</div>

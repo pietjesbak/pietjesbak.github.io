@@ -1,11 +1,16 @@
+import * as React from 'react';
+import { readableDate } from '.';
 import './css/Facebook.css';
-import { readableDate } from './index';
 import inventory from './data/Inventory';
-import React, { Component } from 'react';
 
-class Facebook extends Component {
-    constructor() {
-        super();
+export interface State {
+    events: FacebookEvent[] | null;
+    error: boolean;
+}
+
+export default class Facebook extends React.Component<React.HTMLAttributes<Facebook>, State> {
+    constructor(props: React.HTMLAttributes<Facebook>) {
+        super(props);
         this.state = {
             events: null,
             error: false
@@ -15,23 +20,23 @@ class Facebook extends Component {
     async componentDidMount() {
         try {
             const events = await inventory.getFacebookEvent();
-            this.setState({ events: events });
+            this.setState({ events });
         } catch (e) {
             console.error(e);
             this.setState({ error: true });
         }
     }
 
-    renderDate(date) {
-        let readable = readableDate(date, true);
+    renderDate(date: Date) {
+        const readable = readableDate(date, true);
 
-        if (Date.now() - date < 0) {
+        if (Date.now() - date.getTime() < 0) {
             return <div className="date valid">
                 <span>Op {readable}</span>
             </div>
         }
 
-        if (Date.now() - date < 1000 * 60 * 60 * 5) {
+        if (Date.now() - date.getTime() < 1000 * 60 * 60 * 5) {
             return <div className="date ongoing">
                 <span>Op {readable}</span><br />
                 <span><strong>Nu aan de gang!</strong></span>
@@ -44,7 +49,7 @@ class Facebook extends Component {
         </div>
     }
 
-    renderEvent(events, error) {
+    renderEvent(events: FacebookEvent[] | null, error: boolean) {
         if (error === true) {
             return <h2>De facebook API lijkt geblokkeerd...</h2>
         }
@@ -57,8 +62,8 @@ class Facebook extends Component {
             return <h2>Er lijkt momenteel geen volgend event gepland te zijn.</h2>
         }
 
-        let event = events[0];
-        let date = new Date(event.start_time);
+        const event = events[0];
+        const date = new Date(event.start_time);
         return <div>
             <h2>{event.name}</h2>
             {this.renderDate(date)}
@@ -72,12 +77,9 @@ class Facebook extends Component {
 
     render() {
         return <div className={this.state.error ? "facebook-card card error" : "facebook-card card"}>
-            <a className="facebook" href="https://www.facebook.com/gezelschapsspellenpietjesbak/" ><i className="icon-facebook-squared"></i></a>
+            <a className="facebook" href="https://www.facebook.com/gezelschapsspellenpietjesbak/" ><i className="icon-facebook-squared" /></a>
 
             {this.renderEvent(this.state.events, this.state.error)}
         </div>
     }
 }
-
-
-export default Facebook;

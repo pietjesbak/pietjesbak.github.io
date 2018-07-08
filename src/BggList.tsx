@@ -1,60 +1,86 @@
-//import Pager from 'react-pager';
+// import Pager from 'react-pager';
+import * as escapeStringRegexp from 'escape-string-regexp';
+import * as React from 'react';
+import BggGame from './BggGame';
 import './css/Games.css';
+import { BggGameData } from './data/BggData';
 import { CORS_ANYWHERE_DYNO } from './data/Constants';
-import BggGame from './BggGame.js';
-import escapeStringRegexp from 'escape-string-regexp';
-import inventory from './data/Inventory.js';
-import React, { Component } from 'react';
+import inventory from './data/Inventory';
 
-class BggList extends Component {
-    constructor() {
-        super();
-        this.url = new URL(window.location);
+export interface State {
+    games: Map<number, BggGameData> | null;
+    filteredGames: BggGameData[];
+    page: number;
+    gamesPerPage: number;
+    search: {q: string, o: number};
+    error: boolean;
+    defaultExpands: number[];
+    loaderDots: string;
+}
+
+class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> {
+    /**
+     * Returns all order algorithms.
+     */
+    static gameOrder(): { [key: string]: (a: BggGameData, b: BggGameData) => number } {
+        return {
+            'Alfabetisch': (a, b) => a.name.localeCompare(b.name),
+            'Aantal spelers ↑': (a, b) => (a.stats.minPlayers - b.stats.minPlayers) || (a.stats.maxPlayers - b.stats.maxPlayers),
+            'Aantal spelers ↓': (a, b) => (b.stats.maxPlayers - a.stats.maxPlayers) || (b.stats.minPlayers - a.stats.minPlayers),
+            'Spelduur ↑': (a, b) => (a.stats.minPlaytime! - b.stats.minPlaytime!) || (a.stats.maxPlaytime! - b.stats.maxPlaytime!),
+            'Spelduur ↓': (a, b) => (b.stats.maxPlaytime! - a.stats.maxPlaytime!) || (b.stats.minPlaytime! - a.stats.minPlaytime!),
+            'Publicatie': (a, b) => b.year! - a.year!,
+            'Score': (a, b) => b.stats.rating - a.stats.rating
+        };
+    }
+
+    /**
+     * The current url.
+     */
+    url: URL;
+
+    /**
+     * The amount of games to draw per lazy load.
+     */
+    gamesPerLazyLoad: number;
+
+    /**
+     * The loader interval.
+     */
+    loaderInterval: number | null;
+
+    constructor(props: React.HtmlHTMLAttributes<BggList>) {
+        super(props);
+        this.url = new URL(window.location.href);
 
         // Fuck you, Edge
         // This won't work but at least it doesn't crash.
         if (this.url.searchParams === undefined) {
             console.log('Please use a real browser ლ(ಠ益ಠლ)');
+            // @ts-ignore
             this.url.searchParams = new Map();
         }
 
         this.gamesPerLazyLoad = 5;
 
         this.state = {
-            games: null,
-            filteredGames: [],
-            page: Number(this.url.searchParams.get('p')) || 0,
-            gamesPerPage: this.gamesPerLazyLoad,
-            search: {
-                q: '',
-                o: 0
-            },
-            error: false,
             defaultExpands: [],
-            loaderDots: ''
+            error: false,
+            filteredGames: [],
+            games: null,
+            gamesPerPage: this.gamesPerLazyLoad,
+            loaderDots: '',
+            page: Number(this.url.searchParams.get('p')) || 0,
+            search: {
+                o: 0,
+                q: ''
+            },
         };
 
         this.loaderInterval = null;
 
         // Make sure the dyno is running.
         fetch(CORS_ANYWHERE_DYNO);
-    }
-
-    /**
-     * Returns all order algorithms.
-     *
-     * @return {Object.<string: function(BggGameData, BggGameData): number>}
-     */
-    static gameOrder() {
-        return {
-            'Alfabetisch': (a, b) => a.name.localeCompare(b.name),
-            'Aantal spelers ↑': (a, b) => (a.stats.minPlayers - b.stats.minPlayers) || (a.stats.maxPlayers - b.stats.maxPlayers),
-            'Aantal spelers ↓': (a, b) => (b.stats.maxPlayers - a.stats.maxPlayers) || (b.stats.minPlayers - a.stats.minPlayers),
-            'Spelduur ↑': (a, b) => (a.stats.minPlaytime - b.stats.minPlaytime) || (a.stats.maxPlaytime - b.stats.maxPlaytime),
-            'Spelduur ↓': (a, b) => (b.stats.maxPlaytime - a.stats.maxPlaytime) || (b.stats.minPlaytime - a.stats.minPlaytime),
-            'Publicatie': (a, b) => b.year - a.year,
-            'Score': (a, b) => b.stats.rating - a.stats.rating
-        };
     }
 
     componentDidMount() {
@@ -66,8 +92,9 @@ class BggList extends Component {
     }
 
     componentWillUnmount() {
-        clearInterval(this.fetchInterval);
-        clearInterval(this.loaderInterval);
+        if (this.loaderInterval !== null) {
+            clearInterval(this.loaderInterval);
+        }
 
         window.removeEventListener('scroll', this.lazyLoader);
         window.removeEventListener('resize', this.lazyLoader);
@@ -80,8 +107,8 @@ class BggList extends Component {
         this.lazyLoader();
     }
 
-    updateGames = (games) => {
-        this.setState({ games: games });
+    updateGames = (games: Map<number, BggGameData>) => {
+        this.setState({ games });
         this.onPageChanged(this.state.page);
     }
 
@@ -97,9 +124,9 @@ class BggList extends Component {
     /**
      * Called by the pager.
      *
-     * @param {number} page The page to change to.
+     * @param page The page to change to.
      */
-    onPageChanged = (page) => {
+    onPageChanged = (page: number) => {
         if (page < 0) {
             page = 0;
         }
@@ -113,8 +140,8 @@ class BggList extends Component {
         // window.history.replaceState(null, null, this.url.toString());
 
         this.setState({
-            page: page,
-            filteredGames: filteredGames
+            page,
+            filteredGames
         });
     }
 
@@ -126,26 +153,26 @@ class BggList extends Component {
             }
 
             loaderDots += '.';
-            this.setState({ loaderDots: loaderDots });
+            this.setState({ loaderDots });
             this.loaderInterval = window.setTimeout(this.progressDots.bind(this), 300);
         }
     }
 
-    searchChange = async (e) => {
+    searchChange = async (e: React.ChangeEvent) => {
         const search = Object.assign({}, this.state.search);
-        search[e.target.dataset.key] = e.target.value;
+        search[(e.target as HTMLInputElement).dataset.key!] = (e.target as HTMLInputElement).value;
         await this.setState({
-            search: search,
+            search,
             gamesPerPage: this.gamesPerLazyLoad,
             defaultExpands: []
         });
         this.onPageChanged(this.state.page);
     }
 
-    searchExpansion = async (expansionId) => {
-        let expansion = (await inventory.getGames()).get(expansionId);
+    searchExpansion = async (expansionId: number) => {
+        const expansion = (await inventory.getGames()).get(expansionId);
         if (expansion !== undefined) {
-            this.refs.input.value = expansion.name;
+            (this.refs.input as HTMLInputElement).value = expansion.name;
             await this.setState({
                 search: { q: expansion.name, o: 0 },
                 gamesPerPage: this.gamesPerLazyLoad,
@@ -158,8 +185,6 @@ class BggList extends Component {
 
     /**
      * Filters and sorts the games.
-     *
-     * @return {Array.<BggGameData>}
      */
     filterGames() {
         if (this.state.games === null) {
@@ -196,7 +221,7 @@ class BggList extends Component {
     }
 
     renderGames() {
-        let gamesOnPage = this.state.filteredGames.slice(this.state.page * this.state.gamesPerPage, this.state.page * this.state.gamesPerPage + this.state.gamesPerPage);
+        const gamesOnPage = this.state.filteredGames.slice(this.state.page * this.state.gamesPerPage, this.state.page * this.state.gamesPerPage + this.state.gamesPerPage);
         let list;
         if (this.state.filteredGames.length === 0) {
             list = <h3 className="no-results">Geen resultaten!</h3>
@@ -210,7 +235,7 @@ class BggList extends Component {
                 />)}
                 {this.state.filteredGames.length > this.state.gamesPerPage ? (
                     <li className="spinner">
-                        <i className="icon-spin1 animate-spin"></i>
+                        <i className="icon-spin1 animate-spin" />
                     </li>
                 ) : ""}
             </ul>

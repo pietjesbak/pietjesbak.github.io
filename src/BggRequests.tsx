@@ -1,14 +1,20 @@
-import './css/Games.css';
+import * as React from 'react';
 import { Link } from 'react-router-dom'
-import { readableDate } from './index';
-import * as constants from './data/Constants.js';
-import BggGame from './BggGame.js';
-import inventory from './data/Inventory.js';
-import React, { Component } from 'react';
+import { readableDate } from '.';
+import BggGame from './BggGame';
+import './css/Games.css';
+import { BggGameData } from './data/BggData';
+import * as constants from './data/Constants';
+import inventory from './data/Inventory';
 
-class BggRequests extends Component {
-    constructor() {
-        super();
+export interface State {
+    requestedGames: BggGameData[] | null;
+    nextEvent: { date: Date, confirmed: boolean} | null;
+}
+
+export default class BggRequests extends React.Component<React.HtmlHTMLAttributes<BggRequests>, State> {
+    constructor(props: React.HtmlHTMLAttributes<BggRequests>) {
+        super(props);
 
         this.state = {
             requestedGames: null,
@@ -29,7 +35,7 @@ class BggRequests extends Component {
         inventory.removeChangeListener(this.updateGames);
     }
 
-    updateGames = (games) => {
+    updateGames = (games: Map<number, BggGameData>) => {
         const requestedGames = [...games.values()].filter(game => game.requestsThisMonth > 0).sort((a, b) => b.requestsThisMonth - a.requestsThisMonth || b.stats.rating - a.stats.rating);
         this.setState({ requestedGames });
     }
@@ -46,7 +52,7 @@ class BggRequests extends Component {
                 <div className="bgg-requests card">
                     <h3>Aanvragen voor {date}</h3>
                     <div className="spinner">
-                        <i className="icon-spin1 animate-spin"></i>
+                        <i className="icon-spin1 animate-spin" />
                     </div>
                 </div>
             );
@@ -68,10 +74,8 @@ class BggRequests extends Component {
         return (
             <div className="bgg-requests card">
                 <h3>Aanvragen voor {date}</h3>
-                <ul className="games">{this.state.requestedGames.map(game => <BggGame key={game.id} game={game}></BggGame>)}</ul>
+                <ul className="games">{this.state.requestedGames.map(game => <BggGame key={game.id} game={game} />)}</ul>
             </div>
         );
     }
 }
-
-export default BggRequests;
