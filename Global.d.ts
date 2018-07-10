@@ -27,4 +27,11 @@ interface FirebaseUser {
     uid: string;
     displayName: string;
     photoURL: string;
+    admin?: boolean;
+}
+
+interface FirebaseMessage {
+    title: string,
+    body: string,
+    date: Date
 }

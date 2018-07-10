@@ -5,11 +5,11 @@ import BggGame from './BggGame';
 import './css/Games.css';
 import { BggGameData } from './data/BggData';
 import * as constants from './data/Constants';
-import inventory from './data/Inventory';
+import inventory, { ChangeEvent } from './data/Inventory';
 
 export interface State {
     requestedGames: BggGameData[] | null;
-    nextEvent: { date: Date, confirmed: boolean} | null;
+    nextEvent: { date: Date, confirmed: boolean } | null;
 }
 
 export default class BggRequests extends React.Component<React.HtmlHTMLAttributes<BggRequests>, State> {
@@ -26,13 +26,13 @@ export default class BggRequests extends React.Component<React.HtmlHTMLAttribute
     }
 
     async componentDidMount() {
-        inventory.addChangeListener(this.updateGames);
+        inventory.addChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
 
         this.setState({ nextEvent: await inventory.getNextEventDate() });
     }
 
     componentWillUnmount() {
-        inventory.removeChangeListener(this.updateGames);
+        inventory.removeChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
     }
 
     updateGames = (games: Map<number, BggGameData>) => {

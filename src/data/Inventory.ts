@@ -3,6 +3,11 @@ import * as data from './BggData';
 import { PIETJESBAK_BBG_COLLECTION } from './Constants';
 import * as constants from './Constants';
 
+export enum ChangeEvent {
+    GAME_DATA,
+    USER
+}
+
 class Inventory {
     /**
      * A promise for all board game geek games.
@@ -12,7 +17,7 @@ class Inventory {
     /**
      * A map of games you requested and their firebase key.
      */
-    private ownRequestedGames_: Map<number, number> | null = null;
+    private ownRequestedGames_: Map<number, string> | null = null;
 
     /**
      * A map of all requested games and the amount of times they were requested this month.
@@ -22,7 +27,7 @@ class Inventory {
     /**
      * An array of callbacks for when the game lists update.
      */
-    private changeListeners_: Array<(map: Map<number, data.BggGameData>) => void> = [];
+    private changeListeners_: Map<ChangeEvent, Array<(data: any) => void>> = new Map();
 
     /**
      * Your user object when logged in to firebase.
@@ -35,9 +40,9 @@ class Inventory {
     private users_: Map<string, string> = new Map();
 
     /**
-     * All users of the pietjesbak. uid => name
+     * The cached firebase message.
      */
-    private facebookEventPromise_: Promise<FacebookEvent[]> = this.fetchFacebookEvent_();
+    private message_: FirebaseMessage | null = null;
 
     constructor() {
         this.firebaseWaitForAuthChange_();
@@ -107,23 +112,33 @@ class Inventory {
     /**
      * Adds a listener that gets called everytime the games change. Contains: all game requests, game requests for the current user and all games.
      *
+     * @param event    The type of event.
      * @param listener The listener.
      */
-    async addChangeListener(listener: (map: Map<number, data.BggGameData>) => void) {
-        this.changeListeners_.push(listener);
+    async addChangeListener(event: ChangeEvent, listener: (data: any) => void) {
+        if (this.changeListeners_.has(event) === false) {
+            this.changeListeners_.set(event, [listener]);
+        } else {
+            this.changeListeners_.get(event)!.push(listener);
+        }
 
-        if (this.requestedGames_ !== null) {
-            listener.call(this, await this.getGames());
+        if (event === ChangeEvent.GAME_DATA) {
+            if (this.requestedGames_ !== null) {
+                listener.call(this, await this.getGames());
+            }
         }
     }
 
     /**
      * Removes a listener that was added using addChangeListener.
      *
+     * @param event    The type of event.
      * @param listener The previously added listener.
      */
-    removeChangeListener(listener: (map: Map<number, data.BggGameData>) => void) {
-        this.changeListeners_.splice(this.changeListeners_.indexOf(listener), 1);
+    removeChangeListener(event: ChangeEvent, listener: (data: any) => void) {
+        if (this.changeListeners_.has(event) === true) {
+            this.changeListeners_.get(event)!.splice(this.changeListeners_.get(event)!.indexOf(listener), 1);
+        }
     }
 
     /**
@@ -141,13 +156,6 @@ class Inventory {
     }
 
     /**
-     * Get a promise containing the most recent facebook event.
-     */
-    async getFacebookEvent() {
-        return await this.facebookEventPromise_;
-    }
-
-    /**
      * Get a promise containing the next event date and if this date has been confirmed.
      */
     async getNextEventDate() {
@@ -155,13 +163,12 @@ class Inventory {
         let startTime;
 
         try {
-            const events = await this.getFacebookEvent();
-            startTime = new Date(events[0].start_time);
+            const event = await this.getMessage();
+            startTime = event.date;
         } catch (r) {
             console.error('Failed to get next event date.');
-            startTime = new Date(0);
+            startTime = new Date();
         }
-
 
         const thresholdDate = new Date();
         thresholdDate.setDate(thresholdDate.getDate() + 1);
@@ -178,6 +185,44 @@ class Inventory {
             confirmed,
             date: startTime
         };
+    }
+
+    /**
+     * Get the message from firebase.
+     */
+    async getMessage(): Promise<FirebaseMessage> {
+        if (this.message_ === null) {
+            const message = await database.ref('message').once('value');
+            const val = message.val();
+            if (val === null) {
+                throw new Error('Message is empty!');
+            }
+
+            this.message_ = {
+                title: val.title,
+                body: val.body,
+                date: new Date(val.date)
+            }
+        }
+
+        return this.message_;
+    }
+
+    /**
+     * Update the event in firebase.
+     *
+     * @param title The event title.
+     * @param body The event body.
+     * @param date The event date.
+     */
+    async updateMessage(title: string, body: string, date: number) {
+        await database.ref('message').set({
+            title,
+            body,
+            date
+        });
+
+        this.message_ = null;
     }
 
     /***************************************************************
@@ -261,11 +306,18 @@ class Inventory {
      * Updates the user when the auth state changes.
      */
     private firebaseWaitForAuthChange_() {
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(async user => {
             if (user) {
                 this.user_ = user as FirebaseUser;
+
+                const admins = await database.ref('admins').once('value');
+                this.user_.admin = admins.val()[user.uid] !== undefined;
             } else {
                 this.user_ = null;
+            }
+
+            if (this.changeListeners_.has(ChangeEvent.USER) === true) {
+                this.changeListeners_.get(ChangeEvent.USER)!.forEach(listener => listener.call(this, this.user_));
             }
         });
     }
@@ -277,7 +329,7 @@ class Inventory {
         const date = (await this.getNextEventDate()).date;
         database.ref(`requests/${date.getFullYear()}/${date.getMonth()}/`).on('value', async snapshot => {
             if (snapshot !== null) {
-                const value = snapshot.val() as {  [key: number]: number };
+                const value = snapshot.val() as { [key: string]: number };
                 const ownUid = this.user_ !== null ? this.user_.uid : undefined;
                 this.ownRequestedGames_ = new Map();
                 this.requestedGames_ = new Map();
@@ -287,7 +339,7 @@ class Inventory {
                     if (uid === ownUid) {
                         const keys = Object.keys(value[uid]);
                         for (let i = 0; i < requests.length; i++) {
-                            this.ownRequestedGames_.set(requests[i], Number(keys[i]));
+                            this.ownRequestedGames_.set(requests[i], keys[i]);
                         }
                     }
 
@@ -302,7 +354,9 @@ class Inventory {
                     v.requestedByMe = this.ownRequestedGames_.has(k);
                 }
 
-                this.changeListeners_.forEach(listener => listener.call(this, games));
+                if (this.changeListeners_.has(ChangeEvent.GAME_DATA) === true) {
+                    this.changeListeners_.get(ChangeEvent.GAME_DATA)!.forEach(listener => listener.call(this, games));
+                }
             }
         });
     }
@@ -324,19 +378,6 @@ class Inventory {
     //         }
     //     });
     // }
-
-    /**
-     * Get the most recent facebook event and figure out which month requests should be fetched for.
-     */
-    private async fetchFacebookEvent_(): Promise<FacebookEvent[]> {
-        const response = await fetch(constants.FACEBOOK_PIETJESBAK_EVENTS);
-        if (response.ok === false) {
-            throw Error("Incorrect response");
-        }
-
-        const json = await response.json();
-        return json.data;
-    }
 }
 
 export default new Inventory();

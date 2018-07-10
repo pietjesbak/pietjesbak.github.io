@@ -1,5 +1,9 @@
-.facebook-card>div {
-    max-width: 700px;
+.facebook-card {
+    position: relative;
+}
+
+.facebook-card .content {
+    width: 700px;
     display: inline-block;
 }
 
@@ -29,4 +33,26 @@
     font-size: 100px;
     vertical-align: top;
     color: #666;
+}
+
+.facebook-card .daZGjV {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.facebook-card .edit-event {
+    background-color: #103D5D;
+}
+
+.facebook-card input[type="text"] {
+    width: 100%;
+    margin: 5px 0;
+}
+
+.facebook-card textarea {
+    width: 100%;
+    min-height: 50px;
+    margin: 5px 0;
+    resize: none;
 }

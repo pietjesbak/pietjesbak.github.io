@@ -6,17 +6,28 @@ export interface State {
     windowWidth: number;
 }
 
+export enum IconButtonBehavour {
+    SMALL,
+    BIG,
+    AUTO
+}
+
 export interface Props extends React.HTMLAttributes<IconButton> {
     text: string | JSX.Element;
     placement?: string;
     subClass?: string;
     icon: string;
     to?: string;
+    behaviour?: IconButtonBehavour
 
     action?: (e: React.SyntheticEvent) => void;
 }
 
 export default class IconButton extends React.Component<Props, State> {
+    static defaultProps = {
+        behaviour: IconButtonBehavour.AUTO
+    }
+
     constructor(props: Props) {
         super(props);
 
@@ -26,9 +37,11 @@ export default class IconButton extends React.Component<Props, State> {
     }
 
     handleResize = () => {
-        this.setState({
-            windowWidth: window.innerWidth
-        });
+        if (this.props.behaviour === IconButtonBehavour.AUTO) {
+            this.setState({
+                windowWidth: window.innerWidth
+            });
+        }
     }
 
     componentDidMount() {
@@ -40,7 +53,7 @@ export default class IconButton extends React.Component<Props, State> {
     }
 
     render() {
-        if (this.state.windowWidth <= ICONBUTTON_MIN_SCREEN_WIDTH) {
+        if ((this.state.windowWidth <= ICONBUTTON_MIN_SCREEN_WIDTH || this.props.behaviour === IconButtonBehavour.SMALL) && this.props.behaviour !== IconButtonBehavour.BIG) {
             return (
                 <Tooltip content={this.props.text} placement={this.props.placement}>
                     <button className={"small-button " + this.props.subClass} onClick={this.props.action}>

@@ -4,15 +4,14 @@ import './css/App.css';
 import Tooltip from 'react-simple-tooltip';
 import BggList from './BggList';
 import BggRequests from './BggRequests';
-import Facebook from './Facebook';
+import EventCard from './EventCard';
 import IconButton from './IconButton';
 import IconLink from './IconLink';
 import ScrollToTop from './ScrollToTop';
 import SimpleMap from './SimpleMap';
 
 import { HashRouter, Route, Switch } from 'react-router-dom';
-import inventory from './data/Inventory';
-import { auth } from './Firebase';
+import inventory, { ChangeEvent } from './data/Inventory';
 
 export interface State {
     username: string;
@@ -27,7 +26,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     }
 
     componentDidMount() {
-        auth.onAuthStateChanged(user => {
+        inventory.addChangeListener(ChangeEvent.USER, user => {
             if (user) {
                 this.setState({ username: (user as FirebaseUser).displayName });
             }
@@ -51,7 +50,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     home() {
         return (
             <div>
-                <Facebook />
+                <EventCard />
                 <BggRequests />
             </div>
         );

@@ -5,7 +5,7 @@ import BggGame from './BggGame';
 import './css/Games.css';
 import { BggGameData } from './data/BggData';
 import { CORS_ANYWHERE_DYNO } from './data/Constants';
-import inventory from './data/Inventory';
+import inventory, { ChangeEvent } from './data/Inventory';
 
 export interface State {
     games: Map<number, BggGameData> | null;
@@ -85,7 +85,7 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
 
     componentDidMount() {
         this.progressDots();
-        inventory.addChangeListener(this.updateGames);
+        inventory.addChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
 
         window.addEventListener('scroll', this.lazyLoader);
         window.addEventListener('resize', this.lazyLoader);
@@ -99,7 +99,7 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
         window.removeEventListener('scroll', this.lazyLoader);
         window.removeEventListener('resize', this.lazyLoader);
 
-        inventory.removeChangeListener(this.updateGames);
+        inventory.removeChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
     }
 
     componentDidUpdate() {
