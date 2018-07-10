@@ -52,7 +52,7 @@
 
 .facebook-card textarea {
     width: 100%;
-    min-height: 50px;
+    min-height: 200px;
     margin: 5px 0;
     resize: none;
 }

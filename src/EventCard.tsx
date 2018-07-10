@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { readableDate } from '.';
-import './css/Facebook.css';
+import './css/EventCard.css';
 import inventory from './data/Inventory';
 import IconButton, { IconButtonBehavour } from './IconButton';
 
