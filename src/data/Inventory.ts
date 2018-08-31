@@ -164,7 +164,7 @@ class Inventory {
 
         try {
             const event = await this.getMessage();
-            startTime = event.date;
+            startTime = new Date(event.date);
         } catch (r) {
             console.error('Failed to get next event date.');
             startTime = new Date();
