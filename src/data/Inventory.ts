@@ -174,11 +174,12 @@ class Inventory {
         thresholdDate.setDate(thresholdDate.getDate() + 1);
 
         // Adjust the start time if the event has passed.
-        if (thresholdDate > startTime) {
+        for (let i = 0; i < 2 && thresholdDate > startTime; i++) {
             confirmed = false;
-            startTime.setMonth(startTime.getMonth() + 1); // Go to the next month.
+            startTime.setMonth(thresholdDate.getMonth() + i); // Check this month and the next month for the first available event date.
             startTime.setDate(1); // Set to first day of this month.
             startTime.setDate(2 * 7 + (6 - startTime.getDay() + 7) % 7); // Figure out when the 3rd friday is from here.
+
         }
 
         return {

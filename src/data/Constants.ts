@@ -15,15 +15,10 @@ export const PIETJESBAK_BBG_COLLECTION = 'https://www.boardgamegeek.com/xmlapi/c
 export const BBG_GAME_API = 'https://www.boardgamegeek.com/xmlapi/boardgame/';
 
 /**
- * Facebook pietjesbak events graph api.
- * Please don't steal my app secret k thanks.
+ * Mapbox key.
+ * https://www.mapbox.com/account/
  */
-export const FACEBOOK_PIETJESBAK_EVENTS = 'https://graph.facebook.com/v2.10/gezelschapsspellenpietjesbak/events?access_token=874889636002007|788af4e5d543244dff7ee209987a2a57&format=json&limit=1';
-
-/**
- * Google maps key.
- */
-export const GOOGLE_MAPS_KEY = 'AIzaSyBMBP0S071zw1cg6l2F7fdffYmls888LyY';
+export const MAPBOX_KEY = 'pk.eyJ1IjoibG9yZ2FuMyIsImEiOiJjamxocmNzbmgwNHJvM3BudnV5NmM5dDU4In0.n01kRSSpjingBJyyrledLg';
 
 /**
  * Minimum width to also show the text for the icon buttons.

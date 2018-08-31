@@ -1,25 +1,23 @@
-import GoogleMap from 'google-map-react';
+import * as img from './Pietjesbak.png';
+
+import 'leaflet/dist/leaflet.css';
 import * as React from 'react';
-import Tooltip from 'react-simple-tooltip';
-import { GOOGLE_MAPS_KEY } from './data/Constants'
 
-interface MarkerProps {
-    lat: number;
-    lng: number;
-}
+import { Icon } from 'leaflet';
+import { Map, Marker, TileLayer, Tooltip } from 'react-leaflet';
+import { MAPBOX_KEY } from './data/Constants'
 
-const Pietjesbak = (props: MarkerProps) => {
-    return (
-        <Tooltip style={{ position: 'relative', top: '-26px', left: '-28px' }} content={<span className="nobreak">'t Geestje<br />Zandloperstraat 83<br />9030 Mariakerke</span>}>
-            <svg id="pietjesbak-marker" width="57" height="52">
-                <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee" />
-            </svg>
-        </Tooltip>
-    );
-}
+const logoIcon = new Icon({
+    iconUrl: img as any,
+    iconSize: [40, 40], // size of the icon
+    shadowSize: [40, 40], // size of the shadow
+    iconAnchor: [20, 20], // point of the icon which will correspond to marker's location
+    shadowAnchor: [10, 10],  // the same for the shadow
+    popupAnchor: [0, -20] // point from which the popup should open relative to the iconAnchor
+});
 
 interface Props extends React.HTMLAttributes<JSX.Element> {
-    center?: { lat: number, lng: number};
+    center?: { lat: number, lng: number };
     zoom?: number;
 }
 
@@ -31,17 +29,22 @@ class SimpleMap extends React.Component<Props> {
 
     render() {
         return (
-            <GoogleMap
+            <Map
                 style={{ width: '100%', height: 400, position: 'relative' }}
-                bootstrapURLKeys={{ key: GOOGLE_MAPS_KEY }}
-                defaultCenter={this.props.center!}
-                defaultZoom={this.props.zoom!}
+                center={this.props.center!}
+                zoom={this.props.zoom!}
             >
-                <Pietjesbak
-                    lat={this.props.center!.lat}
-                    lng={this.props.center!.lng}
+                <TileLayer
+                    attribution='Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
+                    url={`https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${MAPBOX_KEY}`}
+                    id="mapbox.streets"
                 />
-            </GoogleMap>
+                <Marker position={[this.props.center!.lat, this.props.center!.lng]} icon={logoIcon}>
+                    <Tooltip offset={[0, -20]} direction="top" >
+                        <span className="nobreak">'t Geestje<br />Zandloperstraat 83<br />9030 Mariakerke</span>
+                    </Tooltip>
+                </Marker>
+            </Map>
         );
     }
 }
