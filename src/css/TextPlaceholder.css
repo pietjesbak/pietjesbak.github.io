@@ -1,0 +1,33 @@
+@keyframes Gradient {
+	0% {
+		background-position: 20%
+	}
+	100% {
+		background-position: -100%
+	}
+}
+
+.placeholder-paragraph:not(:last-child) {
+    margin-bottom: 15px;
+}
+
+.placeholder-paragraph > span, .placeholder-title {
+    background: linear-gradient(90deg, #999, #666, #999 10%);
+	background-size: 200% 100%;
+    animation: Gradient 3s ease infinite;
+    border-radius: 4px;
+    display: block;
+    height: 17px;
+    margin: 5px 0;
+    opacity: 0.6;
+}
+
+.placeholder-paragraph > span.last {
+    width: 66%;
+}
+
+.placeholder-title {
+    height: 20px;
+    margin-bottom: 20px;
+    width: 50%;
+}

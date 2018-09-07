@@ -1,17 +1,16 @@
 import * as React from 'react';
-import './css/App.css';
-
+import { HashRouter, Route, Switch } from 'react-router-dom';
 import Tooltip from 'react-simple-tooltip';
 import BggList from './BggList';
 import BggRequests from './BggRequests';
+import AsyncMap from './components/AsyncMap';
+import inventory, { ChangeEvent } from './data/Inventory';
 import EventCard from './EventCard';
 import IconButton from './IconButton';
 import IconLink from './IconLink';
 import ScrollToTop from './ScrollToTop';
-import SimpleMap from './SimpleMap';
 
-import { HashRouter, Route, Switch } from 'react-router-dom';
-import inventory, { ChangeEvent } from './data/Inventory';
+import './css/App.css';
 
 export interface State {
     username: string;
@@ -79,7 +78,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                         Zandloperstraat 83 <br />
                         9030 Mariakerke
                     </span>
-                    <SimpleMap />
+                    <AsyncMap />
                 </div>
             </div>
         );
@@ -104,8 +103,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
 
     render() {
         return (
-            // @ts-ignore
-            <HashRouter className="app">
+            <HashRouter>
                 <ScrollToTop>
                     <div className="full-height">
                         <div className="page-wrap">
