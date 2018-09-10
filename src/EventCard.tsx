@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { readableDate } from '.';
+import { TextPlaceholder } from './components/TextPlaceholder';
 import './css/EventCard.css';
 import inventory from './data/Inventory';
 import IconButton, { IconButtonBehavour } from './IconButton';
@@ -82,7 +83,7 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
         if (event === null) {
             return (
                 <div className="content">
-                    <h2>Volgend event ophalen...</h2>
+                    <TextPlaceholder paragraphs={2} paragraphSize={3} />
                 </div>
             );
         }

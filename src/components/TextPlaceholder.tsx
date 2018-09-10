@@ -18,7 +18,7 @@ function renderParagraph(index: number, paragraphSize?: number, paragraphFn?: pa
     } else {
         return (
             <p key={index} className="placeholder-paragraph">
-                {new Array(paragraphSize || 1).fill(null).map((empty, i) => <span key={i} className={i === (paragraphSize || 1) - 1 ? 'last': ''} />)}
+                {new Array(paragraphSize || 1).fill(null).map((empty, i) => <span key={i} />)}
             </p>
         );
     }

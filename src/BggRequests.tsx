@@ -2,10 +2,12 @@ import * as React from 'react';
 import { Link } from 'react-router-dom'
 import { readableDate } from '.';
 import BggGame from './BggGame';
-import './css/Games.css';
+import { TextPlaceholder } from './components/TextPlaceholder';
 import { BggGameData } from './data/BggData';
 import * as constants from './data/Constants';
 import inventory, { ChangeEvent } from './data/Inventory';
+
+import './css/Games.css';
 
 export interface State {
     requestedGames: BggGameData[] | null;
@@ -51,9 +53,7 @@ export default class BggRequests extends React.Component<React.HtmlHTMLAttribute
             return (
                 <div className="bgg-requests card">
                     <h3>Aanvragen voor {date}</h3>
-                    <div className="spinner">
-                        <i className="icon-spin1 animate-spin" />
-                    </div>
+                    <TextPlaceholder renderTitle={false} paragraphSize={4}/>
                 </div>
             );
         }
