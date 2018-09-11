@@ -1,7 +1,10 @@
+import './css/EventCard.css';
+
+import classNames from 'classnames';
 import * as React from 'react';
 import { readableDate } from '.';
+import { Container } from './components/Container';
 import { TextPlaceholder } from './components/TextPlaceholder';
-import './css/EventCard.css';
 import inventory from './data/Inventory';
 import IconButton, { IconButtonBehavour } from './IconButton';
 
@@ -74,7 +77,7 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
     renderEvent(event: FirebaseMessage | null, error: boolean) {
         if (error === true) {
             return (
-                <div className="content">
+                <div className="event">
                     <h2>Er lijkt geen volgend event gepland te zijn.</h2>
                 </div>
             );
@@ -82,14 +85,14 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
 
         if (event === null) {
             return (
-                <div className="content">
+                <div className="event">
                     <TextPlaceholder paragraphs={2} paragraphSize={3} />
                 </div>
             );
         }
 
         if (this.state.editing === false) {
-            return (<div className="content">
+            return (<div className="event">
                 <h2>{event.title}</h2>
                 {this.renderDate(event.date)}
                 <br />
@@ -112,11 +115,13 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
     }
 
     render() {
-        return <div className={this.state.error ? "facebook-card card error" : "facebook-card card"}>
-            <a className="facebook" href="https://www.facebook.com/gezelschapsspellenpietjesbak/" ><i className="icon-facebook-squared" /></a>
+        return (
+            <Container className={classNames('event-card', {'error': this.state.error})}>
+                <a className="facebook" href="https://www.facebook.com/gezelschapsspellenpietjesbak/" ><i className="icon-facebook-squared" /></a>
 
-            {this.renderEvent(this.state.event, this.state.error)}
-            {inventory.user !== null && inventory.user.admin === true ? <IconButton subClass="edit-event" action={this.toggleMessage} icon="cog" text={this.state.editing ? "Opslaan" : "Aanpassen"} behaviour={IconButtonBehavour.SMALL} />: <span/>}
-        </div>
+                {this.renderEvent(this.state.event, this.state.error)}
+                {inventory.user !== null && inventory.user.admin === true ? <IconButton subClass="edit-event" action={this.toggleMessage} icon="cog" text={this.state.editing ? "Opslaan" : "Aanpassen"} behaviour={IconButtonBehavour.SMALL} />: <span/>}
+            </Container>
+        );
     }
 }

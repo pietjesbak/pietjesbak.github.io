@@ -15,10 +15,6 @@
     padding: 30px 20px;
 }
 
-.container.error {
-    border-top: 3px solid rgb(153, 25, 25);
-}
-
 .container .collapsed-header {
     background: #103D5D;
     color: white;
@@ -32,4 +28,38 @@
     display: inline-block;
     margin-right: 10px;
     padding: 5px;
+}
+
+/** Hoverable styles */
+.container .collapsed-header.hover {
+    height: 0px;
+    transition: height 0.3s;
+    transform-origin: 0 0;
+}
+
+.container .collapsed-header.hover .container-button {
+    transform: scaleY(0);
+    transition: transform 0.3s;
+    transform-origin: 0 0;
+}
+
+.container:hover .collapsed-header.hover.hover {
+    height: 41px;
+}
+
+.container:hover .collapsed-header.hover .container-button {
+    transform: scaleY(1);
+}
+
+/** Error styles */
+.container.error {
+    border-top: 3px solid rgb(153, 25, 25);
+}
+
+.container.error .collapsed-header {
+    background: rgb(153, 25, 25);
+}
+
+.container.error .collapsed-header .container-button {
+    background: rgb(146, 76, 76);
 }

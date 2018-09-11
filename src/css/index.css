@@ -71,19 +71,6 @@ header h1 {
     opacity: 0.7;
 }
 
-.card {
-    border-top: 3px solid #103D5D;
-    margin-right: 50px;
-    background-color: rgb(237, 237, 237);
-    padding: 30px 20px;
-    box-shadow: 0 3px 4px 0 rgba(0, 0, 0, .14), 0 3px 3px -2px rgba(0, 0, 0, .12), 0 1px 8px 0 rgba(0, 0, 0, .2);
-    margin: 10px 0 30px 0;
-}
-
-.card.error {
-    border-top: 3px solid rgb(153, 25, 25);
-}
-
 ul.pagination {
     text-align: center;
     padding: 0;

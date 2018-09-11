@@ -1,8 +1,10 @@
+import './css/Games.css';
+
 // import Pager from 'react-pager';
 import * as escapeStringRegexp from 'escape-string-regexp';
 import * as React from 'react';
 import BggGame from './BggGame';
-import './css/Games.css';
+import { Container } from './components/Container';
 import { BggGameData } from './data/BggData';
 import { CORS_ANYWHERE_DYNO } from './data/Constants';
 import inventory, { ChangeEvent } from './data/Inventory';
@@ -207,17 +209,21 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
     }
 
     renderLoader() {
-        return <div className="card">
-            <h2>De spellencollectie wordt van <a href="https://boardgamegeek.com/user/de%20pietjesbak/games">Boardgamegeek</a> gehaald.</h2>
-            <span>Dit kan even duren{this.state.loaderDots}</span>
-        </div>
+        return (
+            <Container>
+                <h2>De spellencollectie wordt van <a href="https://boardgamegeek.com/user/de%20pietjesbak/games">Boardgamegeek</a> gehaald.</h2>
+                <span>Dit kan even duren{this.state.loaderDots}</span>
+            </Container>
+        );
     }
 
     renderError() {
-        return <div className="card error">
-            <h2>Er is iets misgelopen!</h2>
-            <span>Je kan de pagina proberen herladen, stuur ons gerust een mailtje als het blijft gebeuren!</span>
-        </div>
+        return (
+            <Container error={true}>
+                <h2>Er is iets misgelopen!</h2>
+                <span>Je kan de pagina proberen herladen, stuur ons gerust een mailtje als het blijft gebeuren!</span>
+            </Container>
+        );
     }
 
     renderGames() {

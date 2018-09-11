@@ -1,14 +1,14 @@
-.facebook-card {
+.event-card {
     position: relative;
 }
 
-.facebook-card .content {
-    width: 100%;;
+.event-card .event {
+    width: 100%;
     max-width: 700px;
     display: inline-block;
 }
 
-.facebook-card .date {
+.event-card .date {
     display: inline-block;
     background: #f7f7f7;
     padding: 10px;
@@ -17,41 +17,41 @@
     border-left: 3px solid #666;
 }
 
-.facebook-card .date.valid {
+.event-card .date.valid {
     border-left: 3px solid #103D5D;
 }
 
-.facebook-card .date.ongoing {
+.event-card .date.ongoing {
     border-left: 3px solid rgb(202, 139, 25);
 }
 
-.facebook-card .date.expired {
+.event-card .date.expired {
     border-left: 3px solid rgb(153, 25, 25);
 }
 
-.facebook-card .facebook {
+.event-card .facebook {
     display: inline-block;
     font-size: 100px;
     vertical-align: top;
     color: #666;
 }
 
-.facebook-card .daZGjV {
+.event-card .daZGjV {
     position: absolute;
     top: 10px;
     right: 10px;
 }
 
-.facebook-card .edit-event {
+.event-card .edit-event {
     background-color: #103D5D;
 }
 
-.facebook-card input[type="text"] {
+.event-card input[type="text"] {
     width: 100%;
     margin: 5px 0;
 }
 
-.facebook-card textarea {
+.event-card textarea {
     width: 100%;
     min-height: 200px;
     margin: 5px 0;

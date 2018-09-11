@@ -6,12 +6,12 @@ import Tooltip from 'react-simple-tooltip';
 import BggList from './BggList';
 import BggRequests from './BggRequests';
 import AsyncMap from './components/AsyncMap';
+import { Container } from './components/Container';
 import inventory, { ChangeEvent } from './data/Inventory';
 import EventCard from './EventCard';
 import IconButton from './IconButton';
 import IconLink from './IconLink';
 import ScrollToTop from './ScrollToTop';
-
 
 export interface State {
     username: string;
@@ -65,7 +65,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     info() {
         return (
             <div>
-                <div className="card">
+                <Container>
                     <h3>Wie zijn wij?</h3>
                     Spellenclub De pietjesbak is een spellenclub in Gent / Mariakerke. <br />
                     Elke derde vrijdag van de maand (behalve in juli en augustus) <br /><br />
@@ -80,7 +80,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                         9030 Mariakerke
                     </span>
                     <AsyncMap />
-                </div>
+                </Container>
             </div>
         );
     }

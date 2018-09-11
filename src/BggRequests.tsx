@@ -1,13 +1,14 @@
+import './css/Games.css';
+
 import * as React from 'react';
 import { Link } from 'react-router-dom'
 import { readableDate } from '.';
 import BggGame from './BggGame';
+import { Container } from './components/Container';
 import { TextPlaceholder } from './components/TextPlaceholder';
 import { BggGameData } from './data/BggData';
 import * as constants from './data/Constants';
 import inventory, { ChangeEvent } from './data/Inventory';
-
-import './css/Games.css';
 
 export interface State {
     requestedGames: BggGameData[] | null;
@@ -51,31 +52,31 @@ export default class BggRequests extends React.Component<React.HtmlHTMLAttribute
 
         if (this.state.requestedGames === null) {
             return (
-                <div className="bgg-requests card">
+                <Container>
                     <h3>Aanvragen voor {date}</h3>
                     <TextPlaceholder renderTitle={false} paragraphSize={4}/>
-                </div>
+                </Container>
             );
         }
 
         if (this.state.requestedGames.length === 0) {
             return (
-                <div className="bgg-requests card">
+                <Container>
                     <h3>Aanvragen voor {date}</h3>
                     <p>
                         Er zijn nog geen aanvragen. <br />
                         Geef aan welk spel je volgende keer graag wil spelen op de <Link to="/games">games</Link> pagina! <br /><br />
                         Of neem gerust enkele van je eigen spellen mee.
                     </p>
-                </div>
+                </Container>
             );
         }
 
         return (
-            <div className="bgg-requests card">
+            <Container>
                 <h3>Aanvragen voor {date}</h3>
                 <ul className="games">{this.state.requestedGames.map(game => <BggGame key={game.id} game={game} />)}</ul>
-            </div>
+            </Container>
         );
     }
 }
