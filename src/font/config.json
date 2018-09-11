@@ -125,6 +125,24 @@
       "css": "megaphone",
       "code": 59404,
       "src": "fontawesome"
+    },
+    {
+      "uid": "07f0832c07f3d9713fffb06c8bffa027",
+      "css": "window-maximize",
+      "code": 62160,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "04f022b8bd044d4ccfffd3887ff72088",
+      "css": "window-minimize",
+      "code": 62161,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "559647a6f430b3aeadbecd67194451dd",
+      "css": "menu",
+      "code": 61641,
+      "src": "fontawesome"
     }
   ]
 }

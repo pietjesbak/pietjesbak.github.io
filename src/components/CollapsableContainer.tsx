@@ -36,6 +36,7 @@ export interface Props extends React.HTMLAttributes<CollapsableContainer> {
 
     /**
      * How should the header behave?
+     * Default shown.
      */
     header?: headerState;
 
@@ -47,6 +48,10 @@ export interface Props extends React.HTMLAttributes<CollapsableContainer> {
 }
 
 export class CollapsableContainer extends React.Component<Props, State> {
+    static defaultProps = {
+        header: headerState.SHOWN
+    }
+
     constructor(props: Props) {
         super(props);
 

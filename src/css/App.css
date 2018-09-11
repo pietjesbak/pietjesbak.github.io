@@ -78,39 +78,13 @@ nav.menu ul li.right.small {
     width: 40px;
 }
 
-button, .button, .small-button {
-    display: inline-block;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 2px;
-    background-color: #FA6900;
-    cursor: pointer;
-    border: 0;
-    min-width: 120px;
-    color: #fff!important;
-    font-size: 14px;
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
-    padding: 10px 6px;
-}
-
-button:hover, .button:hover, .small-button:hover, .button.active, .small-button.active {
-    position: relative;
-    top: 2px;
-    box-shadow: 0 -2px 5px 0 rgba(0, 0, 0, .26);
-}
-
-.small-button {
-    min-width: 40px;
-    width: 40px;
-}
-
 .user-profile {
     position: fixed;
     bottom: 20px;
     right: 40px;
     width: 100px;
     height: 100px;
-    z-index: 999;
+    z-index: 2000;
 }
 
 .user-profile img {

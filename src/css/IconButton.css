@@ -1,0 +1,55 @@
+button, .button, .small-button, .button-holder > * {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 2px;
+    background-color: #FA6900;
+    cursor: pointer;
+    border: 0;
+    min-width: 120px;
+    color: #fff!important;
+    font-size: 14px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+    padding: 10px 6px;
+    box-sizing: content-box;
+}
+
+button:hover, .button:hover, .small-button:hover, .button.active, .small-button.active {
+    position: relative;
+    top: 2px;
+    box-shadow: 0 -2px 5px 0 rgba(0, 0, 0, .26);
+}
+
+.button-holder > *:hover {
+    background-color: #fff;
+}
+
+.small-button {
+    min-width: 40px;
+    width: 40px;
+}
+
+.button-wrapper {
+    display: inline-block;
+    position: relative;
+}
+
+.button-holder {
+    position: absolute;
+    z-index: 100;
+    margin: 0!important;
+}
+
+.button-holder.left {
+    left: 0;
+}
+
+.button-holder.right {
+    right: 0;
+}
+
+.button-holder > * {
+    display: block;
+    background-color: rgb(250, 229, 215);
+    color: #000!important;
+}

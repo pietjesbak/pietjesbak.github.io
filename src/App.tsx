@@ -9,8 +9,8 @@ import AsyncMap from './components/AsyncMap';
 import { Container } from './components/Container';
 import inventory, { ChangeEvent } from './data/Inventory';
 import EventCard from './EventCard';
-import IconButton from './IconButton';
 import IconLink from './IconLink';
+import OptionIconButton from './OptionIconButton';
 import ScrollToTop from './ScrollToTop';
 
 export interface State {
@@ -47,7 +47,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
         });
     }
 
-    home() {
+    home = () => {
         return (
             <div>
                 <EventCard />
@@ -95,11 +95,19 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     }
 
     renderLoginButton() {
-        if (inventory.user !== null) {
-            return <IconButton subClass="logout" icon="logout" text="Log uit" placement="left" action={this.logout} />
-        } else {
-            return <IconButton subClass="login" icon="login" text="Log in" placement="left" action={this.login} />
-        }
+        return (
+            <OptionIconButton text="menu" icon="menu" placement="left">
+                {inventory.user !== null ? (
+                    <button onClick={this.logout}>
+                        <i className="icon-logout" /> Log uit
+                    </button>
+                ) : (
+                    <button onClick={this.login}>
+                        <i className="icon-login" /> Log in
+                    </button>
+                )}
+            </OptionIconButton>
+        );
     }
 
     render() {
