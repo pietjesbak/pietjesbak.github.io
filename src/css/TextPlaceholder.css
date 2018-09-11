@@ -7,31 +7,59 @@
 	}
 }
 
-.placeholder-paragraph:not(:last-child) {
+.placeholder-text .placeholder-paragraph:not(:last-child) {
     margin-bottom: 15px;
 }
 
-.placeholder-paragraph > span, .placeholder-title {
+.placeholder-text .placeholder-paragraph > span, .placeholder-text .placeholder-title {
     background: linear-gradient(90deg, rgba(153, 153, 153, 0.4), rgba(102, 102, 102, 0.8), rgba(153, 153, 153, 0.4) 10%);
 	background-size: 200% 100%;
     animation: Gradient 3s ease infinite;
     border-radius: 4px;
-    display: block;
+    display: inline-block;
     height: 17px;
     margin: 5px 0;
     width: 90%;
 }
 
-.placeholder-paragraph > span:nth-child(2n) {
+.placeholder-text .placeholder-paragraph > span:nth-child(2n) {
     width: 80%;
 }
 
-.placeholder-paragraph > span:last-child {
+.placeholder-text .placeholder-paragraph > span:last-child {
     width: 60%;
 }
 
-.placeholder-title {
+.placeholder-text .placeholder-title {
     height: 25px;
     margin-bottom: 20px;
     width: 50%;
+}
+
+.placeholder-text.error {
+    position: relative;
+}
+
+.placeholder-text.error .placeholder-paragraph > span, .placeholder-text.error .placeholder-title {
+    background: rgba(153, 153, 153, 0.4)
+}
+
+.placeholder-text.error .placeholder-error-icon {
+    display: inline-block;
+    font-size: 35px;
+}
+
+.placeholder-text.error .placeholder-error {
+    font-weight: bold;
+    text-shadow: 1px 1px #fff;
+    background: rgba(156, 67, 67, 0.3);
+    position: absolute;
+    top: 4px;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

@@ -5,6 +5,7 @@ import '../css/Container.css';
 
 export interface Props {
     test?: string;
+    children?: React.ReactNode;
 }
 
 export function Container<T extends React.HTMLAttributes<React.Component>>(props: T & Props) {

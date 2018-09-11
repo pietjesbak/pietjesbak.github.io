@@ -1,3 +1,5 @@
+import './css/App.css';
+
 import * as React from 'react';
 import { HashRouter, Route, Switch } from 'react-router-dom';
 import Tooltip from 'react-simple-tooltip';
@@ -10,7 +12,6 @@ import IconButton from './IconButton';
 import IconLink from './IconLink';
 import ScrollToTop from './ScrollToTop';
 
-import './css/App.css';
 
 export interface State {
     username: string;
