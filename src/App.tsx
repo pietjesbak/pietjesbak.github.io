@@ -1,7 +1,7 @@
 import './css/App.css';
 
 import * as React from 'react';
-import { HashRouter, Route, Switch } from 'react-router-dom';
+import { HashRouter, NavLink, Route, Switch } from 'react-router-dom';
 import Tooltip from 'react-simple-tooltip';
 import AsyncMap from './components/AsyncMap';
 import BggList from './components/BggList';
@@ -10,6 +10,7 @@ import { Container } from './components/Container';
 import EventCard from './components/EventCard';
 import IconLink from './components/IconLink';
 import ScrollToTop from './components/ScrollToTop';
+import TouchDecider from './components/TouchDecider';
 import inventory, { ChangeEvent } from './data/Inventory';
 import OptionIconButton from './OptionIconButton';
 
@@ -85,6 +86,14 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
         );
     }
 
+    touchDecider() {
+        return (
+            <Container>
+                <TouchDecider />
+            </Container>
+        );
+    }
+
     noRoute() {
         return (
             <div className="center not-found">
@@ -106,6 +115,9 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                         <i className="icon-login" /> Log in
                     </button>
                 )}
+                <NavLink exact={true} activeClassName="active" to="/startspeler">
+                    Startspeler kiezen
+                </NavLink>
             </OptionIconButton>
         );
     }
@@ -152,6 +164,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                                     <Route exact={true} path="/" component={this.home} />
                                     <Route path="/games" component={this.games} />
                                     <Route path="/info" component={this.info} />
+                                    <Route path="/startspeler" component={this.touchDecider} />
                                     <Route render={this.noRoute} />
                                 </Switch>
                             </div>

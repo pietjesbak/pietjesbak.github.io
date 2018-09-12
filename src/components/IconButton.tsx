@@ -50,11 +50,11 @@ export default class IconButton extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        window.addEventListener('resize', this.handleResize)
+        window.addEventListener('resize', this.handleResize);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('resize', this.handleResize)
+        window.removeEventListener('resize', this.handleResize);
     }
 
     render() {

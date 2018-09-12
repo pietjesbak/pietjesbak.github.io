@@ -10,8 +10,8 @@ class OptionIconButton extends IconButton {
         super(props);
 
         this.ref = React.createRef();
-
     }
+
     onClick = () => {
         this.setState({
             active: !this.state.active
@@ -27,10 +27,12 @@ class OptionIconButton extends IconButton {
     }
 
     componentDidMount() {
+        super.componentDidMount();
         document.addEventListener('mousedown', this.loseFocus);
     }
 
     componentWillUnmount() {
+        super.componentWillUnmount();
         document.removeEventListener('mousedown', this.loseFocus);
     }
 

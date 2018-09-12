@@ -23,4 +23,4 @@ export const MAPBOX_KEY = 'pk.eyJ1IjoibG9yZ2FuMyIsImEiOiJjamxocmNzbmgwNHJvM3Budn
 /**
  * Minimum width to also show the text for the icon buttons.
  */
-export const ICONBUTTON_MIN_SCREEN_WIDTH = 575;
+export const ICONBUTTON_MIN_SCREEN_WIDTH = 585;
