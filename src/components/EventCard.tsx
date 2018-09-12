@@ -1,12 +1,12 @@
-import './css/EventCard.css';
+import '../css/EventCard.css';
 
 import classNames from 'classnames';
 import * as React from 'react';
-import { readableDate } from '.';
-import { Container } from './components/Container';
-import { TextPlaceholder } from './components/TextPlaceholder';
-import inventory from './data/Inventory';
+import inventory from '../data/Inventory';
+import { readableDate } from '../Helpers';
+import { Container } from './Container';
 import IconButton, { IconButtonBehavour } from './IconButton';
+import { TextPlaceholder } from './TextPlaceholder';
 
 export interface State {
     editing: boolean,

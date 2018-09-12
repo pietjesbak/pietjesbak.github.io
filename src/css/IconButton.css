@@ -52,4 +52,5 @@ button:hover, .button:hover, .small-button:hover, .button.active, .small-button.
     display: block;
     background-color: rgb(250, 229, 215);
     color: #000!important;
+    position: initial!important; /** These buttons do not get pressed in on hover. */
 }

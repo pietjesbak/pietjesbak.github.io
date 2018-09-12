@@ -1,9 +1,9 @@
-import './css/IconButton.css';
+import '../css/IconButton.css';
 
 import classNames from 'classnames';
 import * as React from 'react';
 import Tooltip from 'react-simple-tooltip';
-import { ICONBUTTON_MIN_SCREEN_WIDTH } from './data/Constants';
+import { ICONBUTTON_MIN_SCREEN_WIDTH } from '../data/Constants';
 
 export interface State {
     windowWidth: number;

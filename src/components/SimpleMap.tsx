@@ -1,11 +1,10 @@
-import * as img from './Pietjesbak.png';
-
 import 'leaflet/dist/leaflet.css';
-import * as React from 'react';
 
 import { Icon } from 'leaflet';
+import * as React from 'react';
 import { Map, Marker, TileLayer, Tooltip } from 'react-leaflet';
-import { MAPBOX_KEY } from './data/Constants'
+import { MAPBOX_KEY } from '../data/Constants'
+import * as img from '../Pietjesbak.png';
 
 const logoIcon = new Icon({
     iconUrl: img as any,

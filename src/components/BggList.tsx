@@ -1,13 +1,13 @@
-import './css/Games.css';
+import '../css/Games.css';
 
 // import Pager from 'react-pager';
 import * as escapeStringRegexp from 'escape-string-regexp';
 import * as React from 'react';
+import { BggGameData } from '../data/BggData';
+import { CORS_ANYWHERE_DYNO } from '../data/Constants';
+import inventory, { ChangeEvent } from '../data/Inventory';
 import BggGame from './BggGame';
-import { Container } from './components/Container';
-import { BggGameData } from './data/BggData';
-import { CORS_ANYWHERE_DYNO } from './data/Constants';
-import inventory, { ChangeEvent } from './data/Inventory';
+import { Container } from './Container';
 
 export interface State {
     games: Map<number, BggGameData> | null;

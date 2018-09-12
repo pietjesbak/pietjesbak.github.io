@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import * as React from 'react';
 import Tooltip from 'react-simple-tooltip';
-import IconButton, { Props } from './IconButton';
+import IconButton, { Props } from './components/IconButton';
 
 class OptionIconButton extends IconButton {
     private ref: React.RefObject<HTMLDivElement>;

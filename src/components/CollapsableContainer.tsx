@@ -45,6 +45,12 @@ export interface Props extends React.HTMLAttributes<CollapsableContainer> {
      * Note: this prop is just passed through to the child container.
      */
     error?: boolean;
+
+    /**
+     * Store the collapsed state in localstorage? Default false
+     * A title is required to store the state.
+     */
+    storeCollapsed?: boolean;
 }
 
 export class CollapsableContainer extends React.Component<Props, State> {
@@ -55,8 +61,19 @@ export class CollapsableContainer extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
+        let collapsed: boolean | null = null;
+        if (props.storeCollapsed && props.title) {
+            const stored = localStorage.getItem(encodeURIComponent(props.title));
+            if (stored !== null) {
+                collapsed = Boolean(stored);
+            }
+        }
+        if (collapsed === null) {
+            collapsed = props.defaultCollapsed || false;
+        }
+
         this.state = {
-            collapsed: props.defaultCollapsed || false
+            collapsed
         };
     }
 
@@ -64,6 +81,10 @@ export class CollapsableContainer extends React.Component<Props, State> {
         this.setState({
             collapsed: !this.state.collapsed
         });
+
+        if (this.props.storeCollapsed && this.props.title) {
+            localStorage.setItem(encodeURIComponent(this.props.title), String(this.state.collapsed))
+        }
     }
 
     render(): JSX.Element {
@@ -71,24 +92,24 @@ export class CollapsableContainer extends React.Component<Props, State> {
     }
 
     renderCollapsed() {
-        const {children, className, title, header, ...rest } = this.props;
+        const {children, className, title, header, storeCollapsed, ...rest } = this.props;
         return (
             <Container className={classNames(className, 'collapsable')} {...rest}>
                 <h3 className={classNames('collapsed-header', {'hover': header === headerState.SHOWN_ON_HOVER})} onClick={this.toggle}>
-                    <i className="container-button icon-cog" />
-                    {title}
+                    <i className="container-button icon-window-maximize" />
+                    <span>{title}</span>
                 </h3>
             </Container>
         );
     }
 
     renderExpanded() {
-        const {children, className, title, header, ...rest } = this.props;
+        const {children, className, title, header, storeCollapsed, ...rest } = this.props;
         return (
             <Container className={classNames(className, 'collapsable')} {...rest}>
                 <h3 className={classNames('collapsed-header', {'hover': header === headerState.SHOWN_ON_HOVER || headerState.SHOWN_COLLAPSED})} onClick={this.toggle}>
-                    <i className="container-button icon-info" />
-                    {title}
+                    <i className="container-button icon-window-minimize" />
+                    <span>{title}</span>
                 </h3>
                 <div className="content">
                     {children}

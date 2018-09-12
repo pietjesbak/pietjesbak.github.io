@@ -1,14 +1,14 @@
-import './css/Games.css';
+import '../css/Games.css';
 
 import * as React from 'react';
 import { Link } from 'react-router-dom'
-import { readableDate } from '.';
+import { BggGameData } from '../data/BggData';
+import * as constants from '../data/Constants';
+import inventory, { ChangeEvent } from '../data/Inventory';
+import { readableDate } from '../Helpers';
 import BggGame from './BggGame';
-import { Container } from './components/Container';
-import { TextPlaceholder } from './components/TextPlaceholder';
-import { BggGameData } from './data/BggData';
-import * as constants from './data/Constants';
-import inventory, { ChangeEvent } from './data/Inventory';
+import { CollapsableContainer, headerState } from './CollapsableContainer';
+import { TextPlaceholder } from './TextPlaceholder';
 
 export interface State {
     requestedGames: BggGameData[] | null;
@@ -52,31 +52,31 @@ export default class BggRequests extends React.Component<React.HtmlHTMLAttribute
 
         if (this.state.requestedGames === null) {
             return (
-                <Container>
+                <CollapsableContainer title="Aanvragen" header={headerState.SHOWN_COLLAPSED} storeCollapsed={true}>
                     <h3>Aanvragen voor {date}</h3>
                     <TextPlaceholder renderTitle={false} paragraphSize={4}/>
-                </Container>
+                </CollapsableContainer>
             );
         }
 
         if (this.state.requestedGames.length === 0) {
             return (
-                <Container>
+                <CollapsableContainer title="Aanvragen" header={headerState.SHOWN_COLLAPSED} storeCollapsed={true}>
                     <h3>Aanvragen voor {date}</h3>
                     <p>
                         Er zijn nog geen aanvragen. <br />
                         Geef aan welk spel je volgende keer graag wil spelen op de <Link to="/games">games</Link> pagina! <br /><br />
                         Of neem gerust enkele van je eigen spellen mee.
                     </p>
-                </Container>
+                </CollapsableContainer>
             );
         }
 
         return (
-            <Container>
+            <CollapsableContainer title="Aanvragen" header={headerState.SHOWN_COLLAPSED} storeCollapsed={true}>
                 <h3>Aanvragen voor {date}</h3>
                 <ul className="games">{this.state.requestedGames.map(game => <BggGame key={game.id} game={game} />)}</ul>
-            </Container>
+            </CollapsableContainer>
         );
     }
 }

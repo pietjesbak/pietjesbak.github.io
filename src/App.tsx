@@ -3,15 +3,15 @@ import './css/App.css';
 import * as React from 'react';
 import { HashRouter, Route, Switch } from 'react-router-dom';
 import Tooltip from 'react-simple-tooltip';
-import BggList from './BggList';
-import BggRequests from './BggRequests';
 import AsyncMap from './components/AsyncMap';
+import BggList from './components/BggList';
+import BggRequests from './components/BggRequests';
 import { Container } from './components/Container';
+import EventCard from './components/EventCard';
+import IconLink from './components/IconLink';
+import ScrollToTop from './components/ScrollToTop';
 import inventory, { ChangeEvent } from './data/Inventory';
-import EventCard from './EventCard';
-import IconLink from './IconLink';
 import OptionIconButton from './OptionIconButton';
-import ScrollToTop from './ScrollToTop';
 
 export interface State {
     username: string;

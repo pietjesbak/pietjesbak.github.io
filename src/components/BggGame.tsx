@@ -1,8 +1,8 @@
 import * as React from 'react';
 import Tooltip from 'react-simple-tooltip';
-import { blendColors } from '.';
-import { BggGameData } from './data/BggData';
-import inventory from './data/Inventory';
+import { BggGameData } from '../data/BggData';
+import inventory from '../data/Inventory';
+import { blendColors } from '../Helpers';
 
 export interface Props extends React.HtmlHTMLAttributes<BggGame> {
     expanded?: boolean;

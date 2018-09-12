@@ -33,22 +33,30 @@
 /** Hoverable styles */
 .container .collapsed-header.hover {
     height: 0px;
-    transition: height 0.3s;
+    transition: height 0.2s;
     transform-origin: 0 0;
 }
 
 .container .collapsed-header.hover .container-button {
     transform: scaleY(0);
-    transition: transform 0.3s;
+    transition: transform 0.2s;
     transform-origin: 0 0;
 }
 
-.container:hover .collapsed-header.hover.hover {
+.container .collapsed-header.hover span {
+    display: none;
+}
+
+.container:hover .collapsed-header.hover {
     height: 41px;
 }
 
 .container:hover .collapsed-header.hover .container-button {
     transform: scaleY(1);
+}
+
+.container:hover .collapsed-header.hover span {
+    display: inline;
 }
 
 /** Error styles */
