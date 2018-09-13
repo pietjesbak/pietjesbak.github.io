@@ -207,7 +207,9 @@ class TouchDecider extends React.Component<Props, State> {
             this.winner = undefined;
         }
 
-        this.timeout = 0;
+        if (this.winner === undefined) {
+            this.timeout = 0;
+        }
 
         const offsetLeft = ((this.ref.current!.offsetParent) as HTMLDivElement).offsetLeft;
         const offsetTop = ((this.ref.current!.offsetParent) as HTMLDivElement).offsetTop;

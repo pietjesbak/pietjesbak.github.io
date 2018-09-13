@@ -1,4 +1,5 @@
 .canvas-parent {
+    margin-top: 10px;
     width: 100%;
     height: calc(95vh - 100px);
     line-height: 0;

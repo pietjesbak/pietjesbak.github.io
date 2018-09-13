@@ -89,6 +89,10 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     touchDecider() {
         return (
             <Container>
+                <p>
+                    Deze app kan gebruikt worden om een start speler te bepalen. Iedere speler plaatst 1 vinger op het scherm, de speler wiens kleur het volledige scherm inneemt, is de start speler!
+                </p>
+                {'ontouchstart' in document.documentElement ? null : <span className="mute">PS: Dit werkt enkel op apparaten met een touchscreen.</span>}
                 <TouchDecider />
             </Container>
         );
