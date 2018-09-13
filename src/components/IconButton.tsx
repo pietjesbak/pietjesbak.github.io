@@ -18,7 +18,7 @@ export enum IconButtonBehavour {
 
 export interface Props extends React.HTMLAttributes<IconButton> {
     text: string | JSX.Element;
-    placement?: string;
+    placement?: 'left' | 'top' | 'right' | 'bottom';
     subClass?: string;
     icon: string;
     to?: string;

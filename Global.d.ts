@@ -1,20 +1,22 @@
 declare module 'react-simple-tooltip' {
     interface Props extends React.HTMLAttributes<JSX.Element> {
+        arrow?: number;
+        background?: string;
+        border?: string;
+        color?: string;
         content: string | JSX.Element;
-        placement?: string;
+        fadeDuration?: number;
+        fadeEasing?: number;
+        fixed?: boolean;
+        fontFamily?: string;
+        fontSize?: string;
+        padding?: number;
+        placement?: 'left' | 'top' | 'right' | 'bottom';
+        radius?: number;
+        zIndex?: number;
     }
 
     export default class Tooltip extends React.Component<Props> { }
-}
-
-declare module 'google-map-react' {
-    interface Props extends React.HTMLAttributes<JSX.Element> {
-        bootstrapURLKeys: {key: string };
-        defaultCenter: {lat: number, lng: number};
-        defaultZoom: number;
-    }
-
-    export default class GoogleMap extends React.Component<Props> { }
 }
 
 interface FacebookEvent {

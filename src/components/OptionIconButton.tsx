@@ -55,7 +55,7 @@ class OptionIconButton extends IconButton {
     renderSmall() {
         return (
             <div className="button-wrapper" ref={this.ref} onClick={this.onClick}>
-                <Tooltip content={this.props.text} placement={this.props.placement}>
+                <Tooltip content={this.props.text} placement={this.props.placement} padding={6}>
                     <button className={classNames('small-button', this.props.subClass)} >
                         <i className={"icon-" + this.props.icon} />
                     </button>
