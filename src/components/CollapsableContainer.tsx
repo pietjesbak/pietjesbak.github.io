@@ -65,7 +65,7 @@ export class CollapsableContainer extends React.Component<Props, State> {
         if (props.storeCollapsed && props.title) {
             const stored = localStorage.getItem(encodeURIComponent(props.title));
             if (stored !== null) {
-                collapsed = Boolean(stored);
+                collapsed = stored === 'true';
             }
         }
         if (collapsed === null) {
@@ -78,12 +78,13 @@ export class CollapsableContainer extends React.Component<Props, State> {
     }
 
     toggle = () => {
+        const newState = !this.state.collapsed;
         this.setState({
-            collapsed: !this.state.collapsed
+            collapsed: newState
         });
 
         if (this.props.storeCollapsed && this.props.title) {
-            localStorage.setItem(encodeURIComponent(this.props.title), String(this.state.collapsed))
+            localStorage.setItem(encodeURIComponent(this.props.title), String(newState))
         }
     }
 
