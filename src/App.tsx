@@ -9,10 +9,10 @@ import BggRequests from './components/BggRequests';
 import { Container } from './components/Container';
 import EventCard from './components/EventCard';
 import IconLink from './components/IconLink';
+import OptionIconButton from './components/OptionIconButton';
 import ScrollToTop from './components/ScrollToTop';
 import TouchDecider from './components/TouchDecider';
 import inventory, { ChangeEvent } from './data/Inventory';
-import OptionIconButton from './OptionIconButton';
 
 export interface State {
     username: string;
@@ -115,7 +115,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                         <i className="icon-login" /> Log in
                     </button>
                 )}
-                <NavLink exact={true} activeClassName="active" to="/startspeler">
+                <NavLink exact={true} activeClassName="hidden" to="/startspeler">
                     Startspeler kiezen
                 </NavLink>
             </OptionIconButton>

@@ -138,3 +138,7 @@ i {
     font-style: italic;
     color: #666;
 }
+
+.hidden {
+    display: none!important;
+}
