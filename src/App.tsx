@@ -6,6 +6,7 @@ import Tooltip from 'react-simple-tooltip';
 import AsyncMap from './components/AsyncMap';
 import BggList from './components/BggList';
 import BggRequests from './components/BggRequests';
+import CardDeck from './components/CardDeck';
 import { Container } from './components/Container';
 import EventCard from './components/EventCard';
 import IconLink from './components/IconLink';
@@ -98,6 +99,14 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
         );
     }
 
+    cardDeck() {
+        return (
+            <Container>
+                <CardDeck shuffle={true} />
+            </Container>
+        );
+    }
+
     noRoute() {
         return (
             <div className="center not-found">
@@ -122,6 +131,9 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                 <NavLink exact={true} activeClassName="hidden" to="/startspeler">
                     Startspeler kiezen
                 </NavLink>
+                {/* <NavLink exact={true} activeClassName="hidden" to="/speelkaarten">
+                    Kaarten trekken
+                </NavLink> */}
             </OptionIconButton>
         );
     }
@@ -169,6 +181,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                                     <Route path="/games" component={this.games} />
                                     <Route path="/info" component={this.info} />
                                     <Route path="/startspeler" component={this.touchDecider} />
+                                    <Route path="/speelkaarten" component={this.cardDeck} />
                                     <Route render={this.noRoute} />
                                 </Switch>
                             </div>

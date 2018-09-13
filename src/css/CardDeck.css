@@ -1,0 +1,65 @@
+.card {
+    border-radius: 5px;
+    border: 1px solid black;
+    display: inline-block;
+    height: 140px;
+    margin: 10px;
+    position: relative;
+    user-select: none;
+    width: 100px;
+}
+
+.card:before {
+    background-color: rgba(153, 153, 153, 0.2);
+    border: 1px solid #999;
+    content: '';
+    display: block;
+    height: 85%;
+    margin: 10%;
+    width: 80%;
+}
+
+.card-deck:before {
+    background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
+    background-size: 20px 20px;
+}
+
+.card.red {
+    color: rgb(201, 31, 31);
+}
+
+.card-value {
+    position: absolute;
+}
+
+.card-value-left {
+    top: 15px;
+    left: 15px;
+}
+
+.card-value-right {
+    bottom: 15px;
+    right: 15px;
+}
+
+.card-face {
+    align-items: center;
+    bottom: 0;
+    display: flex;
+    font-size: 100px;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.buttons {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.buttons > button {
+    display: block;
+    margin: 10px;
+}

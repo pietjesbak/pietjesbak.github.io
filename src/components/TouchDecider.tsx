@@ -12,17 +12,13 @@ interface TouchObj {
     angle: number;
 }
 
-interface Props extends React.HTMLAttributes<JSX.Element> {
-    parent?: React.RefObject<HTMLElement>
-}
-
 interface State {
     width: number;
     height: number;
     noTouch: boolean;
 }
 
-class TouchDecider extends React.Component<Props, State> {
+class TouchDecider extends React.Component<{}, State> {
     /**
      * Colors for the different touches.
      */
@@ -73,8 +69,8 @@ class TouchDecider extends React.Component<Props, State> {
      */
     timeout: number;
 
-    constructor(props: Props) {
-        super(props);
+    constructor() {
+        super({});
 
         this.ref = React.createRef();
         this.parent = React.createRef();
@@ -226,11 +222,6 @@ class TouchDecider extends React.Component<Props, State> {
             // -atan2(x - centerx, y - centery) - 90degrees
             angle: -Math.atan2(touch.pageX - offsetLeft - this.state.width / 2, touch.pageY - offsetTop - this.state.height / 2) - Math.PI / 2
         });
-    }
-
-    touchMove = (e: TouchEvent) => {
-        e.preventDefault();
-        this.handleTouches(e.touches);
     }
 
     touchEnd = (e: TouchEvent) => {
