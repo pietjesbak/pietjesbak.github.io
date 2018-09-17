@@ -4,8 +4,9 @@ import * as React from 'react';
 import { Link } from 'react-router-dom'
 import { BggGameData } from '../data/BggData';
 import * as constants from '../data/Constants';
-import inventory, { ChangeEvent } from '../data/Inventory';
+import { ChangeEvent, Inventory } from '../data/Inventory';
 import { readableDate } from '../Helpers';
+import { withInventory } from '../InventoryProvider';
 import BggGame from './BggGame';
 import { CollapsableContainer, headerState } from './CollapsableContainer';
 import { TextPlaceholder } from './TextPlaceholder';
@@ -15,8 +16,12 @@ export interface State {
     nextEvent: { date: Date, confirmed: boolean } | null;
 }
 
-export default class BggRequests extends React.Component<React.HtmlHTMLAttributes<BggRequests>, State> {
-    constructor(props: React.HtmlHTMLAttributes<BggRequests>) {
+export interface Props {
+    inventory: Inventory;
+}
+
+class BggRequests extends React.Component<Props & React.ClassAttributes<BggRequests>, State> {
+    constructor(props: Props & React.ClassAttributes<BggRequests>) {
         super(props);
 
         this.state = {
@@ -29,13 +34,13 @@ export default class BggRequests extends React.Component<React.HtmlHTMLAttribute
     }
 
     async componentDidMount() {
-        inventory.addChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
+        this.props.inventory.addChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
 
-        this.setState({ nextEvent: await inventory.getNextEventDate() });
+        this.setState({ nextEvent: await this.props.inventory.getNextEventDate() });
     }
 
     componentWillUnmount() {
-        inventory.removeChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
+        this.props.inventory.removeChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
     }
 
     updateGames = (games: Map<number, BggGameData>) => {
@@ -80,3 +85,5 @@ export default class BggRequests extends React.Component<React.HtmlHTMLAttribute
         );
     }
 }
+
+export default withInventory(BggRequests);

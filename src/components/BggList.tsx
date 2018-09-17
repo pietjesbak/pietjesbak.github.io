@@ -5,7 +5,8 @@ import * as escapeStringRegexp from 'escape-string-regexp';
 import * as React from 'react';
 import { BggGameData } from '../data/BggData';
 import { CORS_ANYWHERE_DYNO } from '../data/Constants';
-import inventory, { ChangeEvent } from '../data/Inventory';
+import { ChangeEvent, Inventory } from '../data/Inventory';
+import { withInventory } from '../InventoryProvider';
 import BggGame from './BggGame';
 import { Container } from './Container';
 
@@ -20,7 +21,11 @@ export interface State {
     loaderDots: string;
 }
 
-class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> {
+export interface Props {
+    inventory: Inventory;
+}
+
+class BggList extends React.Component<Props & React.ClassAttributes<BggList>, State> {
     /**
      * Returns all order algorithms.
      */
@@ -51,7 +56,7 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
      */
     loaderInterval: number | null;
 
-    constructor(props: React.HtmlHTMLAttributes<BggList>) {
+    constructor(props: Props & React.ClassAttributes<BggList>) {
         super(props);
         this.url = new URL(window.location.href);
 
@@ -87,7 +92,7 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
 
     componentDidMount() {
         this.progressDots();
-        inventory.addChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
+        this.props.inventory.addChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
 
         window.addEventListener('scroll', this.lazyLoader);
         window.addEventListener('resize', this.lazyLoader);
@@ -101,7 +106,7 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
         window.removeEventListener('scroll', this.lazyLoader);
         window.removeEventListener('resize', this.lazyLoader);
 
-        inventory.removeChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
+        this.props.inventory.removeChangeListener(ChangeEvent.GAME_DATA, this.updateGames);
     }
 
     componentDidUpdate() {
@@ -172,7 +177,7 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
     }
 
     searchExpansion = async (expansionId: number) => {
-        const expansion = (await inventory.getGames()).get(expansionId);
+        const expansion = (await this.props.inventory.getGames()).get(expansionId);
         if (expansion !== undefined) {
             (this.refs.input as HTMLInputElement).value = expansion.name;
             await this.setState({
@@ -284,4 +289,4 @@ class BggList extends React.Component<React.HtmlHTMLAttributes<BggList>, State> 
     }
 }
 
-export default BggList;
+export default withInventory(BggList);

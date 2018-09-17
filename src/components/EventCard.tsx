@@ -2,8 +2,9 @@ import '../css/EventCard.css';
 
 import classNames from 'classnames';
 import * as React from 'react';
-import inventory from '../data/Inventory';
+import {Inventory} from '../data/Inventory';
 import { readableDate } from '../Helpers';
+import { withInventory } from '../InventoryProvider';
 import { Container } from './Container';
 import IconButton, { IconButtonBehavour } from './IconButton';
 import { TextPlaceholder } from './TextPlaceholder';
@@ -14,8 +15,12 @@ export interface State {
     error: boolean;
 }
 
-export default class EventCard extends React.Component<React.HTMLAttributes<EventCard>, State> {
-    constructor(props: React.HTMLAttributes<EventCard>) {
+export interface Props {
+    inventory: Inventory;
+}
+
+class EventCard extends React.Component<Props & React.ClassAttributes<EventCard>, State> {
+    constructor(props: Props & React.ClassAttributes<EventCard>) {
         super(props);
         this.state = {
             editing: false,
@@ -30,7 +35,7 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
 
     async updateMessage() {
         try {
-            const event = await inventory.getMessage();
+            const event = await this.props.inventory.getMessage();
             this.setState({ event });
         } catch (e) {
             console.error(e);
@@ -40,7 +45,7 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
 
     toggleMessage = async () => {
         if (this.state.editing === true) {
-            await inventory.updateMessage(
+            await this.props.inventory.updateMessage(
                 (this.refs.title as HTMLInputElement).value,
                 (this.refs.body as HTMLTextAreaElement).value,
                 new Date((this.refs.date as HTMLInputElement).value).getTime()
@@ -120,8 +125,10 @@ export default class EventCard extends React.Component<React.HTMLAttributes<Even
                 <a className="facebook" href="https://www.facebook.com/gezelschapsspellenpietjesbak/" ><i className="icon-facebook-squared" /></a>
 
                 {this.renderEvent(this.state.event, this.state.error)}
-                {inventory.user !== null && inventory.user.admin === true ? <IconButton subClass="edit-event" action={this.toggleMessage} icon="cog" text={this.state.editing ? "Opslaan" : "Aanpassen"} behaviour={IconButtonBehavour.SMALL} />: <span/>}
+                {this.props.inventory.user !== null && this.props.inventory.user.admin === true ? <IconButton subClass="edit-event" action={this.toggleMessage} icon="cog" text={this.state.editing ? "Opslaan" : "Aanpassen"} behaviour={IconButtonBehavour.SMALL} />: <span/>}
             </Container>
         );
     }
 }
+
+export default withInventory(EventCard);

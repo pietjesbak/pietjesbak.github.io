@@ -1,13 +1,15 @@
 import * as React from 'react';
 import Tooltip from 'react-simple-tooltip';
 import { BggGameData } from '../data/BggData';
-import inventory from '../data/Inventory';
+import { Inventory } from '../data/Inventory';
 import { blendColors } from '../Helpers';
+import { withInventory } from '../InventoryProvider';
 
-export interface Props extends React.HtmlHTMLAttributes<BggGame> {
+export interface Props {
     expanded?: boolean;
     game: BggGameData;
     expansionClick?: ((id: number) => void) | null;
+    inventory: Inventory;
 }
 
 export interface State {
@@ -16,14 +18,13 @@ export interface State {
     game: BggGameData;
 }
 
-class BggGame extends React.Component<Props, State> {
-    static defaultProps = {
+class BggGame extends React.Component<Props & React.ClassAttributes<BggGame>, State> {
+    static defaultProps: Partial<Props> = {
         expanded: false,
-        game: null,
         expansionClick: null
     }
 
-    constructor(props: Props) {
+    constructor(props: Props & React.ClassAttributes<BggGame>) {
         super(props);
 
         this.state = {
@@ -63,7 +64,7 @@ class BggGame extends React.Component<Props, State> {
         this.setState({ expanded: newState });
         if (newState === true) {
             try {
-                await inventory.fetchGameDetails(this.state.game!);
+                await this.props.inventory.fetchGameDetails(this.state.game!);
                 this.setState(this.state);
             } catch (e) {
                 console.error(e);
@@ -76,7 +77,7 @@ class BggGame extends React.Component<Props, State> {
         e.preventDefault();
         e.stopPropagation();
 
-        inventory.toggleGame(this.state.game!);
+        this.props.inventory.toggleGame(this.state.game!);
     }
 
     expansionClick = (e: React.SyntheticEvent) => {
@@ -176,7 +177,7 @@ class BggGame extends React.Component<Props, State> {
             <section>
                 <h3><i className="icon-puzzle" /> Uitbreidingen</h3>
                 <ul className="tag-list">
-                    {[...this.state.game.details!.ownedExpansions].map(([id, name] )=> {
+                    {[...this.state.game.details!.ownedExpansions].map(([id, name]) => {
                         return (
                             <li key={id}>
                                 <a target="blank" href={`https://www.boardgamegeek.com/boardgame/${id}/`} onClick={this.expansionClick} data-expansion={id}>
@@ -225,7 +226,7 @@ class BggGame extends React.Component<Props, State> {
             }
         }
 
-        if (inventory.user === null) {
+        if (this.props.inventory.user === null) {
             return (
                 <div className="info pointer">
                     <span className="hover" onClick={this.stopPropagation}>
@@ -271,4 +272,4 @@ class BggGame extends React.Component<Props, State> {
     }
 }
 
-export default BggGame;
+export default withInventory(BggGame);

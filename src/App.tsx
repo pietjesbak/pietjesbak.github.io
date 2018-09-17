@@ -13,14 +13,19 @@ import IconLink from './components/IconLink';
 import OptionIconButton from './components/OptionIconButton';
 import ScrollToTop from './components/ScrollToTop';
 import TouchDecider from './components/TouchDecider';
-import inventory, { ChangeEvent } from './data/Inventory';
+import { ChangeEvent, Inventory } from './data/Inventory';
+import { withInventory } from './InventoryProvider';
 
 export interface State {
     username: string;
 }
 
-class App extends React.Component<React.HTMLAttributes<App>, State> {
-    constructor(props: React.HTMLAttributes<App>) {
+export interface Props {
+    inventory: Inventory
+}
+
+class App extends React.Component<Props & React.ClassAttributes<App>, State> {
+    constructor(props: Props & React.ClassAttributes<App>) {
         super(props);
         this.state = {
             username: ''
@@ -28,7 +33,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     }
 
     componentDidMount() {
-        inventory.addChangeListener(ChangeEvent.USER, user => {
+        this.props.inventory.addChangeListener(ChangeEvent.USER, user => {
             if (user) {
                 this.setState({ username: (user as FirebaseUser).displayName });
             }
@@ -36,14 +41,14 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     }
 
     logout = async () => {
-        await inventory.logout();
+        await this.props.inventory.logout();
         this.setState({
             username: ''
         });
     }
 
     login = async () => {
-        const user = await inventory.login();
+        const user = await this.props.inventory.login();
         this.setState({
             username: user.displayName
         });
@@ -119,7 +124,7 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     renderLoginButton() {
         return (
             <OptionIconButton text="menu" icon="menu" placement="left">
-                {inventory.user !== null ? (
+                {this.props.inventory.user !== null ? (
                     <button onClick={this.logout}>
                         <i className="icon-logout" /> Log uit
                     </button>
@@ -165,11 +170,11 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
                                         </li>
                                     </ul>
                                 </nav>
-                                {inventory.user !== null ?
+                                {this.props.inventory.user !== null ?
                                     <div>
                                         <div className="user-profile">
                                             <Tooltip content={`Ingeloged als ${this.state.username}`} placement="left">
-                                                <img alt={this.state.username} src={inventory.user.photoURL} />
+                                                <img alt={this.state.username} src={this.props.inventory.user.photoURL} />
                                             </Tooltip>
                                         </div>
                                     </div>
@@ -210,4 +215,4 @@ class App extends React.Component<React.HTMLAttributes<App>, State> {
     }
 }
 
-export default App;
+export default withInventory(App);

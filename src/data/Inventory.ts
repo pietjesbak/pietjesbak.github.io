@@ -8,7 +8,7 @@ export enum ChangeEvent {
     USER
 }
 
-class Inventory {
+export class Inventory {
     /**
      * A promise for all board game geek games.
      */
@@ -379,5 +379,3 @@ class Inventory {
     //     });
     // }
 }
-
-export default new Inventory();

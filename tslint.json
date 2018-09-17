@@ -6,6 +6,7 @@
       "node_modules/**/*.ts"
     ]
   },
+  "defaultSeverity": "warning",
   "rules": {
     "member-access": false,
     "interface-name": false,
