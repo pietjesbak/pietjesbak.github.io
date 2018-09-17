@@ -7,7 +7,7 @@ import { MAPBOX_KEY } from '../data/Constants'
 import * as img from '../Pietjesbak.png';
 
 const logoIcon = new Icon({
-    iconUrl: img as any,
+    iconUrl: img,
     iconSize: [40, 40], // size of the icon
     shadowSize: [40, 40], // size of the shadow
     iconAnchor: [20, 20], // point of the icon which will correspond to marker's location
