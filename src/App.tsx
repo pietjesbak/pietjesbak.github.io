@@ -24,7 +24,7 @@ export interface Props {
     inventory: Inventory
 }
 
-class App extends React.Component<Props & React.ClassAttributes<App>, State> {
+export class App extends React.Component<Props & React.ClassAttributes<App>, State> {
     constructor(props: Props & React.ClassAttributes<App>) {
         super(props);
         this.state = {

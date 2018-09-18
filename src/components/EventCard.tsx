@@ -19,7 +19,7 @@ export interface Props {
     inventory: Inventory;
 }
 
-class EventCard extends React.Component<Props & React.ClassAttributes<EventCard>, State> {
+export class EventCard extends React.Component<Props & React.ClassAttributes<EventCard>, State> {
     constructor(props: Props & React.ClassAttributes<EventCard>) {
         super(props);
         this.state = {

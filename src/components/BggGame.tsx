@@ -18,7 +18,7 @@ export interface State {
     game: BggGameData;
 }
 
-class BggGame extends React.Component<Props & React.ClassAttributes<BggGame>, State> {
+export class BggGame extends React.Component<Props & React.ClassAttributes<BggGame>, State> {
     static defaultProps: Partial<Props> = {
         expanded: false,
         expansionClick: null

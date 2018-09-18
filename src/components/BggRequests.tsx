@@ -20,7 +20,7 @@ export interface Props {
     inventory: Inventory;
 }
 
-class BggRequests extends React.Component<Props & React.ClassAttributes<BggRequests>, State> {
+export class BggRequests extends React.Component<Props & React.ClassAttributes<BggRequests>, State> {
     constructor(props: Props & React.ClassAttributes<BggRequests>) {
         super(props);
 

@@ -25,7 +25,7 @@ export interface Props {
     inventory: Inventory;
 }
 
-class BggList extends React.Component<Props & React.ClassAttributes<BggList>, State> {
+export class BggList extends React.Component<Props & React.ClassAttributes<BggList>, State> {
     /**
      * Returns all order algorithms.
      */

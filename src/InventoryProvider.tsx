@@ -11,11 +11,9 @@ export interface InjectedProps {
     inventory: Inventory;
 }
 
-// There are some issues with this implementation:
-// I had to use `Partial<OriginalProps>` because TypeScript would complain `inventory` isn't provided when using the resulting component.
-// Using `Partial` means that all my props are optional now...
-// Ideally I want a type of `OriginalProps - inventory`
-export function withInventory<OriginalProps extends {}>(Component: React.ComponentType<OriginalProps & InjectedProps>): (props: Partial<OriginalProps>) => JSX.Element {
+// This HOC takes a component that requires at least the InjectedProps,
+// and returns an SFC with those InjectedProps already filled in.
+export function withInventory<OriginalProps>(Component: React.ComponentType<OriginalProps & InjectedProps> | React.SFC<OriginalProps & InjectedProps>): React.SFC<Pick<OriginalProps, Exclude<keyof OriginalProps, keyof InjectedProps>>> {
     return (props: OriginalProps) => {
         return (
             <Consumer>
