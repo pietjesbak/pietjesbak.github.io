@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<IconButton /> Renders a big button regardless of screen size: big button 1`] = `
+<button
+  className="button"
+  onClick={[MockFunction]}
+>
+  <i
+    className="icon-globe"
+  />
+   
+  Home
+</button>
+`;
+
+exports[`<IconButton /> Renders a big button: big button 1`] = `
+<button
+  className="button"
+  onClick={[MockFunction]}
+>
+  <i
+    className="icon-globe"
+  />
+   
+  Home
+</button>
+`;
+
+exports[`<IconButton /> Renders a small button regardless of screen size: small button 1`] = `
+<mock-tooltip
+  content="Home"
+>
+  <button
+    className="small-button"
+    onClick={[MockFunction]}
+  >
+    <i
+      className="icon-globe"
+    />
+  </button>
+</mock-tooltip>
+`;
+
+exports[`<IconButton /> Renders a small button: small button 1`] = `
+<IconButton
+  action={[MockFunction]}
+  behaviour={2}
+  icon="globe"
+  text="Home"
+>
+  <mock-tooltip
+    content="Home"
+  >
+    <button
+      className="small-button"
+      onClick={[MockFunction]}
+    >
+      <i
+        className="icon-globe"
+      />
+    </button>
+  </mock-tooltip>
+</IconButton>
+`;

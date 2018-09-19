@@ -93,10 +93,10 @@ export class CollapsableContainer extends React.Component<Props, State> {
     }
 
     renderCollapsed() {
-        const {children, className, title, header, storeCollapsed, ...rest } = this.props;
+        const { children, className, title, header, storeCollapsed, ...rest } = this.props;
         return (
             <Container className={classNames(className, 'collapsable')} {...rest}>
-                <h3 className={classNames('collapsed-header', {'hover': header === headerState.SHOWN_ON_HOVER})} onClick={this.toggle}>
+                <h3 className={classNames('collapsed-header', { 'hover': header === headerState.SHOWN_ON_HOVER })} onClick={this.toggle}>
                     <i className="container-button icon-window-maximize" />
                     <span>{title}</span>
                 </h3>
@@ -105,10 +105,11 @@ export class CollapsableContainer extends React.Component<Props, State> {
     }
 
     renderExpanded() {
-        const {children, className, title, header, storeCollapsed, ...rest } = this.props;
+        const { children, className, title, header, storeCollapsed, ...rest } = this.props;
+
         return (
             <Container className={classNames(className, 'collapsable')} {...rest}>
-                <h3 className={classNames('collapsed-header', {'hover': header === headerState.SHOWN_ON_HOVER || headerState.SHOWN_COLLAPSED})} onClick={this.toggle}>
+                <h3 className={classNames('collapsed-header', { 'hover': header === headerState.SHOWN_ON_HOVER || header === headerState.SHOWN_COLLAPSED })} onClick={this.toggle}>
                     <i className="container-button icon-window-minimize" />
                     <span>{title}</span>
                 </h3>

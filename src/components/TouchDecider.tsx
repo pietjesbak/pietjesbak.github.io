@@ -69,8 +69,8 @@ class TouchDecider extends React.Component<{}, State> {
      */
     timeout: number;
 
-    constructor() {
-        super({});
+    constructor(props: {}) {
+        super(props);
 
         this.ref = React.createRef();
         this.parent = React.createRef();
@@ -130,56 +130,58 @@ class TouchDecider extends React.Component<{}, State> {
             const offsetLeft = ((this.ref.current!.offsetParent) as HTMLDivElement).offsetLeft;
             const offsetTop = ((this.ref.current!.offsetParent) as HTMLDivElement).offsetTop;
 
-            const ctx = this.ref.current!.getContext('2d')!;
-            ctx.clearRect(0, 0, this.state.width, this.state.height);
-            ctx.globalCompositeOperation = 'screen';
+            const ctx = this.ref.current!.getContext('2d');
+            if (ctx !== null) {
+                ctx.clearRect(0, 0, this.state.width, this.state.height);
+                ctx.globalCompositeOperation = 'screen';
 
-            // Draw all lingering circles that should fade away.
-            for (let i = this.lingeringTouches.length - 1; i >= 0; i--) {
-                const touch = this.lingeringTouches[i];
+                // Draw all lingering circles that should fade away.
+                for (let i = this.lingeringTouches.length - 1; i >= 0; i--) {
+                    const touch = this.lingeringTouches[i];
 
-                ctx.beginPath();
-                ctx.arc(touch.x - offsetLeft, touch.y - offsetTop, touch.size, 0, Math.PI * 2);
-                ctx.fillStyle = touch.color;
-                ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(touch.x - offsetLeft, touch.y - offsetTop, touch.size, 0, Math.PI * 2);
+                    ctx.fillStyle = touch.color;
+                    ctx.fill();
 
-                touch.size -= 10;
-                if (touch.size <= 0) {
-                    this.lingeringTouches.splice(i, 1);
-                }
-            }
-
-            // Draw and grow all currently touched areas.
-            for (let i = 0; i < this.touches.length; i++) {
-                const touch = this.touches[i];
-                const state = this.touchCache.get(touch.identifier)!;
-
-                ctx.beginPath();
-                ctx.arc(touch.pageX - offsetLeft, touch.pageY - offsetTop, state.size, 0, Math.PI * 2);
-                ctx.fillStyle = state.color;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(touch.pageX - offsetLeft, touch.pageY - offsetTop, state.size, state.angle, state.angle + this.timeout / 1000 * Math.PI * 2);
-                ctx.strokeStyle = state.color;
-                ctx.lineWidth = 10;
-                ctx.stroke();
-
-                if ((this.winner === undefined || touch.identifier === this.winner) && this.timeout >= 1000) {
-                    if (state.size < radius * 1.1) {
-                        state.size += radius * Math.sqrt(state.size) * 0.00005 * delta;
-                        state.size *= 1 - (i / 150);
+                    touch.size -= 10;
+                    if (touch.size <= 0) {
+                        this.lingeringTouches.splice(i, 1);
                     }
-                } else {
-                    state.size = Math.max(state.size - 10, state.minSize);
                 }
 
-                if (state.size > radius * 0.9 && this.winner === undefined) {
-                    this.winner = touch.identifier;
+                // Draw and grow all currently touched areas.
+                for (let i = 0; i < this.touches.length; i++) {
+                    const touch = this.touches[i];
+                    const state = this.touchCache.get(touch.identifier)!;
+
+                    ctx.beginPath();
+                    ctx.arc(touch.pageX - offsetLeft, touch.pageY - offsetTop, state.size, 0, Math.PI * 2);
+                    ctx.fillStyle = state.color;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(touch.pageX - offsetLeft, touch.pageY - offsetTop, state.size, state.angle, state.angle + this.timeout / 1000 * Math.PI * 2);
+                    ctx.strokeStyle = state.color;
+                    ctx.lineWidth = 10;
+                    ctx.stroke();
+
+                    if ((this.winner === undefined || touch.identifier === this.winner) && this.timeout >= 1000) {
+                        if (state.size < radius * 1.1) {
+                            state.size += radius * Math.sqrt(state.size) * 0.00005 * delta;
+                            state.size *= 1 - (i / 150);
+                        }
+                    } else {
+                        state.size = Math.max(state.size - 10, state.minSize);
+                    }
+
+                    if (state.size > radius * 0.9 && this.winner === undefined) {
+                        this.winner = touch.identifier;
+                    }
                 }
+
+                requestAnimationFrame(this.drawCanvas);
             }
-
-            requestAnimationFrame(this.drawCanvas);
         }
     }
 

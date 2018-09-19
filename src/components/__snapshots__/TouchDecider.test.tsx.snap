@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TouchDecider /> Doesnt render the text when the screen is being touched 1`] = `
+<TouchDecider>
+  <div
+    className="canvas-parent"
+  >
+    <canvas
+      className="touchdecider-canvas"
+      height={0}
+      width={0}
+    />
+  </div>
+</TouchDecider>
+`;
+
+exports[`<TouchDecider /> Renders the default text 1`] = `
+<TouchDecider>
+  <div
+    className="canvas-parent"
+  >
+    <span
+      className="touchdecider-message"
+    >
+      Raak het scherm met 1 vinger aan om te beslissen wie begint.
+    </span>
+    <canvas
+      className="touchdecider-canvas"
+      height={0}
+      width={0}
+    />
+  </div>
+</TouchDecider>
+`;

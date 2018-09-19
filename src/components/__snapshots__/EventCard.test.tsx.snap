@@ -1,0 +1,112 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<EventCard /> Renders a placeholder 1`] = `
+<Container
+  className="event-card"
+>
+  <a
+    className="facebook"
+    href="https://www.facebook.com/gezelschapsspellenpietjesbak/"
+  >
+    <i
+      className="icon-facebook-squared"
+    />
+  </a>
+  <div
+    className="event"
+  >
+    <TextPlaceholder
+      paragraphSize={3}
+      paragraphs={2}
+    />
+  </div>
+  <span />
+</Container>
+`;
+
+exports[`<EventCard /> Renders an event 1`] = `
+<Container
+  className="event-card"
+>
+  <a
+    className="facebook"
+    href="https://www.facebook.com/gezelschapsspellenpietjesbak/"
+  >
+    <i
+      className="icon-facebook-squared"
+    />
+  </a>
+  <div
+    className="event"
+  >
+    <h2>
+      Test event
+    </h2>
+    <div
+      className="date ongoing"
+    >
+      <span>
+        Op 
+        woensdag 19 september 2018 10:20
+      </span>
+      <br />
+      <span>
+        <strong>
+          Nu aan de gang!
+        </strong>
+      </span>
+    </div>
+    <br />
+    <span
+      key="0"
+    >
+      The new test event starts now!
+      <br />
+    </span>
+  </div>
+  <span />
+</Container>
+`;
+
+exports[`<EventCard /> Renders an event that has yet to come 1`] = `
+<div
+  className="date valid"
+>
+  <span>
+    Op 
+    donderdag 20 september 2018 11:00
+  </span>
+</div>
+`;
+
+exports[`<EventCard /> Renders an ongoing event 1`] = `
+<div
+  className="date ongoing"
+>
+  <span>
+    Op 
+    woensdag 19 september 2018 09:30
+  </span>
+  <br />
+  <span>
+    <strong>
+      Nu aan de gang!
+    </strong>
+  </span>
+</div>
+`;
+
+exports[`<EventCard /> Renders an passed event 1`] = `
+<div
+  className="date expired"
+>
+  <span>
+    Op 
+    dinsdag 18 september 2018 11:00
+  </span>
+  <br />
+  <span>
+    Dit event is voorbij, nieuwe events worden meestal 2 weken op voorhand gepland.
+  </span>
+</div>
+`;

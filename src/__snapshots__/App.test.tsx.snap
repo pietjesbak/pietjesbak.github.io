@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<App /> Doesnt render a user 1`] = `
+<button
+  onClick={[Function]}
+>
+  <i
+    className="icon-login"
+  />
+   Log in
+</button>
+`;
+
+exports[`<App /> Renders a 404 1`] = `
+<div
+  className="center not-found"
+>
+  <span>
+    404
+  </span>
+  <div
+    style={
+      Object {
+        "fontSize": "14vw",
+        "whiteSpace": "nowrap",
+      }
+    }
+  >
+    ¯\\_(ツ)_/¯
+  </div>
+</div>
+`;
+
+exports[`<App /> Renders a logged in user 1`] = `
+<div
+  className="user-profile"
+>
+  <mock-tooltip
+    content="Ingeloged als Lennert Claeys"
+    placement="left"
+  >
+    <img
+      alt="Lennert Claeys"
+      src="Photo url"
+    />
+  </mock-tooltip>
+</div>
+`;
+
+exports[`<App /> Renders a logged in user 2`] = `
+<button
+  onClick={[Function]}
+>
+  <i
+    className="icon-logout"
+  />
+   Log uit
+</button>
+`;
+
+exports[`<App /> Renders the correct footer 1`] = `
+<footer>
+  <ul
+    className="wrapper"
+  >
+    <li>
+      <a
+        href="https://www.facebook.com/gezelschapsspellenpietjesbak/"
+      >
+        <i
+          className="icon-facebook-squared"
+        />
+        Like
+      </a>
+    </li>
+    <li>
+      <a
+        href="mailto:pietdecoensel@gmail.com"
+      >
+        <i
+          className="icon-mail-alt"
+        />
+        Contact
+      </a>
+    </li>
+  </ul>
+  <span>
+    © Spellenclub De Pietjesbak ● Lennert Claeys
+  </span>
+</footer>
+`;
+
+exports[`<App /> Renders the correct header 1`] = `
+<h1>
+  <svg
+    height="52"
+    id="logo"
+    width="57"
+  >
+    <path
+      d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z"
+      fill="#c33"
+      stroke="#eee"
+      strokeWidth="5"
+    />
+  </svg>
+  Spellenclub De Pietjesbak
+</h1>
+`;

@@ -129,10 +129,10 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
                         <i className="icon-logout" /> Log uit
                     </button>
                 ) : (
-                    <button onClick={this.login}>
-                        <i className="icon-login" /> Log in
+                        <button onClick={this.login}>
+                            <i className="icon-login" /> Log in
                     </button>
-                )}
+                    )}
                 <NavLink exact={true} activeClassName="hidden" to="/startspeler">
                     Startspeler kiezen
                 </NavLink>
@@ -156,7 +156,8 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
                                             <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee" />
                                         </svg>
                                         Spellenclub De Pietjesbak
-                                </h1>
+
+                                    </h1>
                                 </div>
                             </header>
                             <div className="wrapper">
@@ -170,7 +171,7 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
                                         </li>
                                     </ul>
                                 </nav>
-                                {this.props.inventory.user !== null ?
+                                {this.props.inventory.user !== null ? (
                                     <div>
                                         <div className="user-profile">
                                             <Tooltip content={`Ingeloged als ${this.state.username}`} placement="left">
@@ -178,9 +179,7 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
                                             </Tooltip>
                                         </div>
                                     </div>
-                                    :
-                                    <div />
-                                }
+                                ) : null}
                                 <Switch>
                                     <Route exact={true} path="/" component={this.home} />
                                     <Route path="/games" component={this.games} />

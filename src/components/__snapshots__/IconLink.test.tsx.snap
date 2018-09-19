@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<IconLink /> Renders a big button regardless of screen size: big button 1`] = `
+<mock-navlink
+  activeClassName="active"
+  className="button"
+  exact={true}
+  to="/"
+>
+  <i
+    className="icon-globe"
+  />
+   
+  Home
+</mock-navlink>
+`;
+
+exports[`<IconLink /> Renders a big button: big button 1`] = `
+<mock-navlink
+  activeClassName="active"
+  className="button"
+  exact={true}
+  to="/"
+>
+  <i
+    className="icon-globe"
+  />
+   
+  Home
+</mock-navlink>
+`;
+
+exports[`<IconLink /> Renders a small button regardless of screen size: small button 1`] = `
+<mock-tooltip
+  content="Home"
+>
+  <mock-navlink
+    activeClassName="active"
+    className="small-button"
+    exact={true}
+    to="/"
+  >
+    <i
+      className="icon-globe"
+    />
+  </mock-navlink>
+</mock-tooltip>
+`;
+
+exports[`<IconLink /> Renders a small button: small button 1`] = `
+<IconLink
+  behaviour={2}
+  icon="globe"
+  text="Home"
+  to="/"
+>
+  <mock-tooltip
+    content="Home"
+  >
+    <mock-navlink
+      activeClassName="active"
+      className="small-button"
+      exact={true}
+      to="/"
+    >
+      <i
+        className="icon-globe"
+      />
+    </mock-navlink>
+  </mock-tooltip>
+</IconLink>
+`;

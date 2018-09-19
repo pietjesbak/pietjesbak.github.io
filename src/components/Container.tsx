@@ -20,6 +20,6 @@ export function Container<T extends React.HTMLAttributes<React.Component>>(props
     const { className, error, ...rest } = props;
 
     return (
-        <div className={classNames(className, 'container', {'error': error})} {...rest} />
+        <div className={classNames(className, 'container', { 'error': error })} {...rest} />
     );
 }

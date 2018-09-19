@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<CollapsableContainer /> Renders a collapsable container with settings 1`] = `
+<Container
+  className="collapsable"
+  defaultCollapsed={true}
+>
+  <h3
+    className="collapsed-header"
+    onClick={[Function]}
+  >
+    <i
+      className="container-button icon-window-maximize"
+    />
+    <span>
+      container
+    </span>
+  </h3>
+</Container>
+`;
+
+exports[`<CollapsableContainer /> Renders a collapsable container with settings 2`] = `
+<Container
+  className="collapsable"
+  defaultCollapsed={true}
+>
+  <h3
+    className="collapsed-header"
+    onClick={[Function]}
+  >
+    <i
+      className="container-button icon-window-minimize"
+    />
+    <span>
+      container
+    </span>
+  </h3>
+  <div
+    className="content"
+  >
+    CONTENT
+  </div>
+</Container>
+`;
+
+exports[`<CollapsableContainer /> Renders the default collapsable container 1`] = `
+<Container
+  className="collapsable"
+>
+  <h3
+    className="collapsed-header"
+    onClick={[Function]}
+  >
+    <i
+      className="container-button icon-window-minimize"
+    />
+    <span />
+  </h3>
+  <div
+    className="content"
+  >
+    CONTENT
+  </div>
+</Container>
+`;
+
+exports[`<CollapsableContainer /> Renders the default collapsable container 2`] = `
+<Container
+  className="collapsable"
+>
+  <h3
+    className="collapsed-header"
+    onClick={[Function]}
+  >
+    <i
+      className="container-button icon-window-maximize"
+    />
+    <span />
+  </h3>
+</Container>
+`;
