@@ -29,7 +29,7 @@ describe('<CollapsableContainer />', () => {
     });
 
     it('Loads the state from localstorage', () => {
-        (global as any).localStorage['container'] = 'true';
+        (window as any).localStorage['container'] = 'true';
         const container = enzyme.shallow(<CollapsableContainer storeCollapsed={true} title="container">CONTENT</CollapsableContainer>);
 
         expect(container.find('.content')).toHaveLength(0);
@@ -37,7 +37,7 @@ describe('<CollapsableContainer />', () => {
         // Toggle
         container.find('h3').simulate('click');
         expect(container.find('.content')).toHaveLength(1);
-        expect((global as any).localStorage['container']).toBe('false');
+        expect((window as any).localStorage['container']).toBe('false');
     });
 
     it('Gets the error style', () => {

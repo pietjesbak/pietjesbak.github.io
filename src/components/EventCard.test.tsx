@@ -6,12 +6,12 @@ import { EventCard } from './EventCard';
 
 function getMockInventory(date: Date = new Date()) {
     const inventory = new Inventory();
-    inventory.getMessage= function(): Promise<FirebaseMessage> {
+    inventory.getMessage = () => {
         return Promise.resolve({
             title: 'Test event',
             body: 'The new test event starts now!',
             date
-        })
+        });
     }
 
     return inventory;

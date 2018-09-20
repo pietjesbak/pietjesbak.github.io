@@ -26,7 +26,9 @@
     "fix": "tslint -p tsconfig.json --fix"
   },
   "jest": {
-    "snapshotSerializers": ["enzyme-to-json/serializer"]
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ]
   },
   "devDependencies": {
     "@types/classnames": "^2.2.6",
