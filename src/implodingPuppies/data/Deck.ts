@@ -19,4 +19,8 @@ export class Deck {
     seeTop() {
         return this.cards_.slice(-3).reverse();
     }
+
+    get cards() {
+        return this.cards_;
+    }
 }

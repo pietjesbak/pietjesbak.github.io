@@ -16,7 +16,8 @@ export enum CardTypes {
     PUPPY_1 = 'puppy 1',
     PUPPY_2 = 'puppy 2',
     PUPPY_3 = 'puppy 3',
-    PUPPY_4 = 'puppy 4'
+    PUPPY_4 = 'puppy 4',
+    PUPPY_5 = 'puppy 5'
 }
 
 export interface Card {
@@ -95,7 +96,7 @@ export const cards = new Map<CardTypes, Card>();
 cards.set(CardTypes.BOMB, {
     type: CardTypes.BOMB,
     icon: '💣',
-    color: '#000',
+    color: 'rgb(39, 39, 39)',
     name: 'Imploding Puppy',
     description: 'You are out of the game if you draw this card!',
     count: (playerCount) => playerCount - 1,
@@ -120,7 +121,7 @@ cards.set(CardTypes.BOMB, {
 cards.set(CardTypes.DEFUSE, {
     type: CardTypes.DEFUSE,
     icon: '🎰',
-    color: '#000',
+    color: 'rgb(57, 92, 46)',
     name: 'Defuse',
     description: 'Use this card to put another card back in the deck.',
     count: 6,
@@ -134,8 +135,8 @@ cards.set(CardTypes.DEFUSE, {
 
 cards.set(CardTypes.SHUFFLE, {
     type: CardTypes.SHUFFLE,
-    icon: '⤨',
-    color: '#000',
+    icon: '🎲',
+    color: 'rgb(92, 64, 46)',
     name: 'Shuffle',
     description: 'Use this card to shuffle the deck.',
     count: 4,
@@ -149,7 +150,7 @@ cards.set(CardTypes.SHUFFLE, {
 cards.set(CardTypes.NOPE, {
     type: CardTypes.NOPE,
     icon: '⛔',
-    color: '#000',
+    color: 'rgb(92, 46, 46)',
     name: 'Nope',
     description: 'Use this card to prevent another player\'s action.',
     count: 5,
@@ -161,7 +162,7 @@ cards.set(CardTypes.NOPE, {
 cards.set(CardTypes.SKIP, {
     type: CardTypes.SKIP,
     icon: '🏃',
-    color: '#000',
+    color: 'rgb(46, 47, 92)',
     name: 'Skip',
     description: 'Use this card to skip drawing a card.',
     count: 4,
@@ -173,7 +174,7 @@ cards.set(CardTypes.SKIP, {
 cards.set(CardTypes.ATTACK, {
     type: CardTypes.ATTACK,
     icon: '🚲',
-    color: '#000',
+    color: 'rgb(46, 92, 58)',
     name: 'Attack',
     description: 'Use this card to skip drawing a card and make the next player take 2 turns',
     count: 4,
@@ -185,7 +186,7 @@ cards.set(CardTypes.ATTACK, {
 cards.set(CardTypes.FAVOR, {
     type: CardTypes.FAVOR,
     icon: '🖤',
-    color: '#000',
+    color: 'rgb(39, 39, 39)',
     name: 'Favor',
     description: 'Use this card to ask another player\'s card.',
     count: 4,
@@ -203,25 +204,25 @@ cards.set(CardTypes.FAVOR, {
 cards.set(CardTypes.FUTURE, {
     type: CardTypes.FUTURE,
     icon: '🔮',
-    color: '#000',
+    color: 'rgb(92, 46, 78)',
     name: 'See the future',
     description: 'Use this card to see the top three cards.',
     count: 5,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
     playEffect: async (player, game) => {
-       const top = game.deck.seeTop();
+        // const top = game.deck.seeTop();
 
-       // Todo show the card to the player.
+        // Todo show the card to the player.
     },
     drawEffect: async () => true
 });
 
-const icons = ['🐕', '🐈', '🐦', '🐟'];
-[CardTypes.PUPPY_1, CardTypes.PUPPY_2, CardTypes.PUPPY_3, CardTypes.PUPPY_4].forEach((type, i) => {
+const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
+[CardTypes.PUPPY_1, CardTypes.PUPPY_2, CardTypes.PUPPY_3, CardTypes.PUPPY_4, CardTypes.PUPPY_5].forEach((type, i) => {
     cards.set(type, {
         type,
         icon: icons[i],
-        color: '#000',
+        color: 'rgb(92, 91, 46)',
         name: 'Animal',
         description: 'A collectable. Does nothing',
         count: 4,

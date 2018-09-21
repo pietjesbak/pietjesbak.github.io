@@ -14,6 +14,7 @@ import OptionIconButton from './components/OptionIconButton';
 import ScrollToTop from './components/ScrollToTop';
 import TouchDecider from './components/TouchDecider';
 import { ChangeEvent, Inventory } from './data/Inventory';
+import Game from './implodingPuppies/Game';
 import { withInventory } from './InventoryProvider';
 
 export interface State {
@@ -104,6 +105,14 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
         );
     }
 
+    implodingPuppies() {
+        return (
+            <Container>
+                <Game playerCount={4} />
+            </Container>
+        );
+    }
+
     cardDeck() {
         return (
             <Container>
@@ -186,6 +195,7 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
                                     <Route path="/info" component={this.info} />
                                     <Route path="/startspeler" component={this.touchDecider} />
                                     <Route path="/speelkaarten" component={this.cardDeck} />
+                                    <Route path="/game" component={this.implodingPuppies} />
                                     <Route render={this.noRoute} />
                                 </Switch>
                             </div>

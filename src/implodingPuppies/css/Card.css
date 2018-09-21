@@ -1,6 +1,6 @@
-.card-deck-table .card {
+.imploding-puppies-game .card {
     border-radius: 5px;
-    border: 1px solid black;
+    border: 4px solid;
     display: inline-block;
     height: 140px;
     margin: 10px;
@@ -9,7 +9,8 @@
     width: 100px;
 }
 
-.card-deck-table .card:before {
+
+.imploding-puppies-game .card:before {
     background-color: rgba(153, 153, 153, 0.2);
     border: 1px solid #999;
     content: '';
@@ -19,47 +20,27 @@
     width: 80%;
 }
 
-.card-deck-table .card-deck:before {
+.imploding-puppies-game .card.face-down:before {
     background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
     background-size: 20px 20px;
 }
 
-.card-deck-table .card.red {
-    color: rgb(201, 31, 31);
-}
-
-.card-deck-table .card-value {
+.imploding-puppies-game .card-value {
     position: absolute;
-}
-
-.card-deck-table .card-value-left {
     top: 15px;
-    left: 15px;
+    text-align: center;
+    left: 5px;
+    right: 5px;
 }
 
-.card-deck-table .card-value-right {
-    bottom: 15px;
-    right: 15px;
-}
-
-.card-deck-table .card-face {
+.imploding-puppies-game .card-face {
     align-items: center;
     bottom: 0;
     display: flex;
-    font-size: 100px;
+    font-size: 60px;
     justify-content: center;
     left: 0;
     position: absolute;
     right: 0;
-    top: 0;
-}
-
-.card-deck-table .buttons {
-    display: inline-block;
-    vertical-align: top;
-}
-
-.card-deck-table .buttons>button {
-    display: block;
-    margin: 10px;
+    top: 40px;
 }

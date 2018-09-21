@@ -29,14 +29,14 @@ export class Game {
     constructor(playerCount: number) {
         const deck: CardTypes[] = [];
 
-        Object.keys(CardTypes)
+        Object.values(CardTypes)
             .filter((type: CardTypes) => type !== CardTypes.BOMB && type !== CardTypes.DEFUSE)
             .forEach((type: CardTypes) => {
                 const card = cards.get(type)!;
                 const count = typeof card.count === 'number' ? card.count : card.count(playerCount);
 
                 for (let i = 0; i < count; i++) {
-                    deck.push();
+                    deck.push(type);
                 }
             });
 
