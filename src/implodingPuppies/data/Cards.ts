@@ -54,7 +54,7 @@ export interface Card {
     /**
      * Function that returns true for cards that can be played during this turn.
      */
-    playTest: (player: Player, selection: CardTypes[], game: Game) => boolean;
+    playTest: (player: Player, selection: CardTypes[]) => boolean;
 
     /**
      * Function that executes the effect when a player plays this card.
@@ -68,13 +68,21 @@ export interface Card {
 }
 
 /**
+ * Get the amount of cards that are usable for the `5 different rule`.
+ * @param types The cards.
+ */
+const getApplicableCount = (types: CardTypes[]) => {
+    return new Set(types.filter(type => type !== CardTypes.DEFUSE)).size;
+}
+
+/**
  * Checks if this card can be selected to take a card from the discard pile.
- * @package player The current player.
+ * @param player The current player.
  * @param selection The currently selected cards.
  * @param type The type of the card that's being checked.
  */
 const fiveDifferent = (player: Player, selection: CardTypes[], type: CardTypes) => {
-    return new Set(player.cards).size >= 5 &&
+    return getApplicableCount(player.cards) >= 5 &&
         selection.length < 5 &&
         selection.find(card => card === type) === undefined;
 }
@@ -208,7 +216,7 @@ cards.set(CardTypes.FUTURE, {
     name: 'See the future',
     description: 'Use this card to see the top three cards.',
     count: 5,
-    playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
+    playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FUTURE) || twoOrThreeSame(player, selection, CardTypes.FUTURE),
     playEffect: async (player, game) => {
         // const top = game.deck.seeTop();
 
@@ -226,7 +234,7 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         name: 'Animal',
         description: 'A collectable. Does nothing',
         count: 4,
-        playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
+        playTest: (player, selection) => fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
         playEffect: async () => undefined,
         drawEffect: async () => true
     });

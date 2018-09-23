@@ -71,6 +71,10 @@ export class Game {
         return this.discardPile_;
     }
 
+    get players() {
+        return this.players_;
+    }
+
     async playTurn() {
         this.skip_ = false;
         const player = this.decideNextPlayer();
