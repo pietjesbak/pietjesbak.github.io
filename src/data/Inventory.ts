@@ -171,11 +171,11 @@ export class Inventory {
         }
 
         const thresholdDate = new Date();
-        thresholdDate.setDate(thresholdDate.getDate() + 1);
 
         // Adjust the start time if the event has passed.
         for (let i = 0; i < 2 && thresholdDate > startTime; i++) {
             confirmed = false;
+            startTime.setFullYear(thresholdDate.getFullYear());
             startTime.setMonth(thresholdDate.getMonth() + i); // Check this month and the next month for the first available event date.
             startTime.setDate(1); // Set to first day of this month.
             startTime.setDate(2 * 7 + (5 - startTime.getDay() + 7) % 7 + 1); // Figure out when the 3rd friday is from here.

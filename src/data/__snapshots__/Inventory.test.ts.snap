@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Inventory Fetches all the games 1`] = `
+Map {
+  9999 => BggGameData {
+    "collectionId": 1234,
+    "details": undefined,
+    "id": 9999,
+    "image": "https://via.placeholder.com/500x500",
+    "name": "Game 1",
+    "requestedByMe": false,
+    "requestsThisMonth": 0,
+    "stats": BggStatsData {
+      "maxPlayers": 4,
+      "maxPlaytime": 30,
+      "minPlayers": 2,
+      "minPlaytime": 30,
+      "rating": 6.49274,
+    },
+    "thumbnail": "https://via.placeholder.com/250x150",
+    "year": 1989,
+  },
+  8888 => BggGameData {
+    "collectionId": 1234,
+    "details": undefined,
+    "id": 8888,
+    "image": "https://via.placeholder.com/500x500",
+    "name": "Game 2",
+    "requestedByMe": false,
+    "requestsThisMonth": 0,
+    "stats": BggStatsData {
+      "maxPlayers": 5,
+      "maxPlaytime": 30,
+      "minPlayers": 2,
+      "minPlaytime": 30,
+      "rating": 6.80164,
+    },
+    "thumbnail": "https://via.placeholder.com/250x150",
+    "year": 2010,
+  },
+}
+`;
+
+exports[`Inventory Gets the correct next event date 1`] = `
+Object {
+  "confirmed": false,
+  "date": 2018-09-20T23:00:00.000Z,
+}
+`;
+
+exports[`Inventory Gets the correct next event date 2`] = `
+Object {
+  "confirmed": false,
+  "date": 2018-09-20T23:00:00.000Z,
+}
+`;
+
+exports[`Inventory Gets the correct next event date 3`] = `
+Object {
+  "confirmed": false,
+  "date": 2018-10-18T23:00:00.000Z,
+}
+`;
+
+exports[`Inventory Gets the correct next event date with confirmation 1`] = `
+Object {
+  "confirmed": true,
+  "date": 2018-09-25T17:30:00.000Z,
+}
+`;
