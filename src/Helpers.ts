@@ -46,3 +46,11 @@ export function shuffle<T>(a: T[]) {
     }
     return a;
 }
+
+/**
+ * Creates an empty array with the given amount of spots that can be mapped right away.
+ * @param count The size of the array.
+ */
+export function repeat(count: number) : null[] {
+    return new Array(count).fill(null);
+}

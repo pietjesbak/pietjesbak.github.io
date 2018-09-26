@@ -1,5 +1,5 @@
-import { Game } from "./Game";
-import { Player } from "./Player";
+import { Game } from './Game';
+import { Player } from './Player';
 
 /**
  * All possible card types.
@@ -20,7 +20,7 @@ export enum CardTypes {
     PUPPY_5 = 'puppy 5'
 }
 
-export interface Card {
+export interface CardPrototype {
     /**
      * The card type / identifier.
      */
@@ -54,7 +54,7 @@ export interface Card {
     /**
      * Function that returns true for cards that can be played during this turn.
      */
-    playTest: (player: Player, selection: CardTypes[]) => boolean;
+    playTest: (player: Player, selection: Card[]) => boolean;
 
     /**
      * Function that executes the effect when a player plays this card.
@@ -71,8 +71,8 @@ export interface Card {
  * Get the amount of cards that are usable for the `5 different rule`.
  * @param types The cards.
  */
-const getApplicableCount = (types: CardTypes[]) => {
-    return new Set(types.filter(type => type !== CardTypes.DEFUSE)).size;
+const getApplicableCount = (types: Card[]) => {
+    return new Set(types.filter(card => card.prototype.type !== CardTypes.DEFUSE)).size;
 }
 
 /**
@@ -81,10 +81,10 @@ const getApplicableCount = (types: CardTypes[]) => {
  * @param selection The currently selected cards.
  * @param type The type of the card that's being checked.
  */
-const fiveDifferent = (player: Player, selection: CardTypes[], type: CardTypes) => {
+const fiveDifferent = (player: Player, selection: Card[], type: CardTypes) => {
     return getApplicableCount(player.cards) >= 5 &&
         selection.length < 5 &&
-        selection.find(card => card === type) === undefined;
+        selection.find(card => card.prototype.type === type) === undefined;
 }
 
 /**
@@ -93,13 +93,13 @@ const fiveDifferent = (player: Player, selection: CardTypes[], type: CardTypes) 
  * @param selection The currently selected cards.
  * @param type The type of the card that's being checked.
  */
-const twoOrThreeSame = (player: Player, selection: CardTypes[], type: CardTypes) => {
-    return player.cards.filter(card => card === type).length >= 2 &&
+const twoOrThreeSame = (player: Player, selection: Card[], type: CardTypes) => {
+    return player.cards.filter(card => card.prototype.type === type).length >= 2 &&
         selection.length < 3 &&
-        selection.every(card => card === type);
+        selection.every(card => card.prototype.type === type);
 }
 
-export const cards = new Map<CardTypes, Card>();
+export const cards = new Map<CardTypes, CardPrototype>();
 
 cards.set(CardTypes.BOMB, {
     type: CardTypes.BOMB,
@@ -239,3 +239,32 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         drawEffect: async () => true
     });
 });
+
+let cardCounter = 0;
+
+export enum OwnerType {
+    PLAYER = 'player',
+    DECK = 'deck',
+    DISCARD = 'discard'
+}
+
+interface Owner {
+    type: OwnerType;
+    data?: number;
+}
+
+export class Card {
+    static sortFn(a: Card, b: Card) {
+        return a.prototype.name.localeCompare(b.prototype.name);
+    }
+
+    id: number;
+    prototype: CardPrototype;
+    owner: Owner;
+
+    constructor(proto: CardPrototype, owner?: Owner) {
+        this.id = cardCounter++;
+        this.prototype = proto;
+        this.owner = owner || { type: OwnerType.DECK };
+    }
+}

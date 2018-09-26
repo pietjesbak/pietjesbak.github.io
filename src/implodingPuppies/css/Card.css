@@ -1,4 +1,4 @@
-.imploding-puppies-game .card {
+.imploding-puppies-game .card, .imploding-puppies-game .card-deck {
     border-radius: 5px;
     border: 4px solid;
     display: inline-block;
@@ -9,9 +9,10 @@
     width: 100px;
     transform-origin: 50% 250%;
     background: #fff;
+    margin-bottom: 60px;
 }
 
-.imploding-puppies-game .card:before {
+.imploding-puppies-game .card:before, .imploding-puppies-game .card-deck:before {
     background-color: rgba(153, 153, 153, 0.2);
     border: 1px solid #999;
     content: '';
@@ -46,7 +47,7 @@
     top: 40px;
 }
 
-.imploding-puppies-game .card:not(.disabled):not(.face-down):hover {
+.imploding-puppies-game .card.interactive:not(.disabled):hover {
     z-index: 1;
     top: -10px;
     cursor: pointer;
@@ -59,4 +60,15 @@
 
 .imploding-puppies-game .card.disabled {
     background: #eee;
+}
+
+.nope {
+    background: red;
+}
+
+.imploding-puppies-game .moving-card {
+    transition: transform 0.5s ease-in;
+    position: absolute!important;
+    top: 0;
+    left: 0;
 }

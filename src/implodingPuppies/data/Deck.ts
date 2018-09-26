@@ -1,10 +1,10 @@
-import { shuffle } from "../../Helpers";
-import { CardTypes } from "./Cards";
+import { shuffle } from '../../Helpers';
+import { Card } from './Cards';
 
 export class Deck {
-    private cards_: CardTypes[];
+    private cards_: Card[];
 
-    constructor(initialCards: CardTypes[]) {
+    constructor(initialCards: Card[]) {
         this.cards_ = initialCards;
     }
 
