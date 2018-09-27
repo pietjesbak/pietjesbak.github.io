@@ -248,7 +248,7 @@ export class Inventory {
         return new Promise((resolve, reject) => {
             auth.signInWithRedirect(provider).then(() => {
                 auth.getRedirectResult().then(result => {
-                    this.user_ = result.user;
+                    this.user_ = result.user as FirebaseUser;
 
                     resolve(this.user_!);
                 }).catch(e => {

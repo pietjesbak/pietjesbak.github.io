@@ -1,6 +1,6 @@
-import { Server } from './Server';
-import { Player } from './Player';
 import { CardTypes } from './Cards';
+import { Player } from './Player';
+import { Server } from './Server';
 
 function startServer(server: Server, players: Player[], count: number = 3) {
     for (let i = 0; i < count; i++) {
@@ -95,7 +95,7 @@ describe('Server', () => {
         const server = new Server();
         const players: Player[] = [];
 
-        let complete = false;
+        // let complete = false;
 
         Server.prototype.nextTurn = jest.fn(() => true);
         Server.prototype.playerDraw = jest.fn();
@@ -104,7 +104,7 @@ describe('Server', () => {
             playFn([CardTypes.ATTACK]);
         });
         Player.prototype.allowNope = jest.fn((nopeFn: () => void) => {
-            complete = true;
+            // complete = true;
             nopeFn();
         });
 

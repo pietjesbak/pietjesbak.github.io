@@ -7,7 +7,7 @@ export enum AsyncActions {
 
 export interface AsyncData {
     action: AsyncActions;
-    data?: Object;
+    data?: object;
 }
 
 interface PromiseStore {
@@ -30,7 +30,7 @@ export class AsyncHandler {
      * @param extraData Initial data that will be passed to the promise, will be merged with the additional data that is added when resolving.
      * @param withTimeout Optional timeout for the promise. The promise is rejected when the timeout is reached.
      */
-    createPromise(action: AsyncActions, data?: Object, withTimeout?: number) {
+    createPromise(action: AsyncActions, data?: object, withTimeout?: number) {
         const key = `${action}-${this.promiseCounter_++}`;
         const dict: Partial<PromiseStore> = {
             asyncData: {
@@ -61,7 +61,7 @@ export class AsyncHandler {
      * @param key The key of the stored promise.
      * @param data Optional data that is passed along to the promise, will be merged with the initial data.
      */
-    resolve(key: string, data?: Object) {
+    resolve(key: string, data?: object) {
         const promise = this.promises_.get(key);
         if (promise === undefined) {
             throw new Error(`Promise ${key} does not exist or has already been resolved!`);

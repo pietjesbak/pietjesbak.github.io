@@ -1,8 +1,8 @@
-import { Player } from './Player';
-import { AsyncHandler, AsyncActions, AsyncData } from './AsyncHandler';
-import { CardTypes, Card, cards } from './Cards';
-import { shuffle, repeat } from '../../Helpers';
+import { repeat, shuffle } from '../../Helpers';
+import { AsyncActions, AsyncData, AsyncHandler } from './AsyncHandler';
+import { Card, cards, CardTypes } from './Cards';
 import { Deck } from './Deck';
+import { Player } from './Player';
 
 export class Server extends AsyncHandler {
 
@@ -139,7 +139,7 @@ export class Server extends AsyncHandler {
 
     async playerPlay(selection: CardTypes[]) {
         const noped = await this.processNopes();
-        console.log('Player play', selection, noped);
+        console.log('Player play', selection, noped, this.deck_);
     }
 
     async processNopes() {
@@ -165,6 +165,16 @@ export class Server extends AsyncHandler {
         return result;
     }
 
+    nextTurn() {
+        if (this.playerQueue_.length === 0) {
+            this.playerQueue_.push(++this.currentPlayer_ % this.players_.length);
+        }
+
+        this.currentPlayer_ = this.playerQueue_.pop()!;
+
+        return false;
+    }
+
     private createDrawAction(key: string) {
         return () => this.resolve(key);
     }
@@ -177,15 +187,5 @@ export class Server extends AsyncHandler {
 
     private createNopeAction(key: string) {
         return () => this.resolve(key);
-    }
-
-    nextTurn() {
-        if (this.playerQueue_.length === 0) {
-            this.playerQueue_.push(++this.currentPlayer_ % this.players_.length);
-        }
-
-        this.currentPlayer_ = this.playerQueue_.pop()!;
-
-        return false;
     }
 }
