@@ -1,8 +1,29 @@
 import { repeat, shuffle } from '../../Helpers';
-import { AsyncActions, AsyncData, AsyncHandler } from './AsyncHandler';
+import { AsyncData, AsyncHandler } from './AsyncHandler';
 import { Card, cards, CardTypes } from './Cards';
 import { Deck } from './Deck';
 import { Player } from './Player';
+import { GameState, ISerializer, TestSerializer } from './Serializers';
+
+export enum AsyncActions {
+    JOIN = 'join',
+    PLAY = 'play',
+    DRAW = 'draw',
+    NOPE = 'nope',
+    RUNNING = 'running'
+}
+
+export interface AsyncJoin {
+    player: Player;
+}
+
+export interface AsyncPlay {
+    selection: CardTypes[];
+}
+
+export interface AsyncNope {
+    player: Player;
+}
 
 export class Server extends AsyncHandler {
 
@@ -10,9 +31,13 @@ export class Server extends AsyncHandler {
 
     static NOPE_TIMEOUT_MILLIS = 2000;
 
+    private isHost_: boolean;
+
     private players_: Player[] = [];
 
     private deck_: Deck;
+
+    private discardPile_: Card[] = [];
 
     private playerCount_ = 0;
 
@@ -22,10 +47,15 @@ export class Server extends AsyncHandler {
 
     private slots_: string[];
 
+    private serializer_: ISerializer;
+
     private startHandler_: (value: string) => void;
 
-    constructor() {
+    constructor(isHost: boolean, serializer?: ISerializer) {
         super();
+
+        this.isHost_ = isHost;
+        this.serializer_ = serializer || new TestSerializer();
     }
 
     get playerCount() {
@@ -35,6 +65,26 @@ export class Server extends AsyncHandler {
     get currentPlayer() {
         return this.players_[this.currentPlayer_];
     }
+
+    get players() {
+        return this.players_;
+    }
+
+    get deck() {
+        return this.deck_;
+    }
+
+    get discardPile(){
+        return this.discardPile_;
+    }
+
+    serialize() {
+        return this.serializer_.serializeFull(this);
+    }
+
+    // deserialize(players: Player[], deck: Card[], discardPile: Card[]) {
+
+    // }
 
     /**
      * Makes a player join the server.
@@ -97,16 +147,33 @@ export class Server extends AsyncHandler {
         const copy = [...this.slots_];
 
         // Wait for all slots to be filled or the force start to be called.
-        const promises = this.getPromises(copy);
+        const promises = this.getPromises<AsyncJoin>(copy);
         await Promise.race([Promise.all(promises), forceStart.catch(reject => reject)]);
 
         // When the force start button is pressed, we reject the remaining slots, so all promises resolve.
         // Then we filter out the rejected ones.
         this.rejectRemaining(copy);
-        let data = await Promise.all(promises.map(promise => promise.catch(reject => reject))) as AsyncData[];
+        let data = await Promise.all(promises.map(promise => promise.catch(reject => reject))) as Array<AsyncData<AsyncJoin>>;
         return data.filter(player => typeof player !== 'string')
-            .map(d => d.data!['player']);
+            .map((d, i) => {
+                const player = d.data!.player;
+                player.id = i; // Assign correct ids.
+                return player;
+            });
     }
+
+    // async waitForUpdates() {
+    //     while (true) {
+    //         let response: GameState;
+    //         try {
+    //             response = await Promise.race([this.serializer_.deserializeFull(), this.getPromise(this.runKey_)]) as GameState;
+    //         } catch (e) {
+    //             return;
+    //         }
+
+    //         this.deserialize(response.players, response.deck, response.discardPile);
+    //     }
+    // }
 
     async gameLoop() {
         this.players_ = await this.waitForPlayers();
@@ -125,10 +192,11 @@ export class Server extends AsyncHandler {
                     break;
 
                 case AsyncActions.PLAY:
-                    await this.playerPlay(result.data!['selection']);
+                    await this.playerPlay((result as AsyncData<AsyncPlay>).data!.selection);
                     break;
             }
 
+            this.rejectRemaining(keys);
             gameOver = this.nextTurn();
         }
     }
@@ -145,22 +213,26 @@ export class Server extends AsyncHandler {
     async processNopes() {
         let result = true;
 
-        let player;
+        let player: AsyncData<AsyncNope>|undefined;
+        let excludedPlayer = this.currentPlayer_;
         do {
             const keys = repeat(this.playerCount_).map((unused, i) => this.createPromise(AsyncActions.NOPE, { player: this.players_[i] }, Server.NOPE_TIMEOUT_MILLIS));
-            const promises = this.getPromises(keys);
+            const promises = this.getPromises<AsyncNope>(keys);
             keys.forEach((key, i) => {
-                if (this.currentPlayer_ !== i) {
+                if (excludedPlayer !== i) {
                     this.players_[i].allowNope(this.createNopeAction(key))
                 }
             });
 
-            player = await Promise.race(promises);
-            console.log('nope handler', player);
-
-            result = !result;
-
-        } while (typeof player === 'string');
+            player = undefined;
+            try {
+                player = await Promise.race(promises);
+                excludedPlayer = player.data!.player.id;
+                result = !result;
+            } catch (e) {
+                // Timeout!
+            }
+        } while (player !== undefined);
 
         return result;
     }

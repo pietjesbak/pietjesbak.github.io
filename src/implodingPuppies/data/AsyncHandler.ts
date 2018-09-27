@@ -1,21 +1,14 @@
-export enum AsyncActions {
-    JOIN = 'join',
-    PLAY = 'play',
-    DRAW = 'draw',
-    NOPE = 'nope'
+export interface AsyncData<T = {}> {
+    action: string;
+    data?: T;
 }
 
-export interface AsyncData {
-    action: AsyncActions;
-    data?: object;
-}
-
-interface PromiseStore {
-    promise: Promise<AsyncData>;
-    asyncData: AsyncData;
-    resolve: (data?: AsyncData) => void;
+interface PromiseStore<T = {}> {
+    key: string;
+    promise: Promise<AsyncData<T>>;
+    asyncData: AsyncData<T>;
+    resolve: (data?: AsyncData<T>) => void;
     reject: (reason?: string) => void;
-    resolved: boolean;
 }
 
 export class AsyncHandler {
@@ -23,36 +16,35 @@ export class AsyncHandler {
 
     private promises_: Map<string, PromiseStore> = new Map();
 
-
     /**
      * Creates a promise and returns an identifier.
      * @param action The action.
      * @param extraData Initial data that will be passed to the promise, will be merged with the additional data that is added when resolving.
      * @param withTimeout Optional timeout for the promise. The promise is rejected when the timeout is reached.
      */
-    createPromise(action: AsyncActions, data?: object, withTimeout?: number) {
+    createPromise<T = {}>(action: string, data?: T, withTimeout?: number) {
         const key = `${action}-${this.promiseCounter_++}`;
-        const dict: Partial<PromiseStore> = {
+        const dict: Partial<PromiseStore<T>> = {
+            key,
             asyncData: {
                 action,
                 data
-            },
-            resolved: false
+            }
         };
 
-        dict.promise = new Promise<AsyncData>((resolve, reject) => {
+        dict.promise = new Promise<AsyncData<T>>((resolve, reject) => {
             dict.resolve = resolve;
             dict.reject = reject;
 
             if (withTimeout !== undefined) {
                 window.setTimeout(() => {
                     this.removePromise(key);
-                    reject();
+                    reject(`${key} timed out after ${withTimeout} millis.`);
                 }, withTimeout);
             }
         });
 
-        this.promises_.set(key, dict as PromiseStore);
+        this.promises_.set(key, dict as PromiseStore<T>);
         return key;
     }
 
@@ -61,35 +53,35 @@ export class AsyncHandler {
      * @param key The key of the stored promise.
      * @param data Optional data that is passed along to the promise, will be merged with the initial data.
      */
-    resolve(key: string, data?: object) {
-        const promise = this.promises_.get(key);
+    resolve<T extends object>(key: string, data?: T) {
+        const promise = this.promises_.get(key) as PromiseStore<T>|undefined;
         if (promise === undefined) {
             throw new Error(`Promise ${key} does not exist or has already been resolved!`);
         }
 
         const { asyncData } = promise;
-        asyncData.data = { ...asyncData.data, ...data };
+        if (data !== undefined) {
+            asyncData.data = Object.assign(asyncData.data || {}, data);
+        }
 
         this.removePromise(key);
         promise.resolve(asyncData);
     }
 
-
-
     /**
      * Get the promises for an array of keys. Missing promises are filtered out.
      * @param keys The keys to get the promises for.
      */
-    getPromises(keys: string[]) {
-        return this.get(keys).map(dict => dict!.promise);
+    getPromises<T = {}>(keys: string[]) {
+        return this.get<T>(keys).map(dict => dict!.promise);
     }
 
     /**
      * Get the promise for 1 key.
      * @param key The key to get the promise for.
      */
-    getPromise(key: string) {
-        return this.promises_.get(key)!.promise;
+    getPromise<T>(key: string) {
+        return this.promises_.get(key)!.promise as Promise<AsyncData<T>>;
     }
 
     /**
@@ -100,8 +92,15 @@ export class AsyncHandler {
         this.promises_.delete(key);
     }
 
+    /**
+     * Reject the remaining promises.
+     * @param keys The keys to reject.
+     */
     protected rejectRemaining(keys: string[]) {
-        this.get(keys).forEach(dict => dict.reject('Reject remaining'));
+        this.get(keys).forEach(dict => {
+            dict.reject('Reject remaining');
+            this.removePromise(dict.key);
+        });
     }
 
     /**
@@ -114,8 +113,8 @@ export class AsyncHandler {
         });
     }
 
-    private get(keys: string[]) {
+    private get<T = {}>(keys: string[]) {
         return keys.map(key => this.promises_.get(key))
-            .filter(dict => dict !== undefined) as PromiseStore[];
+            .filter(dict => dict !== undefined) as Array<PromiseStore<T>>;
     }
 }
