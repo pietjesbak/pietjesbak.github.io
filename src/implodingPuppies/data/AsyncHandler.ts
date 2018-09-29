@@ -22,9 +22,9 @@ export class AsyncHandler {
      * @param extraData Initial data that will be passed to the promise, will be merged with the additional data that is added when resolving.
      * @param withTimeout Optional timeout for the promise. The promise is rejected when the timeout is reached.
      */
-    createPromise<T = {}>(action: string, data?: T, withTimeout?: number) {
+    createPromise<T = {}>(action: string, data?: Partial<T>, withTimeout?: number) {
         const key = `${action}-${this.promiseCounter_++}`;
-        const dict: Partial<PromiseStore<T>> = {
+        const dict: Partial<PromiseStore<Partial<T>>> = {
             key,
             asyncData: {
                 action,
@@ -32,7 +32,7 @@ export class AsyncHandler {
             }
         };
 
-        dict.promise = new Promise<AsyncData<T>>((resolve, reject) => {
+        dict.promise = new Promise<AsyncData<Partial<T>>>((resolve, reject) => {
             dict.resolve = resolve;
             dict.reject = reject;
 
@@ -53,8 +53,8 @@ export class AsyncHandler {
      * @param key The key of the stored promise.
      * @param data Optional data that is passed along to the promise, will be merged with the initial data.
      */
-    resolve<T extends object>(key: string, data?: T) {
-        const promise = this.promises_.get(key) as PromiseStore<T>|undefined;
+    resolve<T extends object>(key: string, data?: Partial<T>) {
+        const promise = this.promises_.get(key) as PromiseStore<Partial<T>>|undefined;
         if (promise === undefined) {
             throw new Error(`Promise ${key} does not exist or has already been resolved!`);
         }
@@ -65,7 +65,7 @@ export class AsyncHandler {
         }
 
         this.removePromise(key);
-        promise.resolve(asyncData);
+        promise.resolve(asyncData as AsyncData<T>);
     }
 
     /**
@@ -95,11 +95,17 @@ export class AsyncHandler {
     /**
      * Reject the remaining promises.
      * @param keys The keys to reject.
+     * @param message The message to reject the promises with.
+     * @param keep Should this promise be kept after rejecting?
      */
-    protected rejectRemaining(keys: string[]) {
+    protected rejectRemaining(keys: string[], message?: string|string[], keep?: boolean) {
         this.get(keys).forEach(dict => {
-            dict.reject('Reject remaining');
-            this.removePromise(dict.key);
+            let reason = typeof message === 'object' ? message[0] : message;
+            dict.reject(reason || 'Reject remaining');
+
+            if (keep !== true) {
+                this.removePromise(dict.key);
+            }
         });
     }
 

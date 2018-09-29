@@ -1,6 +1,6 @@
 import { Card } from './Cards';
+import { Game } from './Game';
 import { Player } from './Player';
-import { Server } from './Server';
 
 export interface GameState {
     players: Player[],
@@ -8,12 +8,24 @@ export interface GameState {
     discardPile: Card[]
 }
 export interface ISerializer {
-    serializeFull: (server: Server) => Promise<object | void>;
-    deserializeFull: (data?: object) => Promise<GameState>;
+    serializeFull: (server: Game) => Promise<object | void>;
+    deserializeFull: () => Promise<GameState>;
 }
 
 export class TestSerializer implements ISerializer {
-    serializeFull(server: Server) {
+    private queue_: GameState[] = [];
+    private deserializeHandler_: ((state: GameState) => void) | undefined;
+
+    queueState(state: GameState) {
+        if (this.deserializeHandler_ !== undefined) {
+            this.deserializeHandler_(state);
+            this.deserializeHandler_ = undefined;
+        } else {
+            this.queue_.push(state);
+        }
+    }
+
+    serializeFull(server: Game) {
         return Promise.resolve({
             players: server.players.map(player => this.serializePlayer(player)),
             deck: server.deck.cards.map(card => this.serializeCard(card)),
@@ -37,30 +49,25 @@ export class TestSerializer implements ISerializer {
         };
     }
 
-    async deserializeFull(data?: object) {
-        const response = {
-            players: data && data['players'],
-            deck: data && data['deck'],
-            discardPile: data && data['discardPile']
-        };
-
-        return new Promise<typeof response>(resolve => {
-            if (data && data['timeout'] !== undefined) {
-                window.setTimeout(() => resolve(response), data['timeout']);
-            } else {
-                resolve(response);
-            }
-        });
+    async deserializeFull() {
+        const state = this.queue_.pop();
+        if (state !== undefined) {
+            return Promise.resolve(state);
+        } else {
+            return new Promise<GameState>(resolve => {
+                this.deserializeHandler_ = resolve;
+            });
+        }
     }
 }
 
 export class FirebaseSerializer implements ISerializer {
-    serializeFull(server: Server) {
+    serializeFull(server: Game) {
         throw new Error('WIP');
         return Promise.resolve({});
     }
 
-    deserializeFull(data: object) {
+    deserializeFull() {
         throw new Error('WIP');
         return Promise.resolve({
             players: [],

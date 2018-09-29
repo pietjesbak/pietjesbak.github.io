@@ -1,253 +1,384 @@
-import { shuffle } from '../../Helpers';
-import { Card, cards, CardTypes, OwnerType } from './Cards';
+import { repeat, shuffle } from '../../Helpers';
+import { AsyncData, AsyncHandler } from './AsyncHandler';
+import { Card, cards, CardTypes } from './Cards';
 import { Deck } from './Deck';
 import { Player } from './Player';
+import { GameState, ISerializer, TestSerializer } from './Serializers';
 
-export interface Log {
-    timestamp: Date;
-    player?: Player;
-    msg: string;
-}
-
-export enum PlayerActions {
-    DRAW = 'draw',
+export enum AsyncActions {
+    START = 'start',
+    JOIN = 'join',
     PLAY = 'play',
-    NOPE = 'nope'
+    DRAW = 'draw',
+    NOPE = 'nope',
+    SELECT_PLAYER = 'select player',
+    SELECT_CARD = 'select card',
+    RUNNING = 'running'
 }
 
-interface Action {
-    type: PlayerActions;
-    player: number;
-    selection?: Card[];
+export interface AsyncJoin {
+    player: Player;
 }
 
-export class Game {
+export interface AsyncPlay {
+    player: Player;
+    selection: CardTypes[];
+}
+
+export interface AsyncNope {
+    player: Player;
+}
+
+export interface AsyncSelectPlayer {
+    source: Player;
+    target: Player;
+}
+
+export interface AsyncSelectCard {
+    player: Player;
+    selection: CardTypes;
+    options: CardTypes[];
+}
+
+export class Game extends AsyncHandler {
+
+    static MAX_PLAYER_COUNT = 5;
+
+    static NOPE_TIMEOUT_MILLIS = 2000;
+
+    private isHost_: boolean;
+
     private players_: Player[] = [];
 
     private deck_: Deck;
 
     private discardPile_: Card[] = [];
 
-    private currentPlayer_ = -1;
+    private playerCount_ = 0;
 
-    private winner_?: Player;
+    private currentPlayer_ = 0;
 
-    private logs_: Log[] = [];
+    private playerQueue_: number[] = [];
 
-    private nextPlayerQueue_: Player[] = [];
+    private slots_: string[];
 
-    private skip_: boolean;
+    private serializer_: ISerializer;
 
-    private playerDrawPromise_?: Promise<Action>;
-    private playerDrawHandler_?: (action: Action) => void;
-    private playerPlayPromise_?: Promise<Action>;
-    private playerPlayHandler_?: (action: Action) => void;
-    private playerNopePromise_?: Promise<Action>;
-    private playerNopeHandler_?: (action: Action) => void;
+    private runningKey_: string;
 
-    private waitForNopes_: () => Promise<number|null>;
-    private updateView_: () => void;
+    private startKey_: string;
 
-    constructor(playerCount: number) {
-        const deck: Card[] = [];
+    constructor(isHost: boolean, serializer?: ISerializer) {
+        super();
 
-        Object.values(CardTypes)
-            .filter((type: CardTypes) => type !== CardTypes.BOMB && type !== CardTypes.DEFUSE)
-            .forEach((type: CardTypes) => {
-                const card = cards.get(type)!;
-                const count = typeof card.count === 'number' ? card.count : card.count(playerCount);
-
-                for (let i = 0; i < count; i++) {
-                    deck.push(new Card(cards.get(type)!));
-                }
-            });
-
-        shuffle(deck);
-        for (let i = 0; i < playerCount; i++) {
-            const hand = deck.splice(0, 4);
-            hand.push(new Card(cards.get(CardTypes.DEFUSE)!));
-            this.players_.push(new Player(hand, i));
-        }
-
-        for (let i = 0; i < playerCount - 1; i++) {
-            deck.push(new Card(cards.get(CardTypes.BOMB)!));
-        }
-
-        for (let i = 0; i < 6 - playerCount; i++) {
-            deck.push(new Card(cards.get(CardTypes.DEFUSE)!));
-        }
-
-        shuffle(deck);
-        this.deck_ = new Deck(deck);
+        this.isHost_ = isHost;
+        this.serializer_ = serializer || new TestSerializer();
+        this.runningKey_ = this.createPromise(AsyncActions.RUNNING);
     }
 
-    get logs() {
-        return this.logs_;
+    get playerCount() {
+        return this.playerCount_;
     }
 
-    get deck() {
-        return this.deck_;
-    }
-
-    get discardPile() {
-        return this.discardPile_;
+    get currentPlayer() {
+        return this.players_[this.currentPlayer_];
     }
 
     get players() {
         return this.players_;
     }
 
-    get currentPlayer() {
-        return this.currentPlayer_;
+    get deck() {
+        return this.deck_;
     }
 
-    playerDraw(player: number) {
-        if (this.playerDrawPromise_ !== undefined) {
-            this.playerDrawHandler_!({
-                type: PlayerActions.DRAW,
-                player
+    get discardPile(){
+        return this.discardPile_;
+    }
+
+    shutDown() {
+        this.getPromise(this.runningKey_).catch(error => error);
+        this.rejectRemaining([this.runningKey_], 'Server shut down', true);
+    }
+
+    serialize() {
+        return this.serializer_.serializeFull(this);
+    }
+
+    /**
+     * Makes a player join the server.
+     */
+    join(player: Player) {
+        this.playerCount_++;
+
+        const slot = this.slots_.pop()!;
+        this.resolve(slot, { player });
+    }
+
+    /**
+     * Start the game regardless of the amount of players that joined.
+     */
+    forceStart() {
+        if (this.playerCount_ > 1) {
+            const promise = this.getPromise(this.startKey_);
+            this.rejectRemaining([this.startKey_], 'Force Start');
+
+            return promise;
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Initializes the deck of cards based on the amount of players.
+     */
+    initDeck() {
+        const deck: Card[] = [];
+
+        Object.values(CardTypes)
+            .filter((type: CardTypes) => type !== CardTypes.BOMB && type !== CardTypes.DEFUSE)
+            .forEach((type: CardTypes) => {
+                const card = cards.get(type)!;
+                const count = typeof card.count === 'number' ? card.count : card.count(this.playerCount_);
+
+                for (let i = 0; i < count; i++) {
+                    deck.push(new Card(type));
+                }
             });
+
+        shuffle(deck);
+        for (let i = 0; i < this.playerCount_; i++) {
+            const hand = deck.splice(0, 4);
+            hand.push(new Card(CardTypes.DEFUSE));
+            this.players_[i].cards = hand;
+        }
+
+        for (let i = 0; i < this.playerCount_ - 1; i++) {
+            deck.push(new Card(CardTypes.BOMB));
+        }
+
+        for (let i = 0; i < 6 - this.playerCount_; i++) {
+            deck.push(new Card(CardTypes.DEFUSE));
+        }
+
+        shuffle(deck);
+        this.deck_ = new Deck(deck);
+    }
+
+    async waitForPlayers(): Promise<Player[]> {
+        this.slots_ = new Array(Game.MAX_PLAYER_COUNT).fill(null).map(() => this.createPromise(AsyncActions.JOIN));
+        this.startKey_ = this.createPromise(AsyncActions.START);
+        const copy = [...this.slots_];
+
+        // Wait for all slots to be filled or the force start to be called.
+        const promises = this.getPromises<AsyncJoin>(copy);
+        await Promise.race([Promise.all(promises), this.getPromise(this.startKey_).catch(reject => reject)]);
+
+        // When the force start button is pressed, we reject the remaining slots, so all promises resolve.
+        // Then we filter out the rejected ones.
+        this.rejectRemaining(copy);
+        let data = await Promise.all(promises.map(promise => promise.catch(reject => reject))) as Array<AsyncData<AsyncJoin>>;
+        return data.filter(player => typeof player !== 'string')
+            .map((d, i) => {
+                const player = d.data!.player;
+                player.id = i; // Assign correct ids.
+                return player;
+            });
+    }
+
+    async waitForUpdates() {
+        while (true) {
+            let response: GameState;
+            try {
+                response = await Promise.race([this.serializer_.deserializeFull(), this.getPromise(this.runningKey_)]) as GameState;
+            } catch (e) {
+                return;
+            }
+
+            this.deserialize_(response.players, response.deck, response.discardPile);
         }
     }
 
-    playerPlay(player: number, selection: Card[]) {
-        if (this.playerPlayPromise_ !== undefined) {
-            this.playerPlayHandler_!({
-                type: PlayerActions.PLAY,
-                player,
-                selection
-            });
-        }
-    }
+    async gameLoop() {
+        this.players_ = await this.waitForPlayers();
+        this.initDeck();
+        this.waitForUpdates();
 
-    playerNope(player: number) {
-        if (this.playerNopePromise_ !== undefined) {
-            this.playerNopeHandler_!({
-                type: PlayerActions.NOPE,
-                player
-            });
-        }
-    }
+        let gameOver = false;
+        while (!gameOver) {
+            const keys = [this.createPromise(AsyncActions.DRAW), this.createPromise(AsyncActions.PLAY)];
+            const promises = this.getPromises(keys);
+            this.currentPlayer.giveOptions(this.createDrawAction(keys[0]), this.createPlayAction(keys[1]));
 
-    playerAction() {
-        this.playerDrawPromise_ = new Promise(resolve => this.playerDrawHandler_ = resolve);
-        this.playerPlayPromise_ = new Promise(resolve => this.playerPlayHandler_ = resolve);
-        return Promise.race([this.playerDrawPromise_, this.playerPlayPromise_]);
-    }
+            let result: AsyncData<AsyncPlay|{}>;
+            try {
+                result = await Promise.race([...promises, this.getPromise(this.runningKey_)]);
+            } catch (e) {
+                // Server shut down.
+                this.rejectRemaining(keys);
+                return;
+            }
 
-    async playTurn() {
-        this.skip_ = false;
-        const player = this.decideNextPlayer();
-
-        let playing: boolean = true;
-        do {
-            const action = await this.playerAction();
-            switch (action.type) {
-                case PlayerActions.DRAW:
-                    playing = false;
+            switch (result.action) {
+                case AsyncActions.DRAW:
+                    this.playerDraw();
                     break;
 
-                case PlayerActions.PLAY:
-                    await this.processSelection(player, action.selection!);
-                    if (this.skip_) {
-                        playing = false;
-                    }
+                case AsyncActions.PLAY:
+                    await this.playerPlay((result as AsyncData<AsyncPlay>).data!.selection);
                     break;
             }
 
-            this.updateView_();
-        } while (playing);
-
-        if (!this.skip_) {
-            const card = this.deck_.pick();
-            await player.drawCard(card, this);
+            this.rejectRemaining(keys);
+            gameOver = this.nextTurn();
         }
-
-        this.currentPlayer_ = (this.currentPlayer_++) % this.players_.length;
-
-        const remainingPlayers = this.players_.filter(p => p.alive);
-        if (remainingPlayers.length === 1) {
-            this.winner_ = remainingPlayers[0];
-        }
-
-        return this.winner_;
     }
 
-    setCallbacks(waitForNopes: () => Promise<number|null>, updateView: () => void) {
-        this.waitForNopes_ = waitForNopes;
-        this.updateView_ = updateView;
+    playerDraw() {
+        this.currentPlayer.drawCard(this.deck_.pick(), this);
     }
 
-    async waitForNopes() {
+    async playerPlay(selection: CardTypes[]) {
+        let noped = await this.processNopes();
+        if (!noped) {
+            if (selection.length === 1) {
+                await cards.get(selection[0])!.playEffect(this.currentPlayer, this);
+            } else if (selection.length === 2 && selection[0] === selection[1]) {
+                const target = (await this.selectTarget()).data!.target;
+                noped = await this.processNopes();
+                if (!noped) {
+                    const card = target.stealCard(undefined, this);
+                    if (card !== undefined) {
+                        this.currentPlayer.addCard(card, this);
+                    }
+                }
+
+            } else if (selection.length === 3 && selection.every(type => type === selection[0])) {
+                const target = (await this.selectTarget()).data!.target;
+                noped = await this.processNopes();
+                if (!noped) {
+                    const card = target.stealCard(undefined, this);
+                    if (card !== undefined) {
+                        this.currentPlayer.addCard(card, this);
+                    }
+                }
+
+            } else if (selection.length === 5 && new Set(selection).size === 5 && this.discardPile_.length > 0) {
+                const type = (await this.selectCard()).data!.selection;
+                const card = this.discardPile_.find(c => c.prototype.type === type)!;
+                this.discardPile_.splice(this.discardPile_.indexOf(card), 1);
+                this.currentPlayer.addCard(card, this);
+            }
+        }
+    }
+
+    selectTarget() {
+        const key = this.createPromise<AsyncSelectPlayer>(AsyncActions.SELECT_PLAYER, { source: this.currentPlayer });
+        this.currentPlayer.allowSelectTarget(this.createSelectPlayerAction(key));
+
+        return this.getPromise<AsyncSelectPlayer>(key);
+    }
+
+    selectCard() {
+        const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
+            player: this.currentPlayer,
+            options: [...new Set(this.discardPile_.map(card => card.prototype.type))].filter(type => type !== CardTypes.BOMB)
+         });
+        this.currentPlayer.allowSelectCard(this.createSelectCardAction(key));
+
+        return this.getPromise<AsyncSelectCard>(key);
+    }
+
+    async processNopes() {
+        let result = true;
+
+        let player: AsyncData<AsyncNope>|undefined;
+        let excludedPlayer = this.currentPlayer_;
+        do {
+            const keys = repeat(this.playerCount_).map((unused, i) => this.createPromise(AsyncActions.NOPE, { player: this.players_[i] }, Game.NOPE_TIMEOUT_MILLIS));
+            const promises = this.getPromises<AsyncNope>(keys);
+            keys.forEach((key, i) => {
+                if (excludedPlayer !== i) {
+                    this.players_[i].allowNope(this.createNopeAction(key))
+                }
+            });
+
+            player = undefined;
+            try {
+                player = await Promise.race(promises);
+                excludedPlayer = player.data!.player.id;
+                result = !result;
+            } catch (e) {
+                // Timeout!
+            }
+        } while (player !== undefined);
+
+        return result;
+    }
+
+    nextTurn() {
+        if (this.playerQueue_.length === 0) {
+            this.playerQueue_.push(++this.currentPlayer_ % this.players_.length);
+        }
+
+        this.currentPlayer_ = this.playerQueue_.pop()!;
+
         return false;
     }
 
-    async insertIntoDeck(player: Player, type: CardTypes) {
-        // Todo.
-    }
+    insertIntoDeck(type: CardTypes) {
 
-    async choosePlayer(source: Player) {
-        return this.players_[0];
-    }
-
-    async processSelection(player: Player, selection: Card[]) {
-        let playCard = true;
-
-        let result = null;
-        do {
-            result = await this.waitForNopes_();
-            if (result !== null) {
-                this.log(playCard ? 'Nope!' : 'Yup!', this.players[result]);
-
-                this.players[result].useCard(CardTypes.NOPE, this);
-                playCard = !playCard;
-            }
-        } while (result !== null);
-
-        if (playCard) {
-            if (selection.length === 1) {
-                await player.useCard(selection[0].prototype.type, this);
-            } else if (selection.length === 2) {
-                // Steal a card.
-            } else if (selection.length === 3) {
-                // Ask for a card.
-            } else if (selection.length === 5) {
-                // take a card from the discard pile.
-            }
-        } else {
-            player.discardCard(selection[0], this);
-        }
-
-        selection.forEach(card => card.owner = { type: OwnerType.DISCARD });
-        player.updateSelection([]);
     }
 
     processSkip() {
-        this.skip_ = true;
+
     }
 
     processAttack() {
-        this.processSkip();
-        this.nextPlayerQueue_.push(this.players_[this.currentPlayer_]);
+
     }
 
-    decideNextPlayer() {
-        if (this.nextPlayerQueue_.length === 0) {
-            this.currentPlayer_++;
-            this.currentPlayer_ = this.currentPlayer_ % this.players_.length;
-            this.nextPlayerQueue_.push(this.players_[this.currentPlayer_]);
-            console.log('player', this.currentPlayer_);
+    private deserialize_(players?: Player[], deck?: Card[], discardPile?: Card[]) {
+        if (players !== undefined) {
+            this.players_.forEach((player, i) => {
+                const match = players[i];
+                player.cards = match.cards;
+                player.id = match.id;
+            });
         }
 
-        return this.nextPlayerQueue_.pop()!;
+        if (deck !== undefined) {
+            this.deck_.updateCards(deck);
+        }
+
+        if (discardPile !== undefined) {
+            this.discardPile_ = discardPile;
+        }
     }
 
-    log(msg: string, player?: Player) {
-        console.log(msg);
-        this.logs_.push({
-            timestamp: new Date(),
-            msg,
-            player
-        })
+    private createDrawAction(key: string) {
+        return () => this.resolve(key);
+    }
+
+    private createPlayAction(key: string) {
+        return (selection: CardTypes[]) => this.resolve(key, {
+            selection
+        });
+    }
+
+    private createNopeAction(key: string) {
+        return () => this.resolve(key);
+    }
+
+    private createSelectPlayerAction(key: string) {
+        return (target: Player) => this.resolve(key, {
+            target
+        });
+    }
+
+    private createSelectCardAction(key: string) {
+        return (target: CardTypes) => this.resolve(key, {
+            selection: target
+        });
     }
 }

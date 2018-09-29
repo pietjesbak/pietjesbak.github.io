@@ -4,23 +4,23 @@ import * as React from 'react';
 import { CollapsableContainer, headerState } from './CollapsableContainer';
 
 function storageMock() {
-    var storage = {};
+    let storage = {};
 
     return {
-        setItem: function (key: string, value: any) {
+        setItem (key: string, value: any) {
             storage[key] = value || '';
         },
-        getItem: function (key: string) {
+        getItem (key: string) {
             return key in storage ? storage[key] : null;
         },
-        removeItem: function (key: string) {
+        removeItem (key: string) {
             delete storage[key];
         },
         get length() {
             return Object.keys(storage).length;
         },
-        key: function (i: string) {
-            var keys = Object.keys(storage);
+        key (i: string) {
+            let keys = Object.keys(storage);
             return keys[i] || null;
         }
     };

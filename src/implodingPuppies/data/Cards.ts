@@ -111,7 +111,7 @@ cards.set(CardTypes.BOMB, {
     playTest: () => false,
     playEffect: async (player, game) => {
         // A player can only use this card by playing a defuse, so the play effect of this card is just putting it back in the deck.
-        await game.insertIntoDeck(player, CardTypes.BOMB);
+        await game.insertIntoDeck(CardTypes.BOMB);
     },
     drawEffect: async (player, game) => {
         const defuse = player.find(CardTypes.DEFUSE);
@@ -262,9 +262,9 @@ export class Card {
     prototype: CardPrototype;
     owner: Owner;
 
-    constructor(proto: CardPrototype, owner?: Owner) {
+    constructor(type: CardTypes, owner?: Owner) {
         this.id = cardCounter++;
-        this.prototype = proto;
+        this.prototype = cards.get(type)!;
         this.owner = owner || { type: OwnerType.DECK };
     }
 }

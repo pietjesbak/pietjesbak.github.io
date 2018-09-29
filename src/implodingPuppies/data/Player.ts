@@ -2,7 +2,7 @@ import { Card, CardTypes, OwnerType } from './Cards';
 import { Game } from './Game';
 
 export class Player {
-    id: number;
+    private id_: number;
 
     private cards_: Card[];
 
@@ -12,8 +12,18 @@ export class Player {
 
     constructor(initialCards: Card[], id: number) {
         this.cards_ = initialCards.sort(Card.sortFn);
-        this.cards_.forEach(card => card.owner = { type: OwnerType.PLAYER, data: id });
+        this.assignCards_();
+
         this.id = id;
+    }
+
+    get id() {
+        return this.id_;
+    }
+
+    set id(value: number) {
+        this.id_ = value;
+        this.assignCards_();
     }
 
     get cards() {
@@ -22,6 +32,7 @@ export class Player {
 
     set cards(value: Card[]) {
         this.cards_ = value;
+        this.assignCards_();
     }
 
     get alive() {
@@ -43,18 +54,34 @@ export class Player {
         }
 
         game.discardPile.push(this.cards_.splice(this.cards_.indexOf(card), 1)[0]);
-        game.log(`uses a ${card.prototype.name}`, this);
+        // game.log(`uses a ${card.prototype.name}`, this);
 
         await card.prototype.playEffect(this, game);
     }
 
     async drawCard(card: Card, game: Game) {
+        this.addCard(card, game);
+        await card.prototype.drawEffect(this, game);
+    }
+
+    addCard(card: Card, game: Game) {
         card.owner = { type: OwnerType.PLAYER, data: this.id };
         this.cards_.push(card);
-        game.log(`Draws a ${card.prototype.name}`, this);
-
         this.cards_.sort(Card.sortFn);
-        await card.prototype.drawEffect(this, game);
+    }
+
+    stealCard(type: CardTypes|undefined, game: Game) {
+        let selection: Card|undefined;
+        if (type === undefined) {
+            selection = this.cards_[Math.floor(Math.random() * this.cards_.length)];
+        } else {
+            selection = this.cards_.find(card => card.prototype.type === type);
+        }
+
+        if (selection !== undefined) {
+            this.cards_.splice(this.cards_.indexOf(selection), 1);
+        }
+        return selection;
     }
 
     discardCard(type: Card, game: Game) {
@@ -66,11 +93,19 @@ export class Player {
     }
 
     giveOptions(drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) {
-        console.log('I was given options', drawCallback, playCallback);
+        // console.log('I was given options', drawCallback, playCallback);
     }
 
     allowNope(nopeCallback: () => void) {
-        console.log('I am allowed to nope', nopeCallback);
+        // console.log('I am allowed to nope', nopeCallback);
+    }
+
+    allowSelectTarget(selectCallback: (player: Player) => void) {
+        // console.log('I am allowed to select a player', selectCallback);
+    }
+
+    allowSelectCard(selectCallback: (selection: CardTypes) => void) {
+        // console.log('I am allowed to select a card', selectCallback);
     }
 
     async selectCards(game: Game) {
@@ -83,5 +118,9 @@ export class Player {
 
     async die() {
         this.alive_ = false;
+    }
+
+    private assignCards_() {
+        this.cards_.forEach(card => card.owner = { type: OwnerType.PLAYER, data: this.id });
     }
 }
