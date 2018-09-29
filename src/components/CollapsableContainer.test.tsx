@@ -3,6 +3,31 @@ import * as React from 'react';
 
 import { CollapsableContainer, headerState } from './CollapsableContainer';
 
+function storageMock() {
+    var storage = {};
+
+    return {
+        setItem: function (key: string, value: any) {
+            storage[key] = value || '';
+        },
+        getItem: function (key: string) {
+            return key in storage ? storage[key] : null;
+        },
+        removeItem: function (key: string) {
+            delete storage[key];
+        },
+        get length() {
+            return Object.keys(storage).length;
+        },
+        key: function (i: string) {
+            var keys = Object.keys(storage);
+            return keys[i] || null;
+        }
+    };
+}
+
+(window as any).localStorage = storageMock();
+
 describe('<CollapsableContainer />', () => {
     it('Renders the default collapsable container', () => {
         const container = enzyme.shallow(<CollapsableContainer>CONTENT</CollapsableContainer>);
@@ -29,7 +54,7 @@ describe('<CollapsableContainer />', () => {
     });
 
     it('Loads the state from localstorage', () => {
-        (window as any).localStorage['container'] = 'true';
+        (window as any).localStorage.setItem('container', 'true');
         const container = enzyme.shallow(<CollapsableContainer storeCollapsed={true} title="container">CONTENT</CollapsableContainer>);
 
         expect(container.find('.content')).toHaveLength(0);
@@ -37,7 +62,7 @@ describe('<CollapsableContainer />', () => {
         // Toggle
         container.find('h3').simulate('click');
         expect(container.find('.content')).toHaveLength(1);
-        expect((window as any).localStorage['container']).toBe('false');
+        expect((window as any).localStorage.getItem('container')).toBe('false');
     });
 
     it('Gets the error style', () => {
