@@ -199,13 +199,7 @@ cards.set(CardTypes.FAVOR, {
     description: 'Use this card to ask another player\'s card.',
     count: 4,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FAVOR) || twoOrThreeSame(player, selection, CardTypes.FAVOR),
-    playEffect: async (player, game) => {
-        const target = await game.choosePlayer(player);
-        if (!await game.waitForNopes() && target.cards.length > 0) {
-            const card = await target.chooseCard();
-            player.cards.push(card);
-        }
-    },
+    playEffect: async (player, game) => game.processFavor(),
     drawEffect: async () => true
 });
 

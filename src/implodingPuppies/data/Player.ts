@@ -57,6 +57,7 @@ export class Player {
         // game.log(`uses a ${card.prototype.name}`, this);
 
         await card.prototype.playEffect(this, game);
+        card.owner = { type: OwnerType.DISCARD, data: undefined };
     }
 
     async drawCard(card: Card, game: Game) {
@@ -104,8 +105,12 @@ export class Player {
         // console.log('I am allowed to select a player', selectCallback);
     }
 
-    allowSelectCard(selectCallback: (selection: CardTypes) => void) {
+    allowSelectCard(options: CardTypes[], selectCallback: (selection: CardTypes) => void) {
         // console.log('I am allowed to select a card', selectCallback);
+    }
+
+    allowInsertIntoDeck(maxPosition: number, insertCallback: (position: number) => void) {
+
     }
 
     async selectCards(game: Game) {
