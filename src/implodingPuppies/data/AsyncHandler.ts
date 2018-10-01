@@ -64,8 +64,10 @@ export class AsyncHandler {
             asyncData.data = Object.assign(asyncData.data || {}, data);
         }
 
-        this.removePromise(key);
         promise.resolve(asyncData as AsyncData<T>);
+
+        // Clean up the key in the next event loop.
+        Promise.resolve().then(() => this.removePromise(key));
     }
 
     /**

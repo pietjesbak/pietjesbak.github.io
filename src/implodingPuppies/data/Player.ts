@@ -85,8 +85,13 @@ export class Player {
         return selection;
     }
 
-    discardCard(type: Card, game: Game) {
-        game.discardPile.push(this.cards_.splice(this.cards_.indexOf(type), 1)[0]);
+    discardCard(type: CardTypes, game: Game) {
+        const card = this.find(type);
+        if (!card) {
+            throw new Error('Trying to use a card you dont have!');
+        }
+
+        game.discardPile.push(this.cards_.splice(this.cards_.indexOf(card!), 1)[0]);
     }
 
     updateSelection(selection: Card[]) {
@@ -110,6 +115,10 @@ export class Player {
     }
 
     allowInsertIntoDeck(maxPosition: number, insertCallback: (position: number) => void) {
+
+    }
+
+    seeFuture(cards: CardTypes[], confirmCallback: () => void) {
 
     }
 

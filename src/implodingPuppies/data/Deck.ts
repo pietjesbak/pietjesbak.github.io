@@ -27,4 +27,8 @@ export class Deck {
     updateCards(cards: Card[]) {
         this.cards_ = cards;
     }
+
+    insertCard(card: Card, position: number) {
+        this.cards_.splice(position, 0, card);
+    }
 }

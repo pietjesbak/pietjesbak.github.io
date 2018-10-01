@@ -211,11 +211,7 @@ cards.set(CardTypes.FUTURE, {
     description: 'Use this card to see the top three cards.',
     count: 5,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FUTURE) || twoOrThreeSame(player, selection, CardTypes.FUTURE),
-    playEffect: async (player, game) => {
-        // const top = game.deck.seeTop();
-
-        // Todo show the card to the player.
-    },
+    playEffect: async (player, game) => game.processFuture(),
     drawEffect: async () => true
 });
 
@@ -226,7 +222,7 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         icon: icons[i],
         color: 'rgb(92, 91, 46)',
         name: 'Animal',
-        description: 'A collectable. Does nothing',
+        description: 'A collectable. Combine 2 or 3 of the same type to steal a card.',
         count: 4,
         playTest: (player, selection) => fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
         playEffect: async () => undefined,

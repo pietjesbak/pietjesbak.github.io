@@ -14,6 +14,7 @@ export enum AsyncActions {
     SELECT_PLAYER = 'select player',
     SELECT_CARD = 'select card',
     INSERT_CARD = 'insert card',
+    SEE_FUTURE = 'see future',
     RUNNING = 'running'
 }
 
@@ -45,6 +46,11 @@ export interface AsyncInsertCard {
     player: Player;
     position: number;
     maxPosition: number;
+}
+
+export interface AsyncSeeFuture {
+    player: Player;
+    cards: CardTypes[];
 }
 
 export class Game extends AsyncHandler {
@@ -215,7 +221,7 @@ export class Game extends AsyncHandler {
         while (!gameOver) {
             const keys = [this.createPromise(AsyncActions.DRAW), this.createPromise(AsyncActions.PLAY)];
             const promises = this.getPromises(keys);
-            this.currentPlayer.giveOptions(this.createDrawAction(keys[0]), this.createPlayAction(keys[1]));
+            this.currentPlayer.giveOptions(this.createDefaultAction(keys[0]), this.createPlayAction(keys[1]));
 
             let result: AsyncData<AsyncPlay|{}>;
             try {
@@ -246,10 +252,13 @@ export class Game extends AsyncHandler {
     }
 
     async playerPlay(selection: CardTypes[]) {
+        selection.forEach(type => this.currentPlayer.discardCard(type, this));
+
         let noped = await this.processNopes();
         if (!noped) {
             if (selection.length === 1) {
                 await cards.get(selection[0])!.playEffect(this.currentPlayer, this);
+
             } else if (selection.length === 2 && selection[0] === selection[1]) {
                 const target = (await this.selectTarget()).data!.target;
                 noped = await this.processNopes();
@@ -270,10 +279,10 @@ export class Game extends AsyncHandler {
                         options
                     });
                     this.currentPlayer.allowSelectCard(options, this.createSelectCardAction(key));
-                    const type = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
-                    const card = target.stealCard(type, this);
-                    if (card !== undefined) {
-                        this.currentPlayer.addCard(card, this);
+                    const selectedType = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
+                    const selectedCard = target.stealCard(selectedType, this);
+                    if (selectedCard !== undefined) {
+                        this.currentPlayer.addCard(selectedCard, this);
                     }
                 }
 
@@ -304,18 +313,19 @@ export class Game extends AsyncHandler {
         return this.getPromise<AsyncSelectCard>(key);
     }
 
-    insertIntoDeck(type: CardTypes) {
+    async insertIntoDeck(type: CardTypes) {
         const key = this.createPromise<AsyncInsertCard>(AsyncActions.INSERT_CARD, {
             player: this.currentPlayer,
             maxPosition: this.deck.cards.length
         });
-
         this.currentPlayer.allowInsertIntoDeck(this.deck.cards.length, this.createInsertCardAction(key));
-        return this.getPromise<AsyncInsertCard>(key);
+
+        const position = (await this.getPromise<AsyncInsertCard>(key)).data!.position;
+        this.deck.insertCard(this.discardPile_.pop()!, position);
     }
 
     async processNopes() {
-        let result = true;
+        let result = false;
 
         let player: AsyncData<AsyncNope>|undefined;
         let excludedPlayer = this.currentPlayer_;
@@ -331,10 +341,14 @@ export class Game extends AsyncHandler {
             player = undefined;
             try {
                 player = await Promise.race(promises);
-                excludedPlayer = player.data!.player.id;
-                result = !result;
             } catch (e) {
                 // Timeout!
+            }
+
+            if (player !== undefined) {
+                player.data!.player.discardCard(CardTypes.NOPE, this);
+                excludedPlayer = player.data!.player.id;
+                result = !result;
             }
         } while (player !== undefined);
 
@@ -362,6 +376,10 @@ export class Game extends AsyncHandler {
 
     async processFavor() {
         const target = (await this.selectTarget()).data!.target;
+        if (target === this.currentPlayer) {
+            throw new Error('Target can not be the current player');
+        }
+
         if (!await this.processNopes() && target.cards.length > 0) {
             const options = [...new Set(target.cards.map(card => card.prototype.type))];
             const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
@@ -370,11 +388,22 @@ export class Game extends AsyncHandler {
             })
             target.allowSelectCard(options, this.createSelectCardAction(key));
             const type = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
-            const card = target.stealCard(type, this);
-            if (card !== undefined) {
-                this.currentPlayer.addCard(card, this);
+            const selectedCard = target.stealCard(type, this);
+            if (selectedCard !== undefined) {
+                this.currentPlayer.addCard(selectedCard, this);
             }
         }
+    }
+
+    async processFuture() {
+        const future = this.deck.seeTop().map(card => card.prototype.type);
+        const key = this.createPromise<AsyncSeeFuture>(AsyncActions.SEE_FUTURE, {
+            player: this.currentPlayer,
+            cards: future
+        });
+        this.currentPlayer.seeFuture(future, this.createDefaultAction(key));
+
+        await this.getPromise<AsyncSeeFuture>(key);
     }
 
     private getNextAlivePlayer() {
@@ -400,7 +429,7 @@ export class Game extends AsyncHandler {
         }
     }
 
-    private createDrawAction(key: string) {
+    private createDefaultAction(key: string) {
         return () => this.resolve(key);
     }
 
