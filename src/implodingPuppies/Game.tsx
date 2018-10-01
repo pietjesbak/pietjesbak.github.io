@@ -1,12 +1,12 @@
 import './css/Game.css';
 
+// import classNames from 'classnames';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Card from './Card';
+import { repeat } from '../Helpers';
+// import Card from './Card';
 import { Card as CardData, OwnerType } from './data/Cards';
 import { Deck as DeckData } from './data/Deck';
-// import Card from './Card';
-// import { CardTypes } from './data/Cards';
 import { Game as GameData } from './data/Game';
 import { Player as PlayerData } from './data/Player';
 import Deck from './Deck';
@@ -18,6 +18,7 @@ interface Props {
 
 interface State {
     game: GameData;
+    players: PlayerData[];
     canNope: boolean;
 }
 
@@ -32,9 +33,7 @@ interface DeckRef {
 }
 
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
-    private mounted_: boolean = false;
-
-    private nopeHandler_: (player: number) => void;
+    mounted_: boolean = false;
 
     private playerRefs_: Map<number, PlayerRef> = new Map();
 
@@ -45,11 +44,14 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
 
-        const game = new GameData(props.playerCount);
-        game.setCallbacks(this.waitForNopes, this.updateView);
+        const game = new GameData(true);
+        game.gameLoop();
+        game.setUpdateCallback(this.updateView);
+        // game.setCallbacks(this.waitForNopes, this.updateView);
 
         this.state = {
             game,
+            players: [],
             canNope: false
         }
     }
@@ -59,81 +61,18 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.updateView();
 
         this.mounted_ = true;
-        this.gameLoop();
     }
 
     componentWillUnmount() {
         this.mounted_ = false;
     }
 
-    async gameLoop() {
-        while (this.mounted_ === true) {
-            console.log('turn start');
-
-            await this.state.game.playTurn();
-            this.setState({ game: this.state.game });
-        }
-    }
-
     updateView = () => {
-        this.setState({ game: this.state.game });
-    }
-
-    waitForNopes = async () => {
-        let result: number | null = null;
-        this.setState({ canNope: true });
-        const nopePromise = new Promise(resolve => this.nopeHandler_ = resolve);
-
-        try {
-            result = await Promise.race([
-                new Promise((resolve, reject) => window.setTimeout(reject, 2000)),
-                nopePromise
-            ]) as number;
-        } catch (e) {
-            // No one noped
-        }
-
-        this.setState({ canNope: false });
-        return result;
-    }
-
-    // moveCardToDiscard = (index: number, type: CardTypes) => {
-    //     const player = this.playerRefs_.get(index)!;
-
-    //     this.setState({
-    //         movingCards: [...this.state.movingCards, {
-    //             type: type,
-    //             x2: player.offsetLeft + player.clientWidth / 2,
-    //             y2: player.offsetTop + player.clientHeight / 2,
-    //             x1: this.discardRef_.offsetLeft + this.discardRef_.clientWidth / 2,
-    //             y1: this.discardRef_.offsetTop + this.discardRef_.clientHeight / 2,
-    //             rotation: 0,
-    //             timestamp: Date.now()
-    //         }]
-    //     });
-    // }
-
-    getCallbacks(index: number) {
-        const player = this.playerRefs_.get(index)!;
-        // if (index === this.state.game.currentPlayer) {
-        return {
-            onDraw: () => {
-                this.state.game.playerDraw(index);
-            },
-            onPlay: () => {
-                this.state.game.playerPlay(index, player.model.selection);
-            },
-            onNope: () => {
-                this.nopeHandler_(index);
-            }
-        };
-        // }
-
-        // return undefined;
+        this.setState({});
     }
 
     onDraw = () => {
-        this.state.game.playerDraw(this.state.game.currentPlayer);
+        // Todo
     }
 
     storePlayerRef = (player: number) => (ref: Player) => this.playerRefs_.set(player, {
@@ -186,46 +125,53 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.setState({});
     }
 
-    render() {
+    joinPlayer = () => {
+        const player = new PlayerData([], this.state.players.length);
+
+        this.state.game.join(player);
+        this.setState({
+            players: [...this.state.players, player]
+        });
+    }
+
+    forceStart = () => {
+        this.state.game.forceStart();
+    }
+
+    renderPlayers() {
         return (
-            <div className="imploding-puppies-game">
+            <div>
+                {repeat(4 - this.state.game.playerCount).map((unused, i) => <button key={i} onClick={this.joinPlayer}>Join</button>)}
+                <button onClick={this.forceStart}>Force start</button>
+            </div>
+        )
+    }
+
+    renderGame() {
+        return (
+            <>
+                {this.state.game.players.map((player, i) => <Player
+                    ref={this.storePlayerRef(i)}
+                    key={i}
+                    active={player.id === this.state.game.currentPlayer.id}
+                    player={player} />
+                )}
+
                 <Deck
                     deckRef={this.deckRef}
                     discardRef={this.discardRef}
                     onClick={this.onDraw}
                     game={this.state.game} />
 
-                {this.state.game.discardPile.map(card => <Card key={card.id} className="moving-card" type={card.prototype.type} style={this.getCardStyle(card, 0)} />)}
+                {/* {this.state.game.discardPile.map(card => <Card key={card.id} className="moving-card" type={card.prototype.type} style={this.getCardStyle(card, 0)} />)} */}
+            </>
+        );
+    }
 
-                {this.state.game.players.map((player, i) => <Player
-                    ref={this.storePlayerRef(i)}
-                    key={'p' + i}
-                    interactive={this.getCallbacks(i)}
-                    active={i === this.state.game.currentPlayer}
-                    player={player} />)}
-
-                {this.state.game.players.map(player => player.cards.map((card, i) => <Card
-                    key={card.id}
-                    type={card.prototype.type}
-                    className="moving-card"
-                    canSelect={card.prototype.playTest(player, player.selection)}
-                    selected={player.selection.indexOf(card) !== -1}
-                    onClick={this.clickCard(player, card)}
-                    style={this.getCardStyle(card, i)} />))}
-
-                {/* {this.state.game.players.map((player, i) => <Player
-                    ref={this.storePlayerRef(i)}
-                    key={'p' + i}
-                    player={player}
-                    canNope={this.state.game.currentPlayer !== i && this.state.canNope}
-                    interactive={this.getCallbacks(i)}
-                    active={i === this.state.game.currentPlayer} />)} */}
-
-                {/* {this.state.movingCards.map((card, i) => <Card
-                    key={'c' + i}
-                    target={{ x: card.x2, y: card.y2, destroyCallback: this.destroyMovingCard(i) }}
-                    className="moving-card"
-                    style={{ transform: `translate(${card.x1}px, ${card.y1}px) rotate(0deg)` }} />)} */}
+    render() {
+        return (
+            <div className="imploding-puppies-game">
+                {this.state.game.players.length === 0 ? this.renderPlayers() : this.renderGame()}
             </div>
         );
     }

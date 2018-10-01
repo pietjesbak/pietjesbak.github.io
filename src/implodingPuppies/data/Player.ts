@@ -1,7 +1,29 @@
 import { Card, CardTypes, OwnerType } from './Cards';
 import { Game } from './Game';
 
+export interface PlayerOptions {
+    giveOptions: (drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) => void;
+    allowNope: (nopeCallback: () => void) => void;
+    allowSelectTarget: (selectCallback: (player: Player) => void) => void;
+    allowSelectCard: (options: CardTypes[], selectCallback: (selection: CardTypes) => void) => void;
+    allowInsertIntoDeck: (maxPosition: number, insertCallback: (position: number) => void) => void;
+    seeFuture: (cards: CardTypes[], confirmCallback: () => void) => void;
+}
+
 export class Player {
+
+    giveOptions: (drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) => void;
+
+    allowNope: (nopeCallback: () => void) => void;
+
+    allowSelectTarget: (selectCallback: (player: Player) => void) => void;
+
+    allowSelectCard: (options: CardTypes[], selectCallback: (selection: CardTypes) => void) => void;
+
+    allowInsertIntoDeck: (maxPosition: number, insertCallback: (position: number) => void) => void;
+
+    seeFuture: (cards: CardTypes[], confirmCallback: () => void) => void;
+
     private id_: number;
 
     private cards_: Card[];
@@ -41,6 +63,12 @@ export class Player {
 
     get selection() {
         return this.selection_;
+    }
+
+    setCallbacks(options: PlayerOptions) {
+        for (let key in options) {
+            this[key] = options[key];
+        }
     }
 
     find(type: CardTypes) {
@@ -96,30 +124,6 @@ export class Player {
 
     updateSelection(selection: Card[]) {
         this.selection_ = selection;
-    }
-
-    giveOptions(drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) {
-        // console.log('I was given options', drawCallback, playCallback);
-    }
-
-    allowNope(nopeCallback: () => void) {
-        // console.log('I am allowed to nope', nopeCallback);
-    }
-
-    allowSelectTarget(selectCallback: (player: Player) => void) {
-        // console.log('I am allowed to select a player', selectCallback);
-    }
-
-    allowSelectCard(options: CardTypes[], selectCallback: (selection: CardTypes) => void) {
-        // console.log('I am allowed to select a card', selectCallback);
-    }
-
-    allowInsertIntoDeck(maxPosition: number, insertCallback: (position: number) => void) {
-
-    }
-
-    seeFuture(cards: CardTypes[], confirmCallback: () => void) {
-
     }
 
     async selectCards(game: Game) {

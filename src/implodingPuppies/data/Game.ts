@@ -81,6 +81,8 @@ export class Game extends AsyncHandler {
 
     private startKey_: string;
 
+    private updateCallback_: () => void;
+
     constructor(isHost: boolean, serializer?: ISerializer) {
         super();
 
@@ -107,6 +109,14 @@ export class Game extends AsyncHandler {
 
     get discardPile(){
         return this.discardPile_;
+    }
+
+    get isHost() {
+        return this.isHost_;
+    }
+
+    setUpdateCallback(callback: () => void) {
+        this.updateCallback_ = callback;
     }
 
     shutDown() {
@@ -216,6 +226,7 @@ export class Game extends AsyncHandler {
         this.players_ = await this.waitForPlayers();
         this.initDeck();
         this.waitForUpdates();
+        this.update_();
 
         let gameOver = false;
         while (!gameOver) {
@@ -357,7 +368,7 @@ export class Game extends AsyncHandler {
 
     nextTurn() {
         if (this.playerQueue_.length === 0) {
-            this.playerQueue_.push(this.getNextAlivePlayer());
+            this.playerQueue_.push(this.getNextAlivePlayer_());
         }
 
         this.currentPlayer_ = this.playerQueue_.pop()!;
@@ -406,7 +417,7 @@ export class Game extends AsyncHandler {
         await this.getPromise<AsyncSeeFuture>(key);
     }
 
-    private getNextAlivePlayer() {
+    private getNextAlivePlayer_() {
         const alivePlayers = this.players_.filter(player => player.alive);
         return alivePlayers[++this.currentPlayer_ % alivePlayers.length].id;
     }
@@ -426,6 +437,13 @@ export class Game extends AsyncHandler {
 
         if (discardPile !== undefined) {
             this.discardPile_ = discardPile;
+        }
+    }
+
+    private update_() {
+        if (this.updateCallback_) {
+            console.log('Update callback');
+            this.updateCallback_();
         }
     }
 
