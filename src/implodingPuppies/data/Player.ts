@@ -4,26 +4,14 @@ import { Game } from './Game';
 export interface PlayerOptions {
     giveOptions: (drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) => void;
     allowNope: (nopeCallback: () => void) => void;
-    allowSelectTarget: (selectCallback: (player: Player) => void) => void;
-    allowSelectCard: (options: CardTypes[], selectCallback: (selection: CardTypes) => void) => void;
+    allowSelectTarget: (options: Player[], playerSelectCallback: (player: Player) => void) => void;
+    allowSelectCard: (options: CardTypes[], cardSelectCallback: (selection: CardTypes) => void) => void;
     allowInsertIntoDeck: (maxPosition: number, insertCallback: (position: number) => void) => void;
     seeFuture: (cards: CardTypes[], confirmCallback: () => void) => void;
+    clearCallbacks: () => void;
 }
 
 export class Player {
-
-    giveOptions: (drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) => void;
-
-    allowNope: (nopeCallback: () => void) => void;
-
-    allowSelectTarget: (selectCallback: (player: Player) => void) => void;
-
-    allowSelectCard: (options: CardTypes[], selectCallback: (selection: CardTypes) => void) => void;
-
-    allowInsertIntoDeck: (maxPosition: number, insertCallback: (position: number) => void) => void;
-
-    seeFuture: (cards: CardTypes[], confirmCallback: () => void) => void;
-
     private id_: number;
 
     private cards_: Card[];
@@ -65,6 +53,77 @@ export class Player {
         return this.selection_;
     }
 
+    clearSelection() {
+        this.selection_ = [];
+    }
+
+    //#region Callbacks
+
+    /**
+     * Used to draw or play a card.
+     * @param drawCallback Callback to draw a card.
+     * @param playCallback Callback to play 1 or more cards.
+     */
+    giveOptions(drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) {
+        // Callback
+    }
+
+    /**
+     * Used to nope the currently played card.
+     * @param nopeCallback Callback for when the player wants to nope the currently played card.
+     */
+    allowNope(nopeCallback: () => void) {
+        // Callback
+    };
+
+    /**
+     * Used to select a player.
+     * @param options All possible players to choose from.
+     * @param playerSelectCallback Callback to pass the selected player back to the game logic.
+     */
+    allowSelectTarget(options: Player[], playerSelectCallback: (player: Player) => void) {
+        // Callback
+    }
+
+    /**
+     * Used to select a card type.
+     * @param options All possible card types to choose from.
+     * @param cardSelectCallback Callback to pass the selected type back to the game logic.
+     */
+    allowSelectCard(options: CardTypes[], cardSelectCallback: (selection: CardTypes) => void) {
+        // Callback
+    }
+
+    /**
+     * Used to select a position to put a card back in the deck.
+     * @param maxPosition The size of the deck.
+     * @param insertCallback Callback to pass the selected position back to the game logic.
+     */
+    allowInsertIntoDeck(maxPosition: number, insertCallback: (position: number) => void) {
+        // Callback
+    }
+
+    /**
+     * Used to pass show the future to this player.
+     * @param cards The future cards.
+     * @param confirmCallback Callback when done seeing the future.
+     */
+    seeFuture(cards: CardTypes[], confirmCallback: () => void) {
+        // Callback
+    }
+
+    /**
+     * Used to reset the player state / clear previous callbacks.
+     */
+    clearCallbacks() {
+        // Callback
+    }
+    //#endregion
+
+    /**
+     * Sets the callbacks for this player object.
+     * @param options An object containing all callbacks.
+     */
     setCallbacks(options: PlayerOptions) {
         for (let key in options) {
             this[key] = options[key];
@@ -81,11 +140,9 @@ export class Player {
             throw new Error('Trying to play a card you dont have!');
         }
 
-        game.discardPile.push(this.cards_.splice(this.cards_.indexOf(card), 1)[0]);
-        // game.log(`uses a ${card.prototype.name}`, this);
-
+        this.discardCard(type, game);
         await card.prototype.playEffect(this, game);
-        card.owner = { type: OwnerType.DISCARD, data: undefined };
+
     }
 
     async drawCard(card: Card, game: Game) {
@@ -99,8 +156,8 @@ export class Player {
         this.cards_.sort(Card.sortFn);
     }
 
-    stealCard(type: CardTypes|undefined, game: Game) {
-        let selection: Card|undefined;
+    stealCard(type: CardTypes | undefined, game: Game) {
+        let selection: Card | undefined;
         if (type === undefined) {
             selection = this.cards_[Math.floor(Math.random() * this.cards_.length)];
         } else {
@@ -116,22 +173,11 @@ export class Player {
     discardCard(type: CardTypes, game: Game) {
         const card = this.find(type);
         if (!card) {
-            throw new Error('Trying to use a card you dont have!');
+            throw new Error('Trying to discard a card you dont have!');
         }
 
         game.discardPile.push(this.cards_.splice(this.cards_.indexOf(card!), 1)[0]);
-    }
-
-    updateSelection(selection: Card[]) {
-        this.selection_ = selection;
-    }
-
-    async selectCards(game: Game) {
-        return [];
-    }
-
-    async chooseCard() {
-        return this.cards_.splice(0, 1)[0]!;
+        card.owner = { type: OwnerType.DISCARD, data: undefined };
     }
 
     async die() {

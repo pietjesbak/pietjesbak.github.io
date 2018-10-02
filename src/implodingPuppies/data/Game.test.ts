@@ -221,8 +221,9 @@ describe('Server', () => {
             first ? playCallback([CardTypes.FAVOR]) : server.shutDown();
             first = false;
         });
-        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, selectCallback: (player: Player) => void) {
+        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, options: Player[], selectCallback: (player: Player) => void) {
             expect(this.id).toBe(0);
+            expect(options.map(player => player.id)).toEqual([1, 2]);
             selectCallback(players[1]);
         });
         jest.spyOn(Player.prototype, 'allowSelectCard').mockImplementation(function (this: Player, options: CardTypes[], selectCallback: (selection: CardTypes) => void) {
@@ -348,8 +349,9 @@ describe('Server', () => {
             first ? playCallback([CardTypes.PUPPY_1, CardTypes.PUPPY_1]) : server.shutDown();
             first = false;
         });
-        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, selectCallback: (player: Player) => void) {
+        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, options: Player[], selectCallback: (player: Player) => void) {
             expect(this.id).toBe(0);
+            expect(options.map(player => player.id)).toEqual([1, 2]);
             selectCallback(players[1]);
         });
 
@@ -372,8 +374,9 @@ describe('Server', () => {
             first ? playCallback([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]) : server.shutDown();
             first = false;
         });
-        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, selectCallback: (player: Player) => void) {
+        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, options: Player[], selectCallback: (player: Player) => void) {
             expect(this.id).toBe(0);
+            expect(options.map(player => player.id)).toEqual([1, 2]);
             selectCallback(players[1]);
         });
         jest.spyOn(Player.prototype, 'allowSelectCard').mockImplementation(function (this: Player, options: CardTypes[], selectCallback: (selection: CardTypes) => void) {
@@ -401,8 +404,9 @@ describe('Server', () => {
             first ? playCallback([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]) : server.shutDown();
             first = false;
         });
-        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, selectCallback: (player: Player) => void) {
+        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, options: Player[], selectCallback: (player: Player) => void) {
             expect(this.id).toBe(0);
+            expect(options.map(player => player.id)).toEqual([1, 2]);
             selectCallback(players[1]);
         });
         jest.spyOn(Player.prototype, 'allowSelectCard').mockImplementation(function (this: Player, options: CardTypes[], selectCallback: (selection: CardTypes) => void) {
@@ -456,8 +460,9 @@ describe('Server', () => {
             first ? playCallback([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]) : server.shutDown();
             first = false;
         });
-        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, selectCallback: (player: Player) => void) {
+        jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, options: Player[], selectCallback: (player: Player) => void) {
             expect(this.id).toBe(0);
+            expect(options.map(player => player.id)).toEqual([1, 2]);
             selectCallback(players[1]);
         });
         jest.spyOn(Player.prototype, 'allowNope').mockImplementation(function (this: Player, nopeCallback: () => void) {

@@ -28,5 +28,3 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>>
 }
 
 export default Deck;
-
-

@@ -1,8 +1,9 @@
 import classNames from 'classnames';
 import * as React from 'react';
 import Card from './Card';
-import { CardTypes } from './data/Cards';
+import { cards, CardTypes } from './data/Cards';
 import { Player as PlayerData } from './data/Player';
+import DeckInsert from './DeckInsert';
 
 interface Callbacks {
     drawCallback: () => void;
@@ -32,8 +33,12 @@ interface Props {
 }
 
 interface State {
-    option: Options,
-    callbacks: Partial<Callbacks>
+    option: Options;
+    callbacks: Partial<Callbacks>;
+    playerOptions?: PlayerData[];
+    cardOptions?: CardTypes[];
+    deckOption?: number;
+    future?: CardTypes[];
 }
 
 class Player extends React.Component<Props & React.ClassAttributes<Player>, State> {
@@ -46,7 +51,8 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
             allowSelectTarget: this.allowSelectTarget,
             allowSelectCard: this.allowSelectCard,
             allowInsertIntoDeck: this.allowInsertIntoDeck,
-            seeFuture: this.seeFuture
+            seeFuture: this.seeFuture,
+            clearCallbacks: this.clearCallbacks
         });
 
         this.state = {
@@ -74,12 +80,13 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
         });
     }
 
-    allowSelectTarget = (playerSelectCallback: (player: PlayerData) => void) => {
+    allowSelectTarget = (options: PlayerData[], playerSelectCallback: (player: PlayerData) => void) => {
         this.setState({
             option: Options.SELECT_TARGET,
             callbacks: {
                 playerSelectCallback
-            }
+            },
+            playerOptions: options
         });
     }
 
@@ -88,7 +95,8 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
             option: Options.SELECT_CARD,
             callbacks: {
                 cardSelectCallback
-            }
+            },
+            cardOptions: options
         });
     }
 
@@ -97,16 +105,29 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
             option: Options.INSERT_IN_DECK,
             callbacks: {
                 insertCallback
-            }
+            },
+            deckOption: maxPosition
         });
     }
 
-    seeFuture = (cards: CardTypes[], confirmCallback: () => void) => {
+    seeFuture = (types: CardTypes[], confirmCallback: () => void) => {
         this.setState({
             option: Options.SEE_FUTURE,
             callbacks: {
                 confirmCallback
-            }
+            },
+            future: types
+        });
+    }
+
+    clearCallbacks = () => {
+        this.setState({
+            option: Options.NONE,
+            callbacks: {},
+            playerOptions: undefined,
+            cardOptions: undefined,
+            deckOption: undefined,
+            future: undefined
         });
     }
 
@@ -120,20 +141,15 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
     }
 
     clickCard = (index: number) => (e: React.MouseEvent<HTMLDivElement>) => {
-        // this.setState(state => {
-        //     const selection = [...state.selection];
-        //     const pos = selection.indexOf(index);
+        const card = this.props.player.cards[index];
+        const pos = this.props.player.selection.indexOf(card);
+        if (pos !== -1) {
+            this.props.player.selection.splice(pos, 1);
+        } else if (card.prototype.playTest(this.props.player, this.props.player.selection)) {
+            this.props.player.selection.push(card);
+        }
 
-        //     if (pos === -1) {
-        //         if (cards.get(this.props.player.cards[index])!.playTest(this.props.player, this.selection)) {
-        //             selection.push(index);
-        //         }
-        //     } else {
-        //         selection.splice(pos, 1);
-        //     }
-
-        //     return { selection };
-        // });
+        this.setState({});
     }
 
     clickButton = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -151,18 +167,63 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
         );
     }
 
+    selectPlayer = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const player = this.state.playerOptions![(event.target as HTMLButtonElement).dataset['player']!] as PlayerData;
+        this.state.callbacks.playerSelectCallback!(player);
+    }
+
+    renderPlayerSelection() {
+        return (
+            <div className="player-select-field">
+                {this.state.playerOptions!.map(player => <button key={player.id} data-player={player.id} onClick={this.selectPlayer}>Select Player {player.id}</button>)}
+            </div>
+        )
+    }
+
+    selectCard = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const type = (event.target as HTMLButtonElement).dataset['type']! as CardTypes;
+        this.state.callbacks.cardSelectCallback!(type);
+    }
+
+    renderCardSelection() {
+        return (
+            <div className="player-select-field">
+                {this.state.cardOptions!.map(type => <button key={type} data-type={type} onClick={this.selectCard}>Select {cards.get(type)!.name}</button>)}
+            </div>
+        )
+    }
+
+    renderFuture() {
+        return (
+            <div>
+                {this.state.future!.map((type, i) => <Card type={type} key={i} />)}
+                <button onClick={this.state.callbacks.confirmCallback}>Done</button>
+            </div>
+        );
+    }
+
+    renderInsertInDeck() {
+        return <DeckInsert cards={this.state.deckOption!} type={CardTypes.BOMB} callback={this.state.callbacks.insertCallback!} />
+    }
+
     render() {
         return (
             <div className={classNames('imploding-puppies-player', { 'interactive': this.props.interactive }, { 'active': this.props.active })}>
-                <button onClick={this.clickButton}>{this.props.player.selection.length === 0 ? 'Draw' : 'Play'}</button>
+                {this.state.option === Options.DRAW_PLAY ? <button onClick={this.clickButton}>{this.props.player.selection.length === 0 ? 'Draw' : 'Play'}</button> : null}
+                {this.state.option === Options.NOPE ? <button onClick={this.state.callbacks.nopeCallback}>Nope!</button> : null}
+                {this.state.option === Options.SELECT_TARGET ? this.renderPlayerSelection() : null}
+                {this.state.option === Options.SELECT_CARD ? this.renderCardSelection() : null}
+                {this.state.option === Options.SEE_FUTURE ? this.renderFuture() : null}
+                {this.state.option === Options.INSERT_IN_DECK ? this.renderInsertInDeck() : null}
+
                 {this.props.player.cards.map((card, i) => <Card
-                            style={this.getCardStyles(i)}
-                            canSelect={card.prototype.playTest(this.props.player, this.props.player.selection)}
-                            selected={this.props.player.selection.indexOf(card) !== -1}
-                            onClick={this.clickCard(i)}
-                            type={card.prototype.type}
-                            key={i}
-                        />)}
+                    style={this.getCardStyles(i)}
+                    canSelect={card.prototype.playTest(this.props.player, this.props.player.selection)}
+                    selected={this.props.player.selection.indexOf(card) !== -1}
+                    onClick={this.clickCard(i)}
+                    type={card.prototype.type}
+                    key={i}
+                />)}
             </div>
         );
     }

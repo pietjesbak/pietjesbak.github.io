@@ -1,10 +1,8 @@
 import './css/Game.css';
 
-// import classNames from 'classnames';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { repeat } from '../Helpers';
-// import Card from './Card';
 import { Card as CardData, OwnerType } from './data/Cards';
 import { Deck as DeckData } from './data/Deck';
 import { Game as GameData } from './data/Game';

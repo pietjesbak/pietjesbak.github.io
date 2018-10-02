@@ -34,6 +34,7 @@ export interface AsyncNope {
 export interface AsyncSelectPlayer {
     source: Player;
     target: Player;
+    options: Player[];
 }
 
 export interface AsyncSelectCard {
@@ -230,6 +231,7 @@ export class Game extends AsyncHandler {
 
         let gameOver = false;
         while (!gameOver) {
+            this.clearPlayers_();
             const keys = [this.createPromise(AsyncActions.DRAW), this.createPromise(AsyncActions.PLAY)];
             const promises = this.getPromises(keys);
             this.currentPlayer.giveOptions(this.createDefaultAction(keys[0]), this.createPlayAction(keys[1]));
@@ -243,6 +245,7 @@ export class Game extends AsyncHandler {
                 return;
             }
 
+            this.update_();
             switch (result.action) {
                 case AsyncActions.DRAW:
                     this.playerDraw();
@@ -263,7 +266,9 @@ export class Game extends AsyncHandler {
     }
 
     async playerPlay(selection: CardTypes[]) {
+        this.currentPlayer.clearSelection();
         selection.forEach(type => this.currentPlayer.discardCard(type, this));
+        this.update_();
 
         let noped = await this.processNopes();
         if (!noped) {
@@ -289,6 +294,7 @@ export class Game extends AsyncHandler {
                         player: this.currentPlayer,
                         options
                     });
+                    this.clearPlayers_();
                     this.currentPlayer.allowSelectCard(options, this.createSelectCardAction(key));
                     const selectedType = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
                     const selectedCard = target.stealCard(selectedType, this);
@@ -307,13 +313,19 @@ export class Game extends AsyncHandler {
     }
 
     selectTarget() {
-        const key = this.createPromise<AsyncSelectPlayer>(AsyncActions.SELECT_PLAYER, { source: this.currentPlayer });
-        this.currentPlayer.allowSelectTarget(this.createSelectPlayerAction(key));
+        this.clearPlayers_();
+        const options = this.players_.filter(player => player.alive && player !== this.currentPlayer);
+        const key = this.createPromise<AsyncSelectPlayer>(AsyncActions.SELECT_PLAYER, {
+            source: this.currentPlayer,
+            options
+        });
+        this.currentPlayer.allowSelectTarget(options, this.createSelectPlayerAction(key));
 
         return this.getPromise<AsyncSelectPlayer>(key);
     }
 
     selectCard() {
+        this.clearPlayers_();
         const options = [...new Set(this.discardPile_.map(card => card.prototype.type))].filter(type => type !== CardTypes.BOMB);
         const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
             player: this.currentPlayer,
@@ -325,6 +337,7 @@ export class Game extends AsyncHandler {
     }
 
     async insertIntoDeck(type: CardTypes) {
+        this.clearPlayers_();
         const key = this.createPromise<AsyncInsertCard>(AsyncActions.INSERT_CARD, {
             player: this.currentPlayer,
             maxPosition: this.deck.cards.length
@@ -341,6 +354,7 @@ export class Game extends AsyncHandler {
         let player: AsyncData<AsyncNope>|undefined;
         let excludedPlayer = this.currentPlayer_;
         do {
+            this.clearPlayers_();
             const keys = repeat(this.playerCount_).map((unused, i) => this.createPromise(AsyncActions.NOPE, { player: this.players_[i] }, Game.NOPE_TIMEOUT_MILLIS));
             const promises = this.getPromises<AsyncNope>(keys);
             keys.forEach((key, i) => {
@@ -360,6 +374,8 @@ export class Game extends AsyncHandler {
                 player.data!.player.discardCard(CardTypes.NOPE, this);
                 excludedPlayer = player.data!.player.id;
                 result = !result;
+
+                this.update_();
             }
         } while (player !== undefined);
 
@@ -392,6 +408,7 @@ export class Game extends AsyncHandler {
         }
 
         if (!await this.processNopes() && target.cards.length > 0) {
+            this.clearPlayers_();
             const options = [...new Set(target.cards.map(card => card.prototype.type))];
             const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
                 player: this.currentPlayer,
@@ -407,6 +424,7 @@ export class Game extends AsyncHandler {
     }
 
     async processFuture() {
+        this.clearPlayers_();
         const future = this.deck.seeTop().map(card => card.prototype.type);
         const key = this.createPromise<AsyncSeeFuture>(AsyncActions.SEE_FUTURE, {
             player: this.currentPlayer,
@@ -445,6 +463,10 @@ export class Game extends AsyncHandler {
             console.log('Update callback');
             this.updateCallback_();
         }
+    }
+
+    private clearPlayers_() {
+        this.players_.forEach(player => player.clearCallbacks());
     }
 
     private createDefaultAction(key: string) {

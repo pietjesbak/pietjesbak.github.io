@@ -54,3 +54,13 @@ export function shuffle<T>(a: T[]) {
 export function repeat(count: number) : null[] {
     return new Array(count).fill(null);
 }
+
+/**
+ * Clamps the value between the min and max value.
+ * @param min The minimum value.
+ * @param value The actual value.
+ * @param max The maximum value.
+ */
+export function clamp(min: number, value: number, max: number) {
+    return Math.max(Math.min(value, max), min);
+}
