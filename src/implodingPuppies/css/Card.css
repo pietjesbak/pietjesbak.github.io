@@ -9,7 +9,6 @@
     width: 100px;
     transform-origin: 50% 250%;
     background: #fff;
-    margin-bottom: 60px;
 }
 
 .imploding-puppies-game .card:before, .imploding-puppies-game .card-deck:before {
@@ -33,6 +32,7 @@
     text-align: center;
     left: 5px;
     right: 5px;
+    white-space: normal;
 }
 
 .imploding-puppies-game .card-face {
@@ -71,40 +71,4 @@
     position: absolute!important;
     top: 0;
     left: 0;
-}
-
-.imploding-puppies-card-insert {
-    position: relative;
-    height: 200px;;
-}
-
-.imploding-puppies-card-insert .card {
-    position: absolute!important;
-    top: 0!important;
-    left: 0!important;
-    z-index: inherit!important;
-}
-
-.imploding-puppies-card-insert .left-count {
-    position: absolute;
-    left: 0;
-    font-size: 50px;
-    margin-top: 50px;
-    text-shadow: 4px 4px black;
-    color: white;
-    background: rgba(100,100,100,0.4);
-    padding: 0 15px;
-    pointer-events: none;
-}
-
-.imploding-puppies-card-insert .right-count {
-    position: absolute;
-    right: 0;
-    font-size: 50px;
-    margin-top: 50px;
-    text-shadow: 4px 4px black;
-    color: white;
-    background: rgba(100,100,100,0.4);
-    padding: 0 15px;
-    pointer-events: none;
 }

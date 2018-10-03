@@ -6,6 +6,7 @@ export class Deck {
 
     constructor(initialCards: Card[]) {
         this.cards_ = initialCards;
+        // console.log(this.cards_.map(card => card.prototype.type));
     }
 
     get cards() {
@@ -21,7 +22,7 @@ export class Deck {
     }
 
     seeTop() {
-        return this.cards_.slice(-3).reverse();
+        return this.cards_.slice(0, 3);
     }
 
     updateCards(cards: Card[]) {

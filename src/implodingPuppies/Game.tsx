@@ -31,7 +31,6 @@ interface DeckRef {
 }
 
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
-    mounted_: boolean = false;
 
     private playerRefs_: Map<number, PlayerRef> = new Map();
 
@@ -45,7 +44,6 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         const game = new GameData(true);
         game.gameLoop();
         game.setUpdateCallback(this.updateView);
-        // game.setCallbacks(this.waitForNopes, this.updateView);
 
         this.state = {
             game,
@@ -54,23 +52,17 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         }
     }
 
-    componentDidMount() {
-        // Update the view after the refs are defined.
-        this.updateView();
-
-        this.mounted_ = true;
-    }
+    // componentDidMount() {
+    //     // Update the view after the refs are defined.
+    //     this.updateView();
+    // }
 
     componentWillUnmount() {
-        this.mounted_ = false;
+        this.state.game.shutDown();
     }
 
     updateView = () => {
         this.setState({});
-    }
-
-    onDraw = () => {
-        // Todo
     }
 
     storePlayerRef = (player: number) => (ref: Player) => this.playerRefs_.set(player, {
@@ -151,17 +143,13 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                 {this.state.game.players.map((player, i) => <Player
                     ref={this.storePlayerRef(i)}
                     key={i}
-                    active={player.id === this.state.game.currentPlayer.id}
                     player={player} />
                 )}
 
                 <Deck
                     deckRef={this.deckRef}
                     discardRef={this.discardRef}
-                    onClick={this.onDraw}
                     game={this.state.game} />
-
-                {/* {this.state.game.discardPile.map(card => <Card key={card.id} className="moving-card" type={card.prototype.type} style={this.getCardStyle(card, 0)} />)} */}
             </>
         );
     }

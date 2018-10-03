@@ -117,6 +117,12 @@ cards.set(CardTypes.BOMB, {
         const defuse = player.find(CardTypes.DEFUSE);
         if (defuse === undefined) {
             await player.die();
+            game.log(`${player.name} dies!`, player);
+
+            for (let i = player.cards.length - 1; i >= 0; i--) {
+                player.discardCard(player.cards[i].prototype.type, game)
+            }
+
             return false;
         } else {
             await player.useCard(CardTypes.DEFUSE, game);
@@ -245,7 +251,7 @@ interface Owner {
 
 export class Card {
     static sortFn(a: Card, b: Card) {
-        return a.prototype.name.localeCompare(b.prototype.name);
+        return a.prototype.type.localeCompare(b.prototype.type);
     }
 
     id: number;

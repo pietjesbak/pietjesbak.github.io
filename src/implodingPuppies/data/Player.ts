@@ -12,6 +12,10 @@ export interface PlayerOptions {
 }
 
 export class Player {
+    static colors = ['#5bc0eb', '#fde74c', '#9bc53d', '#e55934', '#fa7921'];
+
+    static avatars = ['🐕', '🐈', '🐦', '🐟', '🐔'];
+
     private id_: number;
 
     private cards_: Card[];
@@ -41,7 +45,7 @@ export class Player {
     }
 
     set cards(value: Card[]) {
-        this.cards_ = value;
+        this.cards_ = value.sort(Card.sortFn);
         this.assignCards_();
     }
 
@@ -51,6 +55,18 @@ export class Player {
 
     get selection() {
         return this.selection_;
+    }
+
+    get name() {
+        return `Player ${this.id}`;
+    }
+
+    get color() {
+        return Player.colors[this.id % Player.colors.length] || '#000';
+    }
+
+    get avatar() {
+        return Player.avatars[this.id % Player.avatars.length] || '🤡';
     }
 
     clearSelection() {
