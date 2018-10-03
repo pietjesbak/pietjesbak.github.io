@@ -230,7 +230,7 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         name: 'Animal',
         description: 'A collectable. Combine 2 or 3 of the same type to steal a card.',
         count: 4,
-        playTest: (player, selection) => fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
+        playTest: (player, selection) => fiveDifferent(player, selection, type) || twoOrThreeSame(player, selection, type),
         playEffect: async () => undefined,
         drawEffect: async () => true
     });

@@ -446,6 +446,9 @@ export class Game extends AsyncHandler {
     }
 
     processAttack() {
+        // Clear the queue! An attack means the next player has to play twice immidiately.
+        this.playerQueue_ = [];
+
         this.nextTurn();
         this.playerQueue_.push(this.currentPlayer_);
     }

@@ -176,8 +176,8 @@ describe('Server', () => {
             }, 0);
 
             promise.then(nope => {
-                expect([...nopes.keys()]).toEqual([1, 2]);
-                expect(Player.prototype.allowNope).toHaveBeenCalledTimes(6);
+                expect([...nopes.keys()]).toEqual([2]);
+                expect(Player.prototype.allowNope).toHaveBeenCalledTimes(5);
                 expect(nope).toBe(false);
 
                 server.shutDown();
@@ -285,7 +285,7 @@ describe('Server', () => {
 
         server.gameLoop().then(() => {
             expect(turns).toEqual([0, 1, 1, 2]);
-            expect(server.players[1].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.ATTACK]);
+            expect(server.players[1].cards.map(card => card.prototype.type)).toEqual([ CardTypes.ATTACK, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
             expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK]);
 
             callback();
@@ -305,7 +305,7 @@ describe('Server', () => {
         });
         jest.spyOn(Player.prototype, 'seeFuture').mockImplementation(function (this: Player, cards: CardTypes, confirmFn: () => void) {
             expect(this.id).toBe(0);
-            expect(cards).toEqual([CardTypes.ATTACK, CardTypes.DEFUSE, CardTypes.BOMB]);
+            expect(cards).toEqual([CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK]);
             confirmFn();
         });
 
@@ -316,7 +316,7 @@ describe('Server', () => {
             callback();
         });
 
-        startServer(server, players, 3, [CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK], [CardTypes.FUTURE]);
+        startServer(server, players, 3, [CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK, CardTypes.PUPPY_1], [CardTypes.FUTURE]);
     });
 
     it('A player plays a shuffle to shuffle the deck', (callback) => {
@@ -480,5 +480,25 @@ describe('Server', () => {
         });
 
         startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.DEFUSE, CardTypes.NOPE]);
+    });
+
+    it('Attacking an attack means you dont have to play twice', (callback) => {
+        const server = new Game(true);
+        let players: Player[] = [];
+
+        let turn = 0;
+        jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
+            turn < 2 ? playCallback([CardTypes.ATTACK]) : server.shutDown();
+            turn++;
+        });
+
+        server.gameLoop().then(() => {
+            expect(server.currentPlayer.id).toBe(2);
+            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK, CardTypes.ATTACK]);
+
+            callback();
+        });
+
+        startServer(server, players, 3, undefined, [CardTypes.ATTACK]);
     });
 });
