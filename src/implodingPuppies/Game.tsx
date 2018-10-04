@@ -5,17 +5,17 @@ import * as ReactDOM from 'react-dom';
 import { repeat } from '../Helpers';
 import { Card as CardData, OwnerType } from './data/Cards';
 import { Deck as DeckData } from './data/Deck';
-import { Game as GameData } from './data/Game';
+import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
 import Deck from './Deck';
 import Player from './Player';
 
 interface Props {
     playerCount: number;
+    server: PeerBase;
 }
 
 interface State {
-    game: GameData;
     players: PlayerData[];
     canNope: boolean;
 }
@@ -41,24 +41,18 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
 
-        const game = new GameData(true);
-        game.gameLoop();
-        game.setUpdateCallback(this.updateView);
-
         this.state = {
-            game,
             players: [],
             canNope: false
         }
     }
 
-    // componentDidMount() {
-    //     // Update the view after the refs are defined.
-    //     this.updateView();
-    // }
+    componentDidMount() {
+        this.props.server.setUpdateCallback(this.updateView);
+    }
 
     componentWillUnmount() {
-        this.state.game.shutDown();
+        this.props.server.shutDown();
     }
 
     updateView = () => {
@@ -66,12 +60,12 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     storePlayerRef = (player: number) => (ref: Player) => this.playerRefs_.set(player, {
-        model: this.state.game.players[player],
+        model: this.props.server.game.players[player],
         view: ReactDOM.findDOMNode(ref) as HTMLElement
     });
 
     deckRef = (ref: any) => this.deckRef_ = {
-        model: this.state.game.deck,
+        model: this.props.server.game.deck,
         view: ReactDOM.findDOMNode(ref) as HTMLElement
     };
 
@@ -116,22 +110,22 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     joinPlayer = () => {
-        const player = new PlayerData([], this.state.players.length);
+        const player = new PlayerData('', this.state.players.length);
 
-        this.state.game.join(player);
+        this.props.server.game.join(player);
         this.setState({
             players: [...this.state.players, player]
         });
     }
 
     forceStart = () => {
-        this.state.game.forceStart();
+        this.props.server.game.forceStart();
     }
 
     renderPlayers() {
         return (
             <div>
-                {repeat(4 - this.state.game.playerCount).map((unused, i) => <button key={i} onClick={this.joinPlayer}>Join</button>)}
+                {repeat(4 - this.props.server.game.playerCount).map((unused, i) => <button key={i} onClick={this.joinPlayer}>Join</button>)}
                 <button onClick={this.forceStart}>Force start</button>
             </div>
         )
@@ -140,7 +134,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     renderGame() {
         return (
             <>
-                {this.state.game.players.map((player, i) => <Player
+                {this.props.server.game.players.map((player, i) => <Player
                     ref={this.storePlayerRef(i)}
                     key={i}
                     player={player} />
@@ -149,7 +143,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                 <Deck
                     deckRef={this.deckRef}
                     discardRef={this.discardRef}
-                    game={this.state.game} />
+                    game={this.props.server.game} />
             </>
         );
     }
@@ -157,7 +151,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     render() {
         return (
             <div className="imploding-puppies-game">
-                {this.state.game.players.length === 0 ? this.renderPlayers() : this.renderGame()}
+                {this.props.server.game.players.length === 0 ? this.renderPlayers() : this.renderGame()}
             </div>
         );
     }

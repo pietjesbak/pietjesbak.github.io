@@ -14,7 +14,7 @@ import OptionIconButton from './components/OptionIconButton';
 import ScrollToTop from './components/ScrollToTop';
 import TouchDecider from './components/TouchDecider';
 import { ChangeEvent, Inventory } from './data/Inventory';
-import Game from './implodingPuppies/Game';
+import Server from './implodingPuppies/Server';
 import { withInventory } from './InventoryProvider';
 
 export interface State {
@@ -108,7 +108,7 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
     implodingPuppies() {
         return (
             <Container>
-                <Game playerCount={4} />
+                <Server />
             </Container>
         );
     }

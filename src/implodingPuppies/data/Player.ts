@@ -18,17 +18,18 @@ export class Player {
 
     private id_: number;
 
+    private name_?: string;
+
     private cards_: Card[];
 
     private alive_: boolean = true;
 
     private selection_: Card[] = [];
 
-    constructor(initialCards: Card[], id: number) {
-        this.cards_ = initialCards.sort(Card.sortFn);
-        this.assignCards_();
-
-        this.id = id;
+    constructor(name?: string, id?: number) {
+        this.cards_ = [];
+        this.name_ = name;
+        this.id_ = id !== undefined ? id : -1;
     }
 
     get id() {
@@ -58,7 +59,7 @@ export class Player {
     }
 
     get name() {
-        return `Player ${this.id}`;
+        return this.name_ || `Player ${this.id}`;
     }
 
     get color() {

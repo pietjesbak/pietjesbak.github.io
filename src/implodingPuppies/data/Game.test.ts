@@ -7,7 +7,7 @@ import { TestSerializer } from './Serializers';
 
 function startServer(server: Game, players: Player[], count: number = 3, deck?: CardTypes[], playerCards?: CardTypes[], discardPile?: CardTypes[]) {
     for (let i = 0; i < count; i++) {
-        players[i] = new Player([], i);
+        players[i] = new Player();
         server.join(players[i]);
     }
 
@@ -18,8 +18,14 @@ function startServer(server: Game, players: Player[], count: number = 3, deck?: 
             playerCards = playerCards || [CardTypes.DEFUSE];
             discardPile = discardPile || [];
 
+            const newPlayers = repeat(count).map((unused, i) => {
+                const player = new Player();
+                player.cards = playerCards!.map(type => new Card(type));
+                return player;
+            });
+
             (server['serializer_'] as TestSerializer).queueState({
-                players: repeat(count).map((unused, i) => new Player(playerCards!.map(type => new Card(type)), i)),
+                players: newPlayers,
                 deck: deck!.map(type => new Card(type)),
                 discardPile: discardPile!.map(type => new Card(type))
             });
@@ -44,7 +50,7 @@ describe('Server', () => {
         });
 
         for (let i = 0; i < 5; i++) {
-            server.join(new Player([], i));
+            server.join(new Player());
         }
     });
 
@@ -55,7 +61,7 @@ describe('Server', () => {
         });
 
         for (let i = 0; i < 3; i++) {
-            server.join(new Player([], i));
+            server.join(new Player());
         }
 
         server.forceStart();

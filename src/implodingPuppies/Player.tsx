@@ -4,18 +4,9 @@ import classNames from 'classnames';
 import * as React from 'react';
 import Card from './Card';
 import { CardTypes } from './data/Cards';
+import { IPlayerCallbacks } from './data/IPlayerCallbacks';
 import { Player as PlayerData } from './data/Player';
 import DeckInsert from './DeckInsert';
-
-interface Callbacks {
-    drawCallback: () => void;
-    playCallback: (selection: CardTypes[]) => void;
-    nopeCallback: () => void;
-    playerSelectCallback: (player: PlayerData) => void;
-    cardSelectCallback: (selection: CardTypes) => void;
-    insertCallback: (position: number) => void;
-    confirmCallback: () => void;
-}
 
 export const enum Options {
     NONE = 'none',
@@ -29,13 +20,13 @@ export const enum Options {
 
 interface Props {
     player: PlayerData;
-    interactive?: Callbacks;
+    interactive?: IPlayerCallbacks;
     canNope?: boolean;
 }
 
 interface State {
     option: Options;
-    callbacks: Partial<Callbacks>;
+    callbacks: Partial<IPlayerCallbacks>;
     playerOptions?: PlayerData[];
     cardOptions?: CardTypes[];
     deckOption?: number;
