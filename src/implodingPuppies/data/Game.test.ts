@@ -19,7 +19,7 @@ function startServer(server: Game, players: Player[], count: number = 3, deck?: 
             discardPile = discardPile || [];
 
             const newPlayers = repeat(count).map((unused, i) => {
-                const player = new Player();
+                const player = new Player(undefined, i);
                 player.cards = playerCards!.map(type => new Card(type));
                 return player;
             });
@@ -230,7 +230,7 @@ describe('Server', () => {
         jest.spyOn(Player.prototype, 'allowSelectTarget').mockImplementation(function (this: Player, options: Player[], selectCallback: (player: Player) => void) {
             expect(this.id).toBe(0);
             expect(options.map(player => player.id)).toEqual([1, 2]);
-            selectCallback(players[1]);
+            selectCallback(options[0]);
         });
         jest.spyOn(Player.prototype, 'allowSelectCard').mockImplementation(function (this: Player, options: CardTypes[], selectCallback: (selection: CardTypes) => void) {
             expect(this.id).toBe(1);

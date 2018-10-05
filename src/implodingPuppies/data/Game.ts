@@ -469,7 +469,7 @@ export class Game extends AsyncHandler {
             const selectedCard = target.stealCard(type, this);
             if (selectedCard !== undefined) {
                 this.currentPlayer.addCard(selectedCard, this);
-                this.log(`${this.currentPlayer.name} gets a  ${this.selectCard.prototype.name}.`, this.currentPlayer);
+                this.log(`${this.currentPlayer.name} gets a ${selectedCard.prototype.name}.`, this.currentPlayer);
             }
         }
     }
