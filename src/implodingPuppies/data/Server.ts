@@ -1,18 +1,21 @@
 import * as Peer from 'peerjs';
+import { repeat } from '../../Helpers';
 import { CardTypes } from './Cards';
 import { Connection, DataType, PeerBase } from './PeerBase';
 import { Player } from './Player';
 
 export class Server extends PeerBase {
+
     constructor(key: string) {
         super(true, key);
+        this.game_.setLogCallback(this.log);
         this.game_.gameLoop();
 
         this.peer_.on('connection', (conn) => {
-            conn.on('data', this.onData_(this.peer_, conn));
+            conn.on('data', this.onData_(conn));
             conn.on('close', () => {
                 console.log('connection lost');
-                this.removePeer_(this.peer_);
+                this.removePeer_(conn);
                 this.peer_.destroy();
             });
         });
@@ -29,13 +32,40 @@ export class Server extends PeerBase {
     start = () => {
         if (this.players.length >= 2) {
             this.game_.forceStart();
-            this.started_ = true;
-            this.update_();
 
-            this.broadcast_({
-                type: DataType.START
-            });
+            // Todo: find way to remove this timeout.
+            window.setTimeout(() => {
+                this.ownId_ = this.connections_.find(conn => conn.connection === undefined)!.player.id;
+                this.started_ = true;
+                this.update_();
+            }, 0);
         }
+    }
+
+    /**
+     * Sync the game state with all clients.
+     */
+    updateState = () => {
+        const base = {
+            type: DataType.UPDATE_STATE,
+            deck: this.game_.deck.cards.length,
+            discard: this.game.discardPile.map(card => card.prototype.type),
+            currentPlayer: this.game.currentPlayer.id
+        };
+
+        this.broadcast_((connection: Connection) => {
+            return {
+                ...base,
+                ownId: connection.player.id,
+                players: this.players.map(player => {
+                    return {
+                        id: player.id,
+                        name: player.name,
+                        cards: connection.player === player ? player.cards.map(card => card.prototype.type) : repeat(player.cards.length).map(() => CardTypes.BOMB)
+                    };
+                })
+            };
+        });
     }
 
     /**
@@ -44,102 +74,121 @@ export class Server extends PeerBase {
      */
     connectSelf(name: string) {
         const player = new Player(name, this.connections_.length);
+        this.ownId_ = player.id;
 
         this.connections_.push({
             player,
-            peer: undefined,
+            connection: undefined,
             callbacks: {}
         });
 
         this.game_.join(player);
-        return player;
+    }
+
+    log = (message: string, player?: Player, secret?: boolean) => {
+        this.broadcast_((connection: Connection) => {
+            return {
+                type: DataType.LOG,
+                message: (!secret || !player || player === connection.player) ? message : '<secret>',
+                player: player !== undefined ? player.id : undefined
+            };
+        });
+    }
+
+    protected update_() {
+        super.update_();
+
+        if (this.started_) {
+            this.updateState();
+        }
     }
 
     /**
      * Handle all data that is sent from the client to the server.
      */
-    private onData_ = (peer: Peer, connection: PeerJs.DataConnection) => (data: any) => {
+    private onData_ = (connection: PeerJs.DataConnection) => {
         let conn: Connection | undefined;
-        switch (data.type) {
-            case DataType.JOIN:
-                // You can only join once.
-                if (this.findConnection_(peer) || this.started_) {
+        return (data: any) => {
+            switch (data.type) {
+                case DataType.JOIN:
+                    // You can only join once.
+                    if (this.findConnection_(connection) || this.started_) {
+                        connection.close();
+                        return;
+                    }
+
+                    conn = {
+                        connection,
+                        player: new Player(data.name, this.connections_.length),
+                        callbacks: {}
+                    };
+
+                    this.broadcast_({
+                        type: DataType.JOIN,
+                        id: conn.player.id,
+                        name: conn.player.name
+                    });
+
+                    this.game_.join(conn.player);
+
+                    this.connections_.push(conn);
+                    this.setPlayerCallbacks_(conn.player, conn);
+                    this.syncPlayers_(connection);
+
+                    this.update_();
+                    if (this.players.length >= 5) {
+                        this.start();
+                    }
+                    break;
+
+                case DataType.LEAVE:
                     connection.close();
-                    return;
-                }
+                    this.removePeer_(connection);
+                    break;
 
-                conn = {
-                    peer,
-                    connection,
-                    player: new Player(data.name, this.connections_.length),
-                    callbacks: {}
-                };
+                // call the correct callback.
+                case DataType.DRAW:
+                    if (conn !== undefined && conn.callbacks.drawCallback !== undefined) {
+                        conn.callbacks.drawCallback();
+                    }
+                    break;
 
-                this.broadcast_({
-                    type: DataType.JOIN,
-                    id: conn.player.id,
-                    name: conn.player.name
-                });
+                case DataType.PLAY:
+                    if (conn !== undefined && conn.callbacks.playCallback !== undefined) {
+                        conn.callbacks.playCallback(data.selection);
+                    }
+                    break;
 
-                this.game_.join(conn.player);
+                case DataType.NOPE:
+                    if (conn !== undefined && conn.callbacks.nopeCallback !== undefined) {
+                        conn.callbacks.nopeCallback();
+                    }
+                    break;
 
-                this.connections_.push(conn);
-                this.setPlayerCallbacks_(conn.player, conn);
-                this.syncPlayers_(connection);
+                case DataType.PLAYER_SELECT:
+                    if (conn !== undefined && conn.callbacks.playerSelectCallback !== undefined) {
+                        conn.callbacks.playerSelectCallback(this.players[data.player]);
+                    }
+                    break;
 
-                this.update_();
-                if (this.players.length >= 5) {
-                    this.start();
-                }
-                break;
+                case DataType.CARD_SELECT:
+                    if (conn !== undefined && conn.callbacks.cardSelectCallback !== undefined) {
+                        conn.callbacks.cardSelectCallback(data.cardType);
+                    }
+                    break;
 
-            case DataType.LEAVE:
-                connection.close();
-                this.removePeer_(peer);
-                break;
+                case DataType.INSERT_CARD:
+                    if (conn !== undefined && conn.callbacks.insertCallback !== undefined) {
+                        conn.callbacks.insertCallback(data.position);
+                    }
+                    break;
 
-            // call the correct callback.
-            case DataType.DRAW:
-                if (conn !== undefined && conn.callbacks.drawCallback !== undefined) {
-                    conn.callbacks.drawCallback();
-                }
-                break;
-
-            case DataType.PLAY:
-                if (conn !== undefined && conn.callbacks.playCallback !== undefined) {
-                    conn.callbacks.playCallback(data.selection);
-                }
-                break;
-
-            case DataType.NOPE:
-                if (conn !== undefined && conn.callbacks.nopeCallback !== undefined) {
-                    conn.callbacks.nopeCallback();
-                }
-                break;
-
-            case DataType.PLAYER_SELECT:
-                if (conn !== undefined && conn.callbacks.playerSelectCallback !== undefined) {
-                    conn.callbacks.playerSelectCallback(data.player);
-                }
-                break;
-
-            case DataType.CARD_SELECT:
-                if (conn !== undefined && conn.callbacks.cardSelectCallback !== undefined) {
-                    conn.callbacks.cardSelectCallback(data.cardType);
-                }
-                break;
-
-            case DataType.INSERT_CARD:
-                if (conn !== undefined && conn.callbacks.insertCallback !== undefined) {
-                    conn.callbacks.insertCallback(data.position);
-                }
-                break;
-
-            case DataType.CONFIRM:
-                if (conn !== undefined && conn.callbacks.confirmCallback !== undefined) {
-                    conn.callbacks.confirmCallback();
-                }
-                break;
+                case DataType.CONFIRM:
+                    if (conn !== undefined && conn.callbacks.confirmCallback !== undefined) {
+                        conn.callbacks.confirmCallback();
+                    }
+                    break;
+            }
         }
     }
 

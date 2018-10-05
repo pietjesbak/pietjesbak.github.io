@@ -20,7 +20,7 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>>
                     <div ref={deckRef} onClick={onClick} className={classNames('imploding-puppies-deck', 'card-deck', { 'interactive': true })} style={{ transform: `translate(${-size * 2}px, ${-size * 2}px)`, boxShadow: `${size}px ${size}px ${size}px ${size}px #333` }} />
                 ) : null}
                 <div ref={discardRef} className={classNames('imploding-puppies-discard')}>
-                    {game.discardPile.slice(0, 10).map((card, i) => <Card key={i} type={card.prototype.type} interactive={false} style={{ transform: `rotate(${Math.sin(i) * 20}deg) translate(${Math.sin(i) * 20}px, ${Math.cos(i) * 20}px)` }} />)}
+                    {game.discardPile.slice(-10).map((card, i) => <Card key={i} type={card.prototype.type} interactive={false} style={{ transform: `rotate(${Math.sin(i) * 20}deg) translate(${Math.sin(i) * 20}px, ${Math.cos(i) * 20}px)` }} />)}
                 </div>
             </div>
         );

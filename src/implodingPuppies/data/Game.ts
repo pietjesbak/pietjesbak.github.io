@@ -88,9 +88,13 @@ export class Game extends AsyncHandler {
 
     private startKey_: string;
 
+    private startRoundKey_: string;
+
     private logs_: Logs[] = [];
 
     private updateCallback_: () => void;
+
+    private logCallback_?: (message: string, player?: Player, secret?: boolean) => void;
 
     constructor(isHost: boolean, serializer?: ISerializer) {
         super();
@@ -132,13 +136,21 @@ export class Game extends AsyncHandler {
         this.updateCallback_ = callback;
     }
 
-    log(message: string, player?: Player) {
+    setLogCallback(callback: (message: string, player?: Player) => void) {
+        this.logCallback_ = callback;
+    }
+
+    log(message: string, player?: Player, secret?: boolean) {
         console.log(message);
         this.logs_.push({
             message,
             player,
             timestamp: Date.now()
         });
+
+        if (this.logCallback_ !== undefined) {
+            this.logCallback_(message, player, secret);
+        }
     }
 
     shutDown() {
@@ -210,6 +222,34 @@ export class Game extends AsyncHandler {
         this.deck_ = new Deck(deck);
     }
 
+    /**
+     * Set the players for the client.
+     * @param players The players
+     */
+    setPlayersClient(players: Player[]) {
+        this.players_ = players;
+    }
+
+    /**
+     * Set the deck for the client.
+     * @param count The amount of cards in the deck.
+     */
+    setDeckClient(count: number) {
+        this.deck_ = new Deck(repeat(count).map(() => new Card(CardTypes.BOMB)));
+    }
+
+    /**
+     * Set the discard pile for the client.
+     * @param types The cards in the discard pile.
+     */
+    setDiscardClient(types: CardTypes[]) {
+        this.discardPile_ = types.map(type => new Card(type));
+    }
+
+    startRound() {
+        this.resolve(this.startRoundKey_);
+    }
+
     async waitForPlayers(): Promise<Player[]> {
         this.slots_ = new Array(Game.MAX_PLAYER_COUNT).fill(null).map(() => this.createPromise(AsyncActions.JOIN));
         this.startKey_ = this.createPromise(AsyncActions.START);
@@ -245,10 +285,13 @@ export class Game extends AsyncHandler {
     }
 
     async gameLoop() {
+        this.startRoundKey_ = this.createPromise(AsyncActions.START);
         this.players_ = await this.waitForPlayers();
         this.initDeck();
         this.waitForUpdates();
         this.update_();
+
+        await this.getPromise(this.startRoundKey_);
 
         let gameOver = false;
         while (!gameOver) {
@@ -289,7 +332,7 @@ export class Game extends AsyncHandler {
 
     async playerDraw() {
         const card = this.deck_.pick();
-        this.log(`${this.currentPlayer.name} draws a ${card.prototype.name}.`, this.currentPlayer);
+        this.log(`${this.currentPlayer.name} draws a ${card.prototype.name}.`, this.currentPlayer, true);
         await this.currentPlayer.drawCard(card, this);
         this.update_();
     }
@@ -355,6 +398,8 @@ export class Game extends AsyncHandler {
                 this.discardPile_.splice(this.discardPile_.indexOf(card), 1);
                 this.currentPlayer.addCard(card, this);
             }
+
+            this.update_();
         }
     }
 

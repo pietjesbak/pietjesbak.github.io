@@ -5,7 +5,6 @@ import { Player } from './Player';
 
 export interface Connection {
     player: Player;
-    peer?: Peer;
     connection?: PeerJs.DataConnection;
     callbacks: Partial<IPlayerCallbacks>;
 }
@@ -24,7 +23,8 @@ export const enum DataType {
     SEE_FUTURE,
     CLEAR,
     UPDATE,
-    START
+    UPDATE_STATE,
+    LOG
 }
 
 export abstract class PeerBase {
@@ -42,10 +42,17 @@ export abstract class PeerBase {
 
     protected started_: boolean;
 
+    protected currentPlayer_?: number;
+
+    protected ownId_: number;
+
     protected updateCallback_?: () => void;
 
     constructor(isHost: boolean, key?: string) {
         this.game_ = new Game(isHost);
+        this.game.setUpdateCallback(() => {
+            this.update_();
+        });
 
         if (key === undefined) {
             this.peer_ = new Peer({debug: PeerBase.DEBUG_LEVEL });
@@ -75,7 +82,15 @@ export abstract class PeerBase {
         return this.connections_.map(connection => connection.player);
     }
 
-    abstract connectSelf(name: string): Player;
+    get currentPlayerId() {
+        return this.currentPlayer_ || this.game_.currentPlayer.id;
+    }
+
+    get ownId() {
+        return this.ownId_;
+    }
+
+    abstract connectSelf(name: string): void;
 
     shutDown() {
         this.game.shutDown();
@@ -83,26 +98,27 @@ export abstract class PeerBase {
 
     setUpdateCallback(callback: () => void) {
         this.updateCallback_ = callback;
-        this.game.setUpdateCallback(callback);
     }
 
-    protected findConnection_(peer: Peer) {
-        return this.connections_.find(connection => connection.peer === peer)!;
+    protected findConnection_(connection: Peer.DataConnection) {
+        return this.connections_.find(conn => conn.connection! === connection)!;
     }
 
-    protected removePeer_(peer: Peer) {
-        this.connections_.splice(this.connections_.indexOf(this.findConnection_(peer)), 1);
+    protected removePeer_(connection: Peer.DataConnection) {
+        this.connections_.splice(this.connections_.indexOf(this.findConnection_(connection)), 1);
     }
 
-    protected broadcast_(data: any) {
+    /**
+     * Broadcast data to all remote peers.
+     * @param data A data object or a function to get the data object.
+     */
+    protected broadcast_(data: ((connection: Connection) => object) | object) {
         this.connections_
-            .map(conn => conn.connection)
-            .filter(conn => conn !== undefined)
-            .forEach(conn => conn!.send(data));
+            .filter(conn => conn.connection !== undefined)
+            .forEach(conn => conn.connection!.send(typeof data === 'function' ? data.call(this, conn) : data));
     }
 
     protected onError_ = (peer: Peer) => (error: any) => {
-        this.removePeer_(peer);
         this.error_ = error.type;
         this.update_();
     }

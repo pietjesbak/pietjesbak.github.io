@@ -2,13 +2,13 @@ import './css/Game.css';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { repeat } from '../Helpers';
 import { Card as CardData, OwnerType } from './data/Cards';
 import { Deck as DeckData } from './data/Deck';
 import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
 import Deck from './Deck';
 import Player from './Player';
+import RemotePlayer from './RemotePlayer';
 
 interface Props {
     playerCount: number;
@@ -49,6 +49,9 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
     componentDidMount() {
         this.props.server.setUpdateCallback(this.updateView);
+        if (this.props.server.isHost) {
+            this.props.server.game.startRound();
+        }
     }
 
     componentWillUnmount() {
@@ -122,36 +125,20 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.props.server.game.forceStart();
     }
 
-    renderPlayers() {
-        return (
-            <div>
-                {repeat(4 - this.props.server.game.playerCount).map((unused, i) => <button key={i} onClick={this.joinPlayer}>Join</button>)}
-                <button onClick={this.forceStart}>Force start</button>
-            </div>
-        )
-    }
+    render() {
+        const players = this.props.server.game.players;
+        const ownPlayer = players.find(player => player.id === this.props.server.ownId)!;
+        const remotePlayers = players.filter(player => player.id !== this.props.server.ownId);
 
-    renderGame() {
         return (
-            <>
-                {this.props.server.game.players.map((player, i) => <Player
-                    ref={this.storePlayerRef(i)}
-                    key={i}
-                    player={player} />
-                )}
+            <div className="imploding-puppies-game">
+                <Player player={ownPlayer} />
+                {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} />)}
 
                 <Deck
                     deckRef={this.deckRef}
                     discardRef={this.discardRef}
                     game={this.props.server.game} />
-            </>
-        );
-    }
-
-    render() {
-        return (
-            <div className="imploding-puppies-game">
-                {this.props.server.game.players.length === 0 ? this.renderPlayers() : this.renderGame()}
             </div>
         );
     }

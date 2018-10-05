@@ -21,7 +21,6 @@ export const enum Options {
 interface Props {
     player: PlayerData;
     interactive?: IPlayerCallbacks;
-    canNope?: boolean;
 }
 
 interface State {

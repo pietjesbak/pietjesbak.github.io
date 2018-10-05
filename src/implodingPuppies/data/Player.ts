@@ -62,6 +62,10 @@ export class Player {
         return this.name_ || `Player ${this.id}`;
     }
 
+    set name(name: string) {
+        this.name_ = name;
+    }
+
     get color() {
         return Player.colors[this.id % Player.colors.length] || '#000';
     }
