@@ -22,7 +22,6 @@ export const enum DataType {
     GIVE_OPTIONS,
     SEE_FUTURE,
     CLEAR,
-    UPDATE,
     UPDATE_STATE,
     LOG
 }
@@ -55,9 +54,9 @@ export abstract class PeerBase {
         });
 
         if (key === undefined) {
-            this.peer_ = new Peer({debug: PeerBase.DEBUG_LEVEL });
+            this.peer_ = new Peer({ debug: PeerBase.DEBUG_LEVEL });
         } else {
-            this.peer_ = new Peer(PeerBase.PREFIX + key, {debug: PeerBase.DEBUG_LEVEL });
+            this.peer_ = new Peer(PeerBase.PREFIX + key, { debug: PeerBase.DEBUG_LEVEL });
         }
         this.peer_.on('error', this.onError_(this.peer_));
     }
@@ -100,8 +99,12 @@ export abstract class PeerBase {
         this.updateCallback_ = callback;
     }
 
-    protected findConnection_(connection: Peer.DataConnection) {
-        return this.connections_.find(conn => conn.connection! === connection)!;
+    protected findConnection_(connection: Peer.DataConnection | Player) {
+        if (connection instanceof Player) {
+            return this.connections_.find(conn => conn.player === connection)!;
+        } else {
+            return this.connections_.find(conn => conn.connection! === connection)!;
+        }
     }
 
     protected removePeer_(connection: Peer.DataConnection) {

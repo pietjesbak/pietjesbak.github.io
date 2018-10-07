@@ -59,12 +59,17 @@ export interface CardPrototype {
     /**
      * Function that executes the effect when a player plays this card.
      */
-    playEffect: (player: Player, game: Game) => Promise<void>;
+    playEffect?: (player: Player, game: Game) => Promise<void>;
 
     /**
      * Function that executes when a player draws this card.
      */
-    drawEffect: (player: Player, game: Game) => Promise<boolean>;
+    drawEffect?: (player: Player, game: Game) => Promise<boolean>;
+
+    /**
+     * Function give a value to the card, used by the ai player.
+     */
+    score: (player: Player, game: Game) => number;
 }
 
 /**
@@ -99,6 +104,15 @@ const twoOrThreeSame = (player: Player, selection: Card[], type: CardTypes) => {
         selection.every(card => card.prototype.type === type);
 }
 
+/**
+ * Counts the amount of cards a player has of a given type.
+ * @param player The current player.
+ * @param type The type of the card that's being checked.
+ */
+const count = (player: Player, type: CardTypes) => {
+    return player.cards.filter(card => card.prototype.type === type).length;
+}
+
 export const cards = new Map<CardTypes, CardPrototype>();
 
 cards.set(CardTypes.BOMB, {
@@ -129,7 +143,8 @@ cards.set(CardTypes.BOMB, {
         }
 
         return true;
-    }
+    },
+    score: () => 0
 });
 
 cards.set(CardTypes.DEFUSE, {
@@ -144,7 +159,7 @@ cards.set(CardTypes.DEFUSE, {
         // A player can only play this as a result of drawing a bomb, so he must have one in his hand.
         await player.useCard(CardTypes.BOMB, game);
     },
-    drawEffect: async () => true
+    score: () => 10
 });
 
 cards.set(CardTypes.SHUFFLE, {
@@ -158,7 +173,7 @@ cards.set(CardTypes.SHUFFLE, {
     playEffect: async (player, game) => {
         game.deck.shuffle();
     },
-    drawEffect: async () => true
+    score: (player: Player, game: Game) => Math.floor(game.deck.cards.length / 10) + count(player, CardTypes.SHUFFLE)
 });
 
 cards.set(CardTypes.NOPE, {
@@ -169,8 +184,7 @@ cards.set(CardTypes.NOPE, {
     description: 'Use this card to prevent another player\'s action.',
     count: 5,
     playTest: (player, selection) => fiveDifferent(player, selection, CardTypes.NOPE) || twoOrThreeSame(player, selection, CardTypes.NOPE),
-    playEffect: async () => undefined,
-    drawEffect: async () => true
+    score: (player: Player) => 4 + count(player, CardTypes.NOPE)
 });
 
 cards.set(CardTypes.SKIP, {
@@ -182,7 +196,7 @@ cards.set(CardTypes.SKIP, {
     count: 4,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.SKIP) || twoOrThreeSame(player, selection, CardTypes.SKIP),
     playEffect: async (player, game) => game.processSkip(),
-    drawEffect: async () => true
+    score: (player: Player) => 3 + count(player, CardTypes.SKIP)
 });
 
 cards.set(CardTypes.ATTACK, {
@@ -194,7 +208,7 @@ cards.set(CardTypes.ATTACK, {
     count: 4,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
     playEffect: async (player, game) => game.processAttack(),
-    drawEffect: async () => true
+    score: (player: Player) => 4 + count(player, CardTypes.ATTACK)
 });
 
 cards.set(CardTypes.FAVOR, {
@@ -206,7 +220,7 @@ cards.set(CardTypes.FAVOR, {
     count: 4,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FAVOR) || twoOrThreeSame(player, selection, CardTypes.FAVOR),
     playEffect: async (player, game) => game.processFavor(),
-    drawEffect: async () => true
+    score: (player: Player) => 1 + count(player, CardTypes.FAVOR)
 });
 
 cards.set(CardTypes.FUTURE, {
@@ -218,7 +232,7 @@ cards.set(CardTypes.FUTURE, {
     count: 5,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FUTURE) || twoOrThreeSame(player, selection, CardTypes.FUTURE),
     playEffect: async (player, game) => game.processFuture(),
-    drawEffect: async () => true
+    score: (player: Player) => 2 + count(player, CardTypes.SHUFFLE)
 });
 
 const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
@@ -231,8 +245,7 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         description: 'A collectable. Combine 2 or 3 of the same type to steal a card.',
         count: 4,
         playTest: (player, selection) => fiveDifferent(player, selection, type) || twoOrThreeSame(player, selection, type),
-        playEffect: async () => undefined,
-        drawEffect: async () => true
+        score: (player: Player) => count(player, type)
     });
 });
 

@@ -31,7 +31,8 @@ function startServer(server: Game, players: Player[], count: number = 3, deck?: 
             });
 
             // Wait for the next event loop.
-            return new Promise(resolve => setTimeout(resolve, 0));
+            return new Promise(resolve => setTimeout(resolve, 0))
+                .then(() => server.startRound());
         });
 }
 
@@ -506,5 +507,47 @@ describe('Server', () => {
         });
 
         startServer(server, players, 3, undefined, [CardTypes.ATTACK]);
+    });
+
+    it('It is not possible to play a card without effect', (callback) => {
+        const server = new Game(true);
+        let players: Player[] = [];
+
+        let first = true;
+        jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
+            first ? playCallback([CardTypes.PUPPY_1]) : server.shutDown();
+            first = false;
+        });
+
+        server.gameLoop().then(() => {
+            expect(server.currentPlayer.id).toBe(0);
+            expect(server.discardPile.map(card => card.prototype.type)).toEqual([]);
+            expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+
+            callback();
+        });
+
+        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+    });
+
+    it('It is not possible to play incorrect combinations', (callback) => {
+        const server = new Game(true);
+        let players: Player[] = [];
+
+        let first = true;
+        jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
+            first ? playCallback([CardTypes.PUPPY_1, CardTypes.PUPPY_2]) : server.shutDown();
+            first = false;
+        });
+
+        server.gameLoop().then(() => {
+            expect(server.currentPlayer.id).toBe(0);
+            expect(server.discardPile.map(card => card.prototype.type)).toEqual([]);
+            expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+
+            callback();
+        });
+
+        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
     });
 });

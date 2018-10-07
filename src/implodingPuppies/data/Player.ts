@@ -1,4 +1,4 @@
-import { Card, CardTypes, OwnerType } from './Cards';
+import { Card, cards, CardTypes, OwnerType } from './Cards';
 import { Game } from './Game';
 
 export interface PlayerOptions {
@@ -74,10 +74,6 @@ export class Player {
         return Player.avatars[this.id % Player.avatars.length] || '🤡';
     }
 
-    clearSelection() {
-        this.selection_ = [];
-    }
-
     //#region Callbacks
 
     /**
@@ -126,10 +122,10 @@ export class Player {
 
     /**
      * Used to pass show the future to this player.
-     * @param cards The future cards.
+     * @param future The future cards.
      * @param confirmCallback Callback when done seeing the future.
      */
-    seeFuture(cards: CardTypes[], confirmCallback: () => void) {
+    seeFuture(future: CardTypes[], confirmCallback: () => void) {
         // Callback
     }
 
@@ -151,14 +147,50 @@ export class Player {
         }
     }
 
+    /**
+     * Finds a card in the player's hand that matches the card type.
+     * @param type The card type to look for.
+     */
     find(type: CardTypes) {
         return this.cards_.find(c => c.prototype.type === type);
     }
 
+    /**
+     * Clears the player's selected cards.
+     */
+    clearSelection() {
+        this.selection_ = [];
+    }
+
+    /**
+     * Checks if the player can play the current selection.
+     */
+    canPlay(selection: CardTypes[]) {
+        if (selection.length === 1 && cards.get(selection[0])!.playEffect !== undefined) {
+            return true;
+        } else if ((selection.length === 2 || selection.length === 3) &&
+            selection.every(type => type === selection[0])) {
+            return true;
+        } else if (selection.length === 5 && new Set(selection).size === 5) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * The player uses a single card.
+     * @param type The type of the card that the player wants to use.
+     * @param game The game.
+     */
     async useCard(type: CardTypes, game: Game) {
         const card = this.find(type);
         if (!card) {
             throw new Error('Trying to play a card you dont have!');
+        }
+
+        if (card.prototype.playEffect === undefined) {
+            throw new Error('Trying to play a card without effect!');
         }
 
         this.discardCard(type, game);
@@ -166,17 +198,34 @@ export class Player {
 
     }
 
+    /**
+     * The player draws a card.
+     * @param card The card that's being drawn.
+     * @param game The game.
+     */
     async drawCard(card: Card, game: Game) {
         this.addCard(card, game);
-        await card.prototype.drawEffect(this, game);
+        if (card.prototype.drawEffect !== undefined) {
+            await card.prototype.drawEffect(this, game);
+        }
     }
 
+    /**
+     * Add a card to the player's hand.
+     * @param card The card to add to the player's hand.
+     * @param game The game.
+     */
     addCard(card: Card, game: Game) {
         card.owner = { type: OwnerType.PLAYER, data: this.id };
         this.cards_.push(card);
         this.cards_.sort(Card.sortFn);
     }
 
+    /**
+     * Tries stealing a card from the player's hand.
+     * @param type Optional type of the card to steal.
+     * @param game The game.
+     */
     stealCard(type: CardTypes | undefined, game: Game) {
         let selection: Card | undefined;
         if (type === undefined) {
@@ -191,6 +240,11 @@ export class Player {
         return selection;
     }
 
+    /**
+     * Removes a card from the player's hand and adds it to the discard pile.
+     * @param type The card type to discard.
+     * @param game The game.
+     */
     discardCard(type: CardTypes, game: Game) {
         const card = this.find(type);
         if (!card) {
@@ -201,10 +255,16 @@ export class Player {
         card.owner = { type: OwnerType.DISCARD, data: undefined };
     }
 
+    /**
+     * Kills the player.
+     */
     async die() {
         this.alive_ = false;
     }
 
+    /**
+     * Makes sure all cards in the player's hand are assigned to him.
+     */
     private assignCards_() {
         this.cards_.forEach(card => card.owner = { type: OwnerType.PLAYER, data: this.id });
     }

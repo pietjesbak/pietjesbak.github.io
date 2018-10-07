@@ -23,16 +23,18 @@ class RemotePlayer extends React.Component<Props & React.ClassAttributes<RemoteP
 
     render() {
         return (
-            <div className={classNames('imploding-puppies-player')}>
+            <div className={classNames('imploding-puppies-player', 'remote-player')}>
                 <div className="player player-avatar" style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>
                 </div>
 
-                {this.props.player.cards.map((card, i) => <Card
-                    style={this.getCardStyles(i)}
-                    key={i}
-                />)}
+                <div className="cards">
+                    {this.props.player.cards.map((card, i) => <Card
+                        style={this.getCardStyles(i)}
+                        key={i}
+                    />)}
+                </div>
             </div>
         );
     }

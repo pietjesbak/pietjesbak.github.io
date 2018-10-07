@@ -1,5 +1,5 @@
-import * as Peer from 'peerjs';
 import { repeat } from '../../Helpers';
+import { AIPlayer } from './AIPlayer';
 import { CardTypes } from './Cards';
 import { Connection, DataType, PeerBase } from './PeerBase';
 import { Player } from './Player';
@@ -27,6 +27,10 @@ export class Server extends PeerBase {
 
     get connected() {
         return !this.error_ && this.connections_.length > 0;
+    }
+
+    get AIPlayers() {
+        return this.players.filter(player => player instanceof AIPlayer);
     }
 
     start = () => {
@@ -85,6 +89,33 @@ export class Server extends PeerBase {
         this.game_.join(player);
     }
 
+    /**
+     * Add an ai player.
+     */
+    addAI = () => {
+        const player = new AIPlayer(this.game_, 'AI', this.connections_.length);
+        this.connections_.push({
+            player,
+            connection: undefined,
+            callbacks: {}
+        });
+
+        this.game_.join(player);
+        this.syncPlayers_();
+        this.update_();
+    }
+
+    kick(player: Player) {
+        const connection = this.findConnection_(player);
+        if (connection.connection !== undefined) {
+            connection.connection!.close();
+        }
+
+        this.connections_.splice(this.connections_.indexOf(connection), 1);
+        this.syncPlayers_();
+        this.update_();
+    }
+
     log = (message: string, player?: Player, secret?: boolean) => {
         this.broadcast_((connection: Connection) => {
             return {
@@ -123,17 +154,11 @@ export class Server extends PeerBase {
                         callbacks: {}
                     };
 
-                    this.broadcast_({
-                        type: DataType.JOIN,
-                        id: conn.player.id,
-                        name: conn.player.name
-                    });
-
                     this.game_.join(conn.player);
 
                     this.connections_.push(conn);
                     this.setPlayerCallbacks_(conn.player, conn);
-                    this.syncPlayers_(connection);
+                    this.syncPlayers_();
 
                     this.update_();
                     if (this.players.length >= 5) {
@@ -192,9 +217,9 @@ export class Server extends PeerBase {
         }
     }
 
-    private syncPlayers_(connection: Peer.DataConnection) {
-        connection.send({
-            type: DataType.UPDATE,
+    private syncPlayers_() {
+        this.broadcast_({
+            type: DataType.JOIN,
             players: this.players.map(player => {
                 return {
                     id: player.id,

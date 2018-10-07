@@ -55,20 +55,12 @@ export class Client extends PeerBase {
     private onData_ = (peer: Peer, connection: PeerJs.DataConnection) => (data: any) => {
         let player;
         switch (data.type) {
-            case DataType.UPDATE:
+            case DataType.JOIN:
                 this.connections_ = data.players.map((p: { name: string, id: number }) => {
                     return {
                         player: new Player(p.name, p.id),
                         callbacks: {}
                     };
-                });
-                this.update_();
-                break;
-
-            case DataType.JOIN:
-                this.connections_.push({
-                    player: new Player(data.name, data.id),
-                    callbacks: {}
                 });
                 this.update_();
                 break;

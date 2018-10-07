@@ -21,6 +21,21 @@
     width: 80%;
 }
 
+.imploding-puppies-game .card-deck span {
+    position: absolute;
+    font-size: 50px;
+    margin-top: 50px;
+    text-shadow: 4px 4px black;
+    color: white;
+    background: rgba(100,100,100,0.4);
+    padding: 0 15px;
+    pointer-events: none;
+    z-index: 1;
+    top: -10px;
+    left: 8px;
+    width: 56px;
+}
+
 .imploding-puppies-game .card.face-down:before {
     background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
     background-size: 20px 20px;

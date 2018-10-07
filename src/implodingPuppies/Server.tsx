@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import * as React from 'react';
 import { Client as ClientData } from './data/Client';
 import { PeerBase } from './data/PeerBase';
+import { Player } from './data/Player';
 import { Server as ServerData } from './data/Server';
 import Game from './Game';
 
@@ -56,6 +57,10 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
         this.forceUpdate();
     }
 
+    kick = (player: Player) => () => {
+        (this.state.server as ServerData).kick(player);
+    }
+
     renderForm() {
         const { className, ...rest } = this.props;
         return (
@@ -89,20 +94,37 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
         const { className, ...rest } = this.props;
         return (
             <div className={classNames('server-lobby', 'imploding-puppies-game', className)} {...rest}>
-                <h3>Waiting for players...</h3>
-                {this.state.server!.players.map(player => (
-                    <div className="player player-avatar" key={player.id} style={{ background: player.color }}>
-                        <span className="avatar">{player.avatar}</span>
-                        <span className="name">{player.name}</span>
-                    </div>
-                ))}
+                <h3>Lobby</h3>
+                <div className="players">
+                    {this.state.server!.players.map(player => (
+                        <div className="player player-avatar" key={player.id} style={{ background: player.color }}>
+                            <span className="avatar">{player.avatar}</span>
+                            <span className="name" title={player.name}>{player.name}</span>
+                            {this.state.server!.isHost ? <span className="host-actions"><i className="icon-logout" title="Kick" onClick={this.kick(player)} /></span> : null}
+                        </div>
+                    ))}
 
-                {this.state.server!.isHost ? <button
-                    className="force-start"
-                    disabled={this.state.server!.players.length < 2}
-                    onClick={(this.state.server as ServerData).start}>
-                    Force start
-                    </button> : null}
+                    {this.state.server!.players.length < 5 ? (
+                        <div className="player player-avatar loader">
+                            <span className="avatar"><i className="icon-spin1 animate-spin" /></span>
+                        </div>
+                    ) : null}
+                </div>
+
+                {this.state.server!.isHost ? <div className="admin-buttons">
+                    <button
+                        className="force-start"
+                        disabled={this.state.server!.players.length < 2}
+                        onClick={(this.state.server as ServerData).start}>
+                        Force start
+                    </button>
+                    <button
+                        className="add-ai"
+                        disabled={this.state.server!.players.length >= 5}
+                        onClick={(this.state.server as ServerData).addAI}>
+                        Add AI
+                    </button>
+                </div> : null}
             </div>
         );
     }

@@ -23,3 +23,31 @@
 .server-dialog button:first-of-type {
     margin-right: 4%;
 }
+
+.server-lobby .host-actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.server-lobby .host-actions i {
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.server-lobby .players {
+    width: calc(100% - 142px);
+    display: inline-block;
+    overflow: auto;
+    white-space: nowrap;
+    background: #ddd;
+    box-sizing: border-box;
+    border: 1px solid #999;
+}
+
+.server-lobby .admin-buttons {
+    width: 132px;
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: top;
+}

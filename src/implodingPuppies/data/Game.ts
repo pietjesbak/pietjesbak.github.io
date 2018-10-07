@@ -339,16 +339,20 @@ export class Game extends AsyncHandler {
 
     async playerPlay(selection: CardTypes[]) {
         this.currentPlayer.clearSelection();
+        if (!this.currentPlayer.canPlay(selection)) {
+            return;
+        }
+
         selection.forEach(type => this.currentPlayer.discardCard(type, this));
         this.update_();
 
         let noped = await this.processNopes();
         if (!noped) {
-            if (selection.length === 1) {
+            if (selection.length === 1 && cards.get(selection[0])!.playEffect !== undefined) {
                 const card = cards.get(selection[0])!;
                 this.log(`${this.currentPlayer.name} uses a ${card.name}.`, this.currentPlayer);
 
-                await card.playEffect(this.currentPlayer, this);
+                await card.playEffect!(this.currentPlayer, this);
 
             } else if (selection.length === 2 && selection[0] === selection[1]) {
                 this.log(`${this.currentPlayer.name} plays 2 of the same card.`, this.currentPlayer);
