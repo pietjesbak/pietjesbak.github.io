@@ -40,6 +40,7 @@ class DeckInsert extends React.PureComponent<Props & React.HTMLAttributes<HTMLDi
     }
 
     trackMouseX = (event: MouseEvent) => {
+        event.preventDefault();
         this.setState({
             x: clamp(0, event.layerX, this.state.width)
         });
@@ -69,15 +70,15 @@ class DeckInsert extends React.PureComponent<Props & React.HTMLAttributes<HTMLDi
 
     render() {
         const { type, cards, callback, className, ...rest } = this.props;
-        const index = clamp(0, Math.ceil(this.state.x / this.state.width * this.props.cards), cards);
+        const index = clamp(0, Math.round(this.state.x / this.state.width * this.props.cards), cards);
 
         return (
             <div className={classNames('imploding-puppies-card-insert', 'player-overlay', className)} onClick={this.onClick} {...rest}>
                 {this.renderCards(index, 0)}
                 <Card type={type} style={{ transform: `translate(${this.state.x - 35}px, 20px)` }} />
                 {this.renderCards(cards - index, index)}
-                <span className="count left-count">{index}</span>
-                <span className="count right-count">{this.props.cards - index}</span>
+                <span className="count left-count">{index}<span>Bottom</span></span>
+                <span className="count right-count">{this.props.cards - index}<span>Top</span></span>
             </div>
         );
     }

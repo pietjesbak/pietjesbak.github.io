@@ -212,7 +212,7 @@ export class AIPlayer extends Player {
         [CardTypes.SKIP, CardTypes.ATTACK, CardTypes.NOPE, CardTypes.FAVOR, CardTypes.SHUFFLE].forEach((type) => this.addOfAKindOption_(type, 0.2, options));
 
         if (this.game_.deck.cards.find(card => card.prototype.type === CardTypes.DEFUSE) !== undefined &&
-            new Set(this.cards.filter(card => card.prototype.type !== CardTypes.DEFUSE)).size >= 5) {
+            new Set(this.cards.filter(card => card.prototype.type !== CardTypes.DEFUSE).map(card => card.prototype.type)).size >= 5) {
 
             const scores = this.getCardsScore_().sort((a, b) => b.score - a.score);
             const selection: CardTypes[] = [];

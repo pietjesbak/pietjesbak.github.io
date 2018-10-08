@@ -130,7 +130,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     getRemotePlayerPosition(player: PlayerData, index: number): { transform: string } {
-        const height = 300;
+        const height = 280;
 
         const count = this.props.server.game.players.length - 2;
         const angle = (((-count / 2 + index) * Math.PI / count) || 0) - Math.PI / 2;

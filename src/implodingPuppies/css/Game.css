@@ -46,9 +46,11 @@
     bottom: 40px;
 }
 
+/** Discard pile */
 .imploding-puppies-discard {
     position: relative;
     display: inline-block;
+    margin-left: 20px;
 }
 
 .imploding-puppies-discard .discard-placeholder {
@@ -73,6 +75,7 @@
     position: relative;
 }
 
+/** Announcements */
 .imploding-puppies-game .announcements {
     position: absolute;
     top: 0;

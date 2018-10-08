@@ -159,6 +159,7 @@ export class Game extends AsyncHandler {
         }
 
         this.log(announcement.message, announcement.source);
+        this.update_();
     }
 
     shutDown() {
@@ -556,7 +557,7 @@ export class Game extends AsyncHandler {
     }
 
     private log(message: string, player?: Player, secret?: boolean) {
-        // console.log(message);
+        console.log(message);
 
         this.logs_.push({
             message,

@@ -6,7 +6,6 @@ export class Deck {
 
     constructor(initialCards: Card[]) {
         this.cards_ = initialCards;
-        // console.log(this.cards_.map(card => card.prototype.type));
     }
 
     get cards() {
