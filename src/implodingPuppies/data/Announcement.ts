@@ -82,6 +82,10 @@ export class Announcement {
         return this.target_;
     }
 
+    get timestamp() {
+        return this.timestamp_;
+    }
+
     private get cardName() {
         if (this.cards_ === undefined) {
             return 'card';
@@ -119,11 +123,15 @@ export class Announcement {
 
     private cards_?: CardTypes[];
 
+    private timestamp_: number;
+
     constructor(type: AnnouncementTypes, types?: CardTypes[], source?: Player, target?: Player) {
         this.type_ = type;
         this.cards_ = types;
         this.source_ = source;
         this.target_ = target;
+
+        this.timestamp_ = Date.now();
     }
 
     serialize(game: Game) {

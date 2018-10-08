@@ -91,8 +91,8 @@ export class Game extends AsyncHandler {
         return this.logs_;
     }
 
-    get announcement() {
-        return this.announcements_[this.announcements_.length - 1];
+    get announcements() {
+        return this.announcements_;
     }
 
     static MAX_PLAYER_COUNT = 5;

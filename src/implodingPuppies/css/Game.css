@@ -52,3 +52,37 @@
     top: 75px;
     left: 75px;
 }
+
+.imploding-puppies-game .announcements {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.imploding-puppies-game .announcements li {
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+    margin: 5px 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 10px;
+    animation: fade-announcement 2s linear 1 forwards;
+    z-index: 100;
+}
+
+@keyframes fade-announcement {
+    0% {
+        transform: translateY(100px);
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+  }

@@ -17,7 +17,6 @@ interface Props {
 
 interface State {
     players: PlayerData[];
-    canNope: boolean;
 }
 
 interface PlayerRef {
@@ -42,8 +41,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         super(props);
 
         this.state = {
-            players: [],
-            canNope: false
+            players: []
         }
     }
 
@@ -125,6 +123,25 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.props.server.game.forceStart();
     }
 
+    renderAnnouncements() {
+        const elements: JSX.Element[] = [];
+
+        const cutoff = Date.now() - 2000;
+        const announcements = this.props.server.game.announcements;
+        for (let i = announcements.length - 1; i >= 0; i--) {
+            const announcement = announcements[i];
+            if (announcement.timestamp < cutoff) {
+                break;
+            }
+
+            elements.push(<li key={i}>
+                {announcement.message}
+            </li>);
+        }
+
+        return elements;
+    }
+
     render() {
         const players = this.props.server.game.players;
         const ownPlayer = players.find(player => player.id === this.props.server.ownId)!;
@@ -139,6 +156,10 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                     deckRef={this.deckRef}
                     discardRef={this.discardRef}
                     game={this.props.server.game} />
+
+                <ul className="announcements">
+                    {this.renderAnnouncements()}
+                </ul>
             </div>
         );
     }
