@@ -17,6 +17,7 @@ interface Props {
 
 interface State {
     players: PlayerData[];
+    width: number;
 }
 
 interface PlayerRef {
@@ -41,7 +42,8 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         super(props);
 
         this.state = {
-            players: []
+            players: [],
+            width: 960
         }
     }
 
@@ -50,6 +52,10 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         if (this.props.server.isHost) {
             this.props.server.game.startRound();
         }
+
+        this.setState({
+            width: (ReactDOM.findDOMNode(this) as HTMLElement).clientWidth
+        })
     }
 
     componentWillUnmount() {
@@ -123,6 +129,17 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.props.server.game.forceStart();
     }
 
+    getRemotePlayerPosition(player: PlayerData, index: number): { transform: string } {
+        const height = 300;
+
+        const count = this.props.server.game.players.length - 2;
+        const angle = (((-count / 2 + index) * Math.PI / count) || 0) - Math.PI / 2;
+
+        return {
+            transform: `translate(${Math.cos(angle) * this.state.width / 3}px, ${Math.sin(angle) * height}px)`
+        };
+    }
+
     renderAnnouncements() {
         const elements: JSX.Element[] = [];
 
@@ -149,13 +166,16 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
         return (
             <div className="imploding-puppies-game">
-                <Player player={ownPlayer} />
-                {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} />)}
+                <div className="remote-area">
+                    {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} style={this.getRemotePlayerPosition(player, i)} />)}
 
-                <Deck
-                    deckRef={this.deckRef}
-                    discardRef={this.discardRef}
-                    game={this.props.server.game} />
+                    <Deck
+                        deckRef={this.deckRef}
+                        discardRef={this.discardRef}
+                        game={this.props.server.game} />
+                </div>
+
+                <Player player={ownPlayer} />
 
                 <ul className="announcements">
                     {this.renderAnnouncements()}

@@ -11,20 +11,21 @@ interface Props {
 
 class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>> {
     render() {
-        const { game, onClick, deckRef, discardRef, ...rest } = this.props;
+        const { game, onClick, deckRef, discardRef, className, ...rest } = this.props;
         const size = game.deck.cards.length / 10;
         const offset = Math.max(0, game.discardPile.length - 10);
 
         return (
-            <div {...rest}>
+            <div className={classNames(className, 'imploding-puppies-deck-holder')} {...rest}>
                 {size > 0 ? (
-                    <div ref={deckRef} onClick={onClick} className={classNames('imploding-puppies-deck', 'card-deck', { 'interactive': true })} style={{ transform: `translate(${-size * 2}px, ${-size * 2}px)`, boxShadow: `${size}px ${size}px ${size}px ${size}px #333` }}>
+                    <div ref={deckRef} onClick={onClick} className={classNames('imploding-puppies-deck', 'card-deck')} style={{ transform: `translate(${-size * 2}px, ${-size * 2}px)`, boxShadow: `${size}px ${size}px ${size}px ${size}px #333` }}>
                         <span>{game.deck.cards.length}</span>
                     </div>
                 ) : null}
 
                 <div ref={discardRef} className={classNames('imploding-puppies-discard')}>
-                    {game.discardPile.slice(-10).map((card, i) => <Card key={i} type={card.prototype.type} interactive={false} style={{ transform: `rotate(${Math.sin(i+offset) * 20}deg) translate(${Math.sin(i+offset) * 20}px, ${Math.cos(i+offset) * 20}px)` }} />)}
+                    <div className="discard-placeholder" />
+                    {game.discardPile.slice(-10).map((card, i) => <Card key={i} type={card.prototype.type} interactive={false} style={{ transform: `rotate(${Math.sin(i + offset) * 20}deg) translate(${Math.sin(i + offset) * 20}px, ${Math.cos(i + offset) * 20}px)` }} />)}
                 </div>
             </div>
         );

@@ -7,8 +7,8 @@ interface Props {
     player: PlayerData;
 }
 
-class RemotePlayer extends React.Component<Props & React.ClassAttributes<RemotePlayer>> {
-    constructor(props: Props & React.ClassAttributes<RemotePlayer>) {
+class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>> {
+    constructor(props: Props & React.HTMLAttributes<HTMLDivElement>) {
         super(props);
     }
 
@@ -22,8 +22,9 @@ class RemotePlayer extends React.Component<Props & React.ClassAttributes<RemoteP
     }
 
     render() {
+        const { player, className, ...rest } = this.props;
         return (
-            <div className={classNames('imploding-puppies-player', 'remote-player')}>
+            <div className={classNames('imploding-puppies-player', 'remote-player', className)} {...rest}>
                 <div className="player player-avatar" style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>

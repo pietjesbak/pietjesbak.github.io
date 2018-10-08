@@ -39,18 +39,38 @@
     background-size: 20px 20px;
 }
 
+.imploding-puppies-deck-holder {
+    transform: translateX(-50%);
+    left: 50%;
+    position: absolute;
+    bottom: 40px;
+}
+
 .imploding-puppies-discard {
     position: relative;
-    width: 300px;
-    height: 265px;
     display: inline-block;
+}
+
+.imploding-puppies-discard .discard-placeholder {
+    border: 4px dashed #999;
+    border-radius: 5px;
+    display: inline-block;
+    height: 140px;
+    margin: 10px;
+    position: relative;
+    width: 100px;
 }
 
 .imploding-puppies-discard > .card {
     transform-origin: center!important;
     position: absolute!important;
-    top: 75px;
-    left: 75px;
+    top: -20px;
+    left: 0;
+}
+
+.imploding-puppies-game .remote-area {
+    height: 400px;
+    position: relative;
 }
 
 .imploding-puppies-game .announcements {
