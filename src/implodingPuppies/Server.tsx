@@ -61,6 +61,12 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
         (this.state.server as ServerData).kick(player);
     }
 
+    reset = () => {
+        this.setState({
+            server: undefined
+        });
+    }
+
     renderForm() {
         const { className, ...rest } = this.props;
         return (
@@ -82,7 +88,10 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
 
     renderError() {
         return (
-            <div>{this.state.server!.error}</div>
+            <div>
+                <p>{this.state.server!.error}</p>
+                <button onClick={this.reset}>Back</button>
+            </div>
         );
     }
 

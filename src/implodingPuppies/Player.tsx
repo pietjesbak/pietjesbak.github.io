@@ -155,8 +155,10 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
 
     getPlayButton() {
         const text = this.props.player.selection.length === 0 ? 'Draw' : 'Play';
+        const disabled = this.props.player.selection.length !== 0 && !this.props.player.canPlay();
+
         return (
-            <button onClick={this.clickButton}>{text}</button>
+            <button disabled={disabled} onClick={this.clickButton}>{text}</button>
         );
     }
 
@@ -214,7 +216,7 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
                     <span className="name">{this.props.player.name}</span>
                 </div>
 
-                {this.state.option === Options.DRAW_PLAY ? <button onClick={this.clickButton}>{this.props.player.selection.length === 0 ? 'Draw' : 'Play'}</button> : null}
+                {this.state.option === Options.DRAW_PLAY ? this.getPlayButton() : null}
                 {this.state.option === Options.NOPE ? <button onClick={this.state.callbacks.nopeCallback}>Nope!</button> : null}
                 {this.state.option === Options.SELECT_TARGET ? this.renderPlayerSelection() : null}
                 {this.state.option === Options.SELECT_CARD ? this.renderCardSelection() : null}

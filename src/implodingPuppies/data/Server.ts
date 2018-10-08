@@ -1,5 +1,6 @@
 import { repeat } from '../../Helpers';
 import { AIPlayer } from './AIPlayer';
+import { Announcement } from './Announcement';
 import { CardTypes } from './Cards';
 import { Connection, DataType, PeerBase } from './PeerBase';
 import { Player } from './Player';
@@ -8,15 +9,13 @@ export class Server extends PeerBase {
 
     constructor(key: string) {
         super(true, key);
-        this.game_.setLogCallback(this.log);
+        this.game_.setAnnouncementCallback(this.announce_);
         this.game_.gameLoop();
 
         this.peer_.on('connection', (conn) => {
             conn.on('data', this.onData_(conn));
             conn.on('close', () => {
-                console.log('connection lost');
                 this.removePeer_(conn);
-                this.peer_.destroy();
             });
         });
     }
@@ -107,23 +106,15 @@ export class Server extends PeerBase {
 
     kick(player: Player) {
         const connection = this.findConnection_(player);
-        if (connection.connection !== undefined) {
-            connection.connection!.close();
+        if (connection !== undefined) {
+            if (connection.connection !== undefined) {
+                connection.connection!.close();
+            }
+
+            this.removePeer_(player);
+            this.syncPlayers_();
+            this.update_();
         }
-
-        this.connections_.splice(this.connections_.indexOf(connection), 1);
-        this.syncPlayers_();
-        this.update_();
-    }
-
-    log = (message: string, player?: Player, secret?: boolean) => {
-        this.broadcast_((connection: Connection) => {
-            return {
-                type: DataType.LOG,
-                message: (!secret || !player || player === connection.player) ? message : '<secret>',
-                player: player !== undefined ? player.id : undefined
-            };
-        });
     }
 
     protected update_() {
@@ -217,6 +208,20 @@ export class Server extends PeerBase {
         }
     }
 
+    /**
+     * Announces an event to all players.
+     * @param announcement The announcement.
+     */
+    private announce_ = (announcement: Announcement) => {
+        this.broadcast_({
+            type: DataType.ANNOUNCEMENT,
+            announcement: announcement.serialize(this.game)
+        });
+    }
+
+    /**
+     * Syncs the current players with the clients.
+     */
     private syncPlayers_() {
         this.broadcast_({
             type: DataType.JOIN,

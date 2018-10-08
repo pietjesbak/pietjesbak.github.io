@@ -1,4 +1,5 @@
 import { repeat, shuffle } from '../../Helpers';
+import { Announcement, AnnouncementTypes } from './Announcement';
 import { AsyncData, AsyncHandler } from './AsyncHandler';
 import { Card, cards, CardTypes } from './Cards';
 import { Deck } from './Deck';
@@ -62,6 +63,38 @@ export interface Logs {
 
 export class Game extends AsyncHandler {
 
+    get playerCount() {
+        return this.playerCount_;
+    }
+
+    get currentPlayer() {
+        return this.players_[this.currentPlayer_];
+    }
+
+    get players() {
+        return this.players_;
+    }
+
+    get deck() {
+        return this.deck_;
+    }
+
+    get discardPile() {
+        return this.discardPile_;
+    }
+
+    get isHost() {
+        return this.isHost_;
+    }
+
+    get logs() {
+        return this.logs_;
+    }
+
+    get announcement() {
+        return this.announcements_[this.announcements_.length - 1];
+    }
+
     static MAX_PLAYER_COUNT = 5;
 
     static NOPE_TIMEOUT_MILLIS = 2000;
@@ -94,7 +127,9 @@ export class Game extends AsyncHandler {
 
     private updateCallback_: () => void;
 
-    private logCallback_?: (message: string, player?: Player, secret?: boolean) => void;
+    private announcements_: Announcement[] = [];
+
+    private announcementCallback_?: (announcement: Announcement) => void;
 
     constructor(isHost: boolean, serializer?: ISerializer) {
         super();
@@ -104,53 +139,26 @@ export class Game extends AsyncHandler {
         this.runningKey_ = this.createPromise(AsyncActions.RUNNING);
     }
 
-    get playerCount() {
-        return this.playerCount_;
-    }
-
-    get currentPlayer() {
-        return this.players_[this.currentPlayer_];
-    }
-
-    get players() {
-        return this.players_;
-    }
-
-    get deck() {
-        return this.deck_;
-    }
-
-    get discardPile() {
-        return this.discardPile_;
-    }
-
-    get isHost() {
-        return this.isHost_;
-    }
-
-    get logs() {
-        return this.logs_;
-    }
-
     setUpdateCallback(callback: () => void) {
         this.updateCallback_ = callback;
     }
 
-    setLogCallback(callback: (message: string, player?: Player) => void) {
-        this.logCallback_ = callback;
+    setAnnouncementCallback(callback: (announcement: Announcement) => void) {
+        this.announcementCallback_ = callback;
     }
 
-    log(message: string, player?: Player, secret?: boolean) {
-        console.log(message);
-        this.logs_.push({
-            message,
-            player,
-            timestamp: Date.now()
-        });
+    /**
+     * Add an announcement to the game.
+     * @param announcement The announcement to add.
+     */
+    announce(announcement: Announcement) {
+        this.announcements_.push(announcement);
 
-        if (this.logCallback_ !== undefined) {
-            this.logCallback_(message, player, secret);
+        if (this.announcementCallback_ !== undefined) {
+            this.announcementCallback_(announcement);
         }
+
+        this.log(announcement.message, announcement.source);
     }
 
     shutDown() {
@@ -326,13 +334,13 @@ export class Game extends AsyncHandler {
 
         this.clearPlayers_();
         if (gameOver) {
-            this.log('Game over!');
+            this.announce(new Announcement(AnnouncementTypes.GAME_OVER, undefined, this.currentPlayer));
         }
     }
 
     async playerDraw() {
         const card = this.deck_.pick();
-        this.log(`${this.currentPlayer.name} draws a ${card.prototype.name}.`, this.currentPlayer, true);
+        this.announce(new Announcement(AnnouncementTypes.DRAW_CARD, undefined, this.currentPlayer))
         await this.currentPlayer.drawCard(card, this);
         this.update_();
     }
@@ -346,35 +354,38 @@ export class Game extends AsyncHandler {
         selection.forEach(type => this.currentPlayer.discardCard(type, this));
         this.update_();
 
-        let noped = await this.processNopes();
-        if (!noped) {
-            if (selection.length === 1 && cards.get(selection[0])!.playEffect !== undefined) {
-                const card = cards.get(selection[0])!;
-                this.log(`${this.currentPlayer.name} uses a ${card.name}.`, this.currentPlayer);
+        if (selection.length === 1 && cards.get(selection[0])!.playEffect !== undefined) {
+            const card = cards.get(selection[0])!;
+            this.announce(new Announcement(AnnouncementTypes.PLAY_CARD, selection, this.currentPlayer));
 
+            if (!await this.processNopes(selection)) {
                 await card.playEffect!(this.currentPlayer, this);
+            }
 
-            } else if (selection.length === 2 && selection[0] === selection[1]) {
-                this.log(`${this.currentPlayer.name} plays 2 of the same card.`, this.currentPlayer);
+        } else if (selection.length === 2 && selection[0] === selection[1]) {
+            this.announce(new Announcement(AnnouncementTypes.TWO_OF_A_KIND, selection, this.currentPlayer));
+
+            if (!await this.processNopes(selection)) {
                 const target = (await this.selectTarget()).data!.target;
-                this.log(`${this.currentPlayer.name} wants to steal from ${target.name}.`, this.currentPlayer);
+                this.announce(new Announcement(AnnouncementTypes.STEAL_FROM, selection, this.currentPlayer, target));
 
-                noped = await this.processNopes();
-                if (!noped) {
+                if (!await this.processNopes(selection)) {
                     const card = target.stealCard(undefined, this);
                     if (card !== undefined) {
                         this.currentPlayer.addCard(card, this);
-                        this.log(`${this.currentPlayer.name} steals a ${card.prototype.name}.`, this.currentPlayer);
+                        this.announce(new Announcement(AnnouncementTypes.TAKE, undefined, this.currentPlayer, target));
                     }
                 }
+            }
 
-            } else if (selection.length === 3 && selection.every(type => type === selection[0])) {
-                this.log(`${this.currentPlayer.name} plays 3 of the same card.`, this.currentPlayer);
+        } else if (selection.length === 3 && selection.every(type => type === selection[0])) {
+            this.announce(new Announcement(AnnouncementTypes.THREE_OF_A_KIND, selection, this.currentPlayer));
+
+            if (!await this.processNopes(selection)) {
                 const target = (await this.selectTarget()).data!.target;
-                this.log(`${this.currentPlayer.name} wants to steal from ${target.name}.`, this.currentPlayer);
+                this.announce(new Announcement(AnnouncementTypes.STEAL_FROM, selection, this.currentPlayer, target));
 
-                noped = await this.processNopes();
-                if (!noped) {
+                if (!await this.processNopes(selection)) {
                     const options = Object.values(CardTypes).filter(type => type !== CardTypes.BOMB);
                     const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
                         player: this.currentPlayer,
@@ -383,28 +394,30 @@ export class Game extends AsyncHandler {
                     this.clearPlayers_();
                     this.currentPlayer.allowSelectCard(options, this.createSelectCardAction(key));
                     const selectedType = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
-                    this.log(`${this.currentPlayer.name} wants to steal a ${cards.get(selectedType)!.name}.`, this.currentPlayer);
+                    this.announce(new Announcement(AnnouncementTypes.WANTS, [selectedType], this.currentPlayer, target));
 
                     const selectedCard = target.stealCard(selectedType, this);
                     if (selectedCard !== undefined) {
                         this.currentPlayer.addCard(selectedCard, this);
-                        this.log(`${this.currentPlayer.name} steals a ${selectedCard.prototype.name}.`, this.currentPlayer);
+                        this.announce(new Announcement(AnnouncementTypes.TAKE, [selectedType], this.currentPlayer, target));
                     }
                 }
+            }
 
-            } else if (selection.length === 5 && new Set(selection).size === 5 && this.discardPile_.length > 0) {
-                this.log(`${this.currentPlayer.name} plays 5 different cards.`, this.currentPlayer);
+        } else if (selection.length === 5 && new Set(selection).size === 5 && this.discardPile_.length > 0) {
+            this.announce(new Announcement(AnnouncementTypes.FIVE_DIFFERENT, selection, this.currentPlayer));
 
+            if (!await this.processNopes(selection)) {
                 const type = (await this.selectCard()).data!.selection;
                 const card = this.discardPile_.find(c => c.prototype.type === type)!;
-                this.log(`${this.currentPlayer.name} takes a ${card.prototype.name}.`, this.currentPlayer);
+                this.announce(new Announcement(AnnouncementTypes.TAKE, [type], this.currentPlayer));
 
                 this.discardPile_.splice(this.discardPile_.indexOf(card), 1);
                 this.currentPlayer.addCard(card, this);
             }
-
-            this.update_();
         }
+
+        this.update_();
     }
 
     selectTarget() {
@@ -441,21 +454,25 @@ export class Game extends AsyncHandler {
         this.currentPlayer.allowInsertIntoDeck(this.deck.cards.length, this.createInsertCardAction(key));
 
         const position = (await this.getPromise<AsyncInsertCard>(key)).data!.position;
-        this.log(`${this.currentPlayer.name} puts the bomb back into the deck.`, this.currentPlayer);
+        this.announce(new Announcement(AnnouncementTypes.PUT_BOMB, undefined, this.currentPlayer));
         this.deck.insertCard(this.discardPile_.pop()!, position);
     }
 
-    async processNopes() {
+    /**
+     * Checks if anyone wants to nope the cards that are currently being played.
+     * @param selection The cards that can be noped.
+     */
+    async processNopes(selection: CardTypes[]) {
         let result = false;
 
         let player: AsyncData<AsyncNope> | undefined;
-        let excludedPlayer = this.currentPlayer_;
+        let excludedPlayer = this.currentPlayer;
         do {
             this.clearPlayers_();
             const keys = repeat(this.playerCount_).map((unused, i) => this.createPromise(AsyncActions.NOPE, { player: this.players_[i] }, Game.NOPE_TIMEOUT_MILLIS));
             const promises = this.getPromises<AsyncNope>(keys);
             keys.forEach((key, i) => {
-                if (excludedPlayer !== i && this.players[i].find(CardTypes.NOPE) !== undefined) {
+                if (excludedPlayer.id !== i && this.players[i].find(CardTypes.NOPE) !== undefined) {
                     this.players_[i].allowNope(this.createNopeAction(key))
                 }
             });
@@ -468,13 +485,15 @@ export class Game extends AsyncHandler {
             }
 
             if (player !== undefined) {
-                player.data!.player.discardCard(CardTypes.NOPE, this);
-                excludedPlayer = player.data!.player.id;
+                const target = excludedPlayer;
+                excludedPlayer = player.data!.player;
+                excludedPlayer.discardCard(CardTypes.NOPE, this);
                 result = !result;
 
-                this.log(`${player.data!.player.name} plays a nope -- ${result ? 'Nope!' : 'Yup!'}`);
+                this.announce(new Announcement(result ? AnnouncementTypes.NOPE : AnnouncementTypes.YUP, selection, excludedPlayer, target));
                 this.update_();
             }
+            selection = [CardTypes.NOPE];
         } while (player !== undefined);
 
         return result;
@@ -504,9 +523,9 @@ export class Game extends AsyncHandler {
 
     async processFavor() {
         const target = (await this.selectTarget()).data!.target;
-        this.log(`${this.currentPlayer.name} wants a favor from ${target.name}.`, this.currentPlayer);
+        this.announce(new Announcement(AnnouncementTypes.FAVOR_FROM, undefined, this.currentPlayer, target));
 
-        if (!await this.processNopes() && target.cards.length > 0) {
+        if (!await this.processNopes([CardTypes.FAVOR]) && target.cards.length > 0) {
             this.clearPlayers_();
             const options = [...new Set(target.cards.map(card => card.prototype.type))];
             const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
@@ -518,7 +537,7 @@ export class Game extends AsyncHandler {
             const selectedCard = target.stealCard(type, this);
             if (selectedCard !== undefined) {
                 this.currentPlayer.addCard(selectedCard, this);
-                this.log(`${this.currentPlayer.name} gets a ${selectedCard.prototype.name}.`, this.currentPlayer);
+                this.announce(new Announcement(AnnouncementTypes.TAKE, undefined, this.currentPlayer, target));
             }
         }
     }
@@ -531,9 +550,19 @@ export class Game extends AsyncHandler {
             cards: future
         });
         this.currentPlayer.seeFuture(future, this.createDefaultAction(key));
-        this.log(`${this.currentPlayer.name} sees the future: ${this.deck.seeTop().map(card => card.prototype.name)}.`, this.currentPlayer);
+        this.announce(new Announcement(AnnouncementTypes.FUTURE, undefined, this.currentPlayer));
 
         await this.getPromise<AsyncSeeFuture>(key);
+    }
+
+    private log(message: string, player?: Player, secret?: boolean) {
+        // console.log(message);
+
+        this.logs_.push({
+            message,
+            player,
+            timestamp: Date.now()
+        });
     }
 
     private getNextAlivePlayer_() {

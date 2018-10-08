@@ -23,7 +23,8 @@ export const enum DataType {
     SEE_FUTURE,
     CLEAR,
     UPDATE_STATE,
-    LOG
+    LOG,
+    ANNOUNCEMENT
 }
 
 export abstract class PeerBase {
@@ -101,14 +102,17 @@ export abstract class PeerBase {
 
     protected findConnection_(connection: Peer.DataConnection | Player) {
         if (connection instanceof Player) {
-            return this.connections_.find(conn => conn.player === connection)!;
+            return this.connections_.find(conn => conn.player === connection);
         } else {
-            return this.connections_.find(conn => conn.connection! === connection)!;
+            return this.connections_.find(conn => conn.connection! === connection);
         }
     }
 
-    protected removePeer_(connection: Peer.DataConnection) {
-        this.connections_.splice(this.connections_.indexOf(this.findConnection_(connection)), 1);
+    protected removePeer_(connection: Peer.DataConnection | Player) {
+        const conn = this.findConnection_(connection);
+        if (conn !== undefined) {
+            this.connections_.splice(this.connections_.indexOf(conn, 1));
+        }
     }
 
     /**

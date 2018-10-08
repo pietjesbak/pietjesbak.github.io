@@ -128,7 +128,7 @@ describe('Server', () => {
 
         server.gameLoop();
         startServer(server, players, 3, undefined, [CardTypes.NOPE]).then(() => {
-            server.processNopes().then(noped => {
+            server.processNopes([CardTypes.SKIP]).then(noped => {
                 expect(noped).toBe(false);
                 expect(Player.prototype.allowNope).toHaveBeenCalledTimes(2);
 
@@ -147,7 +147,7 @@ describe('Server', () => {
 
         server.gameLoop();
         startServer(server, players, 3, undefined, [CardTypes.NOPE]).then(() => {
-            const promise = server.processNopes();
+            const promise = server.processNopes([CardTypes.SKIP]);
 
             expect(nopes).toHaveLength(2);
             nopes[0]();
@@ -170,7 +170,7 @@ describe('Server', () => {
 
         server.gameLoop();
         startServer(server, players, 3, undefined, [CardTypes.NOPE]).then(() => {
-            const promise = server.processNopes();
+            const promise = server.processNopes([CardTypes.SKIP]);
 
             expect([...nopes.keys()]).toEqual([1, 2]);
             nopes.get(1)!.call(null);

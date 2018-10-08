@@ -1,3 +1,4 @@
+import { Announcement, AnnouncementTypes } from './Announcement';
 import { Game } from './Game';
 import { Player } from './Player';
 
@@ -131,7 +132,7 @@ cards.set(CardTypes.BOMB, {
         const defuse = player.find(CardTypes.DEFUSE);
         if (defuse === undefined) {
             await player.die();
-            game.log(`${player.name} dies!`, player);
+            game.announce(new Announcement(AnnouncementTypes.DIE, undefined, player));
 
             for (let i = player.cards.length - 1; i >= 0; i--) {
                 player.discardCard(player.cards[i].prototype.type, game)

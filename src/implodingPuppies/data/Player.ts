@@ -165,11 +165,13 @@ export class Player {
     /**
      * Checks if the player can play the current selection.
      */
-    canPlay(selection: CardTypes[]) {
+    canPlay(selection?: CardTypes[]) {
+        selection = selection === undefined ? this.selection.map(card => card.prototype.type)! : selection;
+
         if (selection.length === 1 && cards.get(selection[0])!.playEffect !== undefined) {
             return true;
         } else if ((selection.length === 2 || selection.length === 3) &&
-            selection.every(type => type === selection[0])) {
+            selection.every(type => type === selection![0])) {
             return true;
         } else if (selection.length === 5 && new Set(selection).size === 5) {
             return true;

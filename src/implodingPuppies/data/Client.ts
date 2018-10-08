@@ -1,4 +1,5 @@
 import * as Peer from 'peerjs';
+import { Announcement } from './Announcement';
 import { Card, CardTypes } from './Cards';
 import { DataType, PeerBase } from './PeerBase';
 import { Player } from './Player';
@@ -17,7 +18,7 @@ export class Client extends PeerBase {
 
             this.serverConnection_.on('data', this.onData_(this.peer_, this.serverConnection_));
             this.serverConnection_.on('close', () => {
-                this.error_ = 'Connection lost';
+                this.error_ = 'You have been disconnected from the server!';
                 this.update_();
                 this.peer_.destroy();
             })
@@ -150,8 +151,8 @@ export class Client extends PeerBase {
                 player.clearCallbacks();
                 break;
 
-            case DataType.LOG:
-                this.game.log(data.message, data.player ? this.players[data.player] : undefined);
+            case DataType.ANNOUNCEMENT:
+                this.game.announce(Announcement.deserialize(this.game, data.announcement));
                 break;
         }
     }
