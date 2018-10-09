@@ -278,3 +278,29 @@ export class Card {
         this.owner = owner || { type: OwnerType.DECK };
     }
 }
+
+/**
+ * Diffs state and props and returns which cards were added / removed.
+ * @param state The cards stored in the react component's state.
+ * @param props The cards stored in the react component's props.
+ */
+export function diffCardstate(state: Card[], props: Card[]) {
+    const addedCards: Card[] = [];
+    const removedCards: Card[] = [];
+
+    let j = 0;
+    for (let i = 0; i < props.length; i++) {
+        const card = props[i];
+        if (state[j] !== undefined && card.id === state[j].id) {
+            j++;
+        } else if (props.length > state.length) {
+            addedCards.push(card);
+        } else {
+            removedCards.push(state[j]);
+            i--;
+            j++;
+        }
+    }
+
+    return { addedCards, removedCards };
+}

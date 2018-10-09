@@ -3,7 +3,7 @@ import './css/Player.css';
 import classNames from 'classnames';
 import * as React from 'react';
 import Card from './Card';
-import { CardTypes } from './data/Cards';
+import { Card as CardData, CardTypes, diffCardstate } from './data/Cards';
 import { IPlayerCallbacks } from './data/IPlayerCallbacks';
 import { Player as PlayerData } from './data/Player';
 import DeckInsert from './DeckInsert';
@@ -30,6 +30,7 @@ interface State {
     cardOptions?: CardTypes[];
     deckOption?: number;
     future?: CardTypes[];
+    cards: CardData[];
 }
 
 class Player extends React.Component<Props & React.ClassAttributes<Player>, State> {
@@ -48,7 +49,20 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
 
         this.state = {
             option: Options.NONE,
-            callbacks: {}
+            callbacks: {},
+            cards: [...this.props.player.cards]
+        }
+    }
+
+    componentDidUpdate() {
+        const { addedCards, removedCards } = diffCardstate(this.state.cards, this.props.player.cards);
+        if (addedCards.length > 0 || removedCards.length > 0) {
+
+            // There is a settimeout here to trick react into first rendering the card in the start position,
+            // and then in the end position right away so css transitions take care of the rest.
+            window.setTimeout(() => this.setState({
+                cards: [...this.props.player.cards]
+            }), 0);
         }
     }
 
@@ -122,12 +136,18 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
         });
     }
 
-    getCardStyles(index: number) {
+    getCardStyles(index: number, card: CardData, addedCards: CardData[]) {
+        if (addedCards.indexOf(card) !== -1) {
+            return {
+                transform: `translate(0px, -200px) rotate(0deg)`
+            };
+        }
+
         const count = this.props.player.cards.length - 1;
         const range = Math.sqrt(count / 2) * 36;
 
         return {
-            transform: `translateX(${(-count / 2 + index) * 10}px) rotate(${(-count / 2 + index) * range / count}deg)`
+            transform: `translate(${(-count / 2 + index) * 10}px, 0px) rotate(${(-count / 2 + index) * range / count}deg)`
         };
     }
 
@@ -209,6 +229,8 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
     }
 
     render() {
+        const { addedCards } = diffCardstate(this.state.cards, this.props.player.cards);
+
         return (
             <div className={classNames('imploding-puppies-player', { 'interactive': this.props.interactive }, { 'active': this.state.option !== Options.NONE })}>
                 <div className="player player-avatar" style={{ background: this.props.player.color }}>
@@ -224,12 +246,12 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
                 {this.state.option === Options.INSERT_IN_DECK ? this.renderInsertInDeck() : null}
 
                 {this.props.player.cards.map((card, i) => <Card
-                    style={this.getCardStyles(i)}
+                    key={card.id}
+                    style={this.getCardStyles(i, card, addedCards)}
                     canSelect={this.state.option === Options.DRAW_PLAY && card.prototype.playTest(this.props.player, this.props.player.selection)}
                     selected={this.props.player.selection.indexOf(card) !== -1}
                     onClick={this.clickCard(i)}
                     type={card.prototype.type}
-                    key={i}
                 />)}
             </div>
         );

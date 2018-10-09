@@ -18,7 +18,7 @@
     position: absolute!important;
     top: 0;
     left: calc(50% - 67px);
-    transition: transform 0.2s, top 0.1s
+    transition: transform 0.5s ease-out, top 0.1s;
 }
 
 .imploding-puppies-player button {
@@ -68,6 +68,7 @@
     position: absolute!important;
     top: -20px;
     left: 0;
+    transition: transform 0.5s ease-out;
 }
 
 .imploding-puppies-game .remote-area {

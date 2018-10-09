@@ -254,7 +254,6 @@ export class Player {
         }
 
         game.discardPile.push(this.cards_.splice(this.cards_.indexOf(card!), 1)[0]);
-        card.owner = { type: OwnerType.DISCARD, data: undefined };
     }
 
     /**
