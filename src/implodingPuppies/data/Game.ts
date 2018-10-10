@@ -111,6 +111,8 @@ export class Game extends AsyncHandler {
 
     private currentPlayer_ = 0;
 
+    private currentPlayerIndex_ = 0;
+
     private playerQueue_: number[] = [];
 
     private slots_: string[];
@@ -253,6 +255,14 @@ export class Game extends AsyncHandler {
      */
     setDiscardClient(types: Card[]) {
         this.discardPile_ = types;
+    }
+
+    /**
+     * Sets the current player for the client.
+     * @param id The id of the current player.
+     */
+    setCurrentPlayerClient(id: number) {
+        this.currentPlayer_ = id;
     }
 
     startRound() {
@@ -503,7 +513,7 @@ export class Game extends AsyncHandler {
 
     nextTurn() {
         if (this.playerQueue_.length === 0) {
-            this.playerQueue_.push(this.getNextAlivePlayer_());
+            this.playerQueue_.push(this.getNextAlivePlayer_().id);
         }
 
         this.currentPlayer_ = this.playerQueue_.pop()!;
@@ -568,8 +578,11 @@ export class Game extends AsyncHandler {
     }
 
     private getNextAlivePlayer_() {
-        const alivePlayers = this.players_.filter(player => player.alive);
-        return alivePlayers[++this.currentPlayer_ % alivePlayers.length].id;
+        let currentPlayer: Player;
+        do {
+            currentPlayer = this.players[++this.currentPlayerIndex_ % this.players.length];
+        } while (!currentPlayer.alive);
+        return currentPlayer;
     }
 
     private deserialize_(players?: Player[], deck?: Card[], discardPile?: Card[]) {

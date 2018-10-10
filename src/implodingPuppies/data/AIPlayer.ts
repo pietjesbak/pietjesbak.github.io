@@ -16,7 +16,7 @@ export interface WeightedPlay {
 
 export class AIPlayer extends Player {
 
-    static PLAY_DELAY = 500;
+    static PLAY_DELAY = 1000;
 
     personality_: Personality;
 

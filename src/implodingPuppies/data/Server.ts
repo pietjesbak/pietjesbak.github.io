@@ -64,6 +64,7 @@ export class Server extends PeerBase {
                     return {
                         id: player.id,
                         name: player.name,
+                        alive: player.alive,
                         cards: connection.player === player ? player.cards.map(card => card.prototype.type) : repeat(player.cards.length).map(() => CardTypes.BOMB)
                     };
                 })

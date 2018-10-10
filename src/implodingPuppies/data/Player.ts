@@ -66,6 +66,10 @@ export class Player {
         this.name_ = name;
     }
 
+    set alive(alive: boolean) {
+        this.alive_ = alive;
+    }
+
     get color() {
         return Player.colors[this.id % Player.colors.length] || '#000';
     }

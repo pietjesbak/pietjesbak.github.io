@@ -73,6 +73,7 @@ export class Client extends PeerBase {
                 this.connections_.forEach((conn, i) => {
                     conn.player.id = data.players[i].id;
                     conn.player.name = data.players[i].name;
+                    conn.player.alive = data.players[i].alive;
 
                     const ids = conn.player.cards.map(card => card.id);
                     conn.player.cards = data.players[i].cards.map((type: CardTypes, j: number) => new Card(type, undefined, ids[j]));
@@ -82,6 +83,7 @@ export class Client extends PeerBase {
                 this.game_.setDeckClient(data.deck);
                 this.game_.setDiscardClient((data.discard as DiscardData[]).map(({type, owner}) => new Card(type, { type: OwnerType.PLAYER, data: owner})));
                 this.game_.setPlayersClient(this.players.sort((a, b) => a.id - b.id));
+                this.game_.setCurrentPlayerClient(this.currentPlayer_!);
                 this.update_();
                 break;
 
@@ -109,8 +111,9 @@ export class Client extends PeerBase {
                 break;
 
             case DataType.PLAYER_SELECT:
-                const options = data.players.map((i: number) => this.players[i]);
+                const options = data.players.map((id: number) => this.game.players[id]);
                 player = this.players.find(p => p.id === this.ownId_)!;
+
                 player.allowSelectTarget(options, (p) => {
                     this.serverConnection_.send({
                         type: DataType.PLAYER_SELECT,
