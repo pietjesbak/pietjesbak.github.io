@@ -1,7 +1,7 @@
 import * as Peer from 'peerjs';
 import { Announcement } from './Announcement';
-import { Card, CardTypes } from './Cards';
-import { DataType, PeerBase } from './PeerBase';
+import { Card, CardTypes, OwnerType } from './Cards';
+import { DataType, DiscardData, PeerBase } from './PeerBase';
 import { Player } from './Player';
 
 export class Client extends PeerBase {
@@ -73,12 +73,14 @@ export class Client extends PeerBase {
                 this.connections_.forEach((conn, i) => {
                     conn.player.id = data.players[i].id;
                     conn.player.name = data.players[i].name;
-                    conn.player.cards = data.players[i].cards.map((type: CardTypes) => new Card(type));
+
+                    const ids = conn.player.cards.map(card => card.id);
+                    conn.player.cards = data.players[i].cards.map((type: CardTypes, j: number) => new Card(type, undefined, ids[j]));
                     conn.player.clearSelection();
                 });
 
                 this.game_.setDeckClient(data.deck);
-                this.game_.setDiscardClient(data.discard);
+                this.game_.setDiscardClient((data.discard as DiscardData[]).map(({type, owner}) => new Card(type, { type: OwnerType.PLAYER, data: owner})));
                 this.game_.setPlayersClient(this.players.sort((a, b) => a.id - b.id));
                 this.update_();
                 break;

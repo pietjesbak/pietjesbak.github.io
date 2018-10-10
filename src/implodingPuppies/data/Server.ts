@@ -52,7 +52,7 @@ export class Server extends PeerBase {
         const base = {
             type: DataType.UPDATE_STATE,
             deck: this.game_.deck.cards.length,
-            discard: this.game.discardPile.map(card => card.prototype.type),
+            discard: this.game.discardPile.map(card => ({ type: card.prototype.type, owner: card.owner.data })),
             currentPlayer: this.game.currentPlayer.id
         };
 

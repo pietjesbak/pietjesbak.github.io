@@ -121,6 +121,7 @@
 
 .imploding-puppies-game .player.dead .name {
     text-decoration: line-through;
+    color: red;
 }
 
 /** Card selection */

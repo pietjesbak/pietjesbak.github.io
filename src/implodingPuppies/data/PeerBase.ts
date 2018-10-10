@@ -1,4 +1,5 @@
 import * as Peer from 'peerjs';
+import { CardTypes } from './Cards';
 import { Game } from './Game';
 import { IPlayerCallbacks } from './IPlayerCallbacks';
 import { Player } from './Player';
@@ -25,6 +26,11 @@ export const enum DataType {
     UPDATE_STATE,
     LOG,
     ANNOUNCEMENT
+}
+
+export interface DiscardData {
+    type: CardTypes;
+    owner: number;
 }
 
 export abstract class PeerBase {

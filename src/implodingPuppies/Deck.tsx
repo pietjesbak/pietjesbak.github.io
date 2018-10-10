@@ -1,12 +1,12 @@
 import classNames from 'classnames';
 import * as React from 'react';
 import Card from './Card';
-import { Game as GameData } from './data/Game';
 import { Card as CardData, diffCardstate, OwnerType } from './data/Cards';
+import { Game as GameData } from './data/Game';
 
 interface Props {
     game: GameData;
-    getPlayerAngle(player: number): number;
+    getPlayerAngle(playerId: number): { angle: number, x: number, y: number };
 }
 
 interface State {
@@ -36,9 +36,9 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
 
     getCardStyles(i: number, card: CardData, addedCards: CardData[]) {
         if (addedCards.indexOf(card) !== -1 && card.owner.type === OwnerType.PLAYER) {
-            const angle = this.props.getPlayerAngle(card.owner.data!);
+            const { angle, x, y } = this.props.getPlayerAngle(card.owner.data!);
             return {
-                transform: `rotate(${angle * 180 / Math.PI}deg) translate(${Math.cos(angle) * 200}px, ${Math.sin(angle) * 200}px)`
+                transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`
             }
         }
 

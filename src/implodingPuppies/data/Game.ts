@@ -251,8 +251,8 @@ export class Game extends AsyncHandler {
      * Set the discard pile for the client.
      * @param types The cards in the discard pile.
      */
-    setDiscardClient(types: CardTypes[]) {
-        this.discardPile_ = types.map(type => new Card(type));
+    setDiscardClient(types: Card[]) {
+        this.discardPile_ = types;
     }
 
     startRound() {
@@ -308,6 +308,7 @@ export class Game extends AsyncHandler {
             const keys = [this.createPromise(AsyncActions.DRAW), this.createPromise(AsyncActions.PLAY)];
             const promises = this.getPromises(keys);
             this.currentPlayer.giveOptions(this.createDefaultAction(keys[0]), this.createPlayAction(keys[1]));
+            this.update_();
 
             let result: AsyncData<AsyncPlay | {}>;
             try {
@@ -557,7 +558,7 @@ export class Game extends AsyncHandler {
     }
 
     private log(message: string, player?: Player, secret?: boolean) {
-        console.log(message);
+        // console.log(message);
 
         this.logs_.push({
             message,

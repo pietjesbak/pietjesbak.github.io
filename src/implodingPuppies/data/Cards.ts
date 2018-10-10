@@ -272,8 +272,8 @@ export class Card {
     prototype: CardPrototype;
     owner: Owner;
 
-    constructor(type: CardTypes, owner?: Owner) {
-        this.id = cardCounter++;
+    constructor(type: CardTypes, owner?: Owner, id?: number) {
+        this.id = id || cardCounter++;
         this.prototype = cards.get(type)!;
         this.owner = owner || { type: OwnerType.DECK };
     }
@@ -299,6 +299,9 @@ export function diffCardstate(state: Card[], props: Card[]) {
             removedCards.push(state[j]);
             i--;
             j++;
+            if (j > state.length) {
+                break;
+            }
         }
     }
 

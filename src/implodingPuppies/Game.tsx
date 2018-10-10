@@ -16,24 +16,19 @@ interface Props {
 
 interface State {
     players: PlayerData[];
+    playerAngles: Map<number, number>;
     width: number;
 }
 
-interface PlayerRef {
-    model: PlayerData;
-    view: HTMLElement;
-}
-
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
-
-    private playerRefs_: Map<number, PlayerRef> = new Map();
 
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
 
         this.state = {
             players: [],
-            width: 960
+            width: 960,
+            playerAngles: new Map()
         }
     }
 
@@ -43,8 +38,30 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
             this.props.server.game.startRound();
         }
 
+        // Calculate the correct angle for every player.
+        // The own player should be a the bottom and the others around him in the right order.
+        const playerAngles = new Map<number, number>();
+        playerAngles.set(this.props.server.ownId, Math.PI / 2);
+
+        let i = this.props.server.ownId;
+        let counter = 0;
+        while(true) {
+            i++;
+            if (i >= this.props.server.players.length) {
+                i = 0;
+            }
+
+            if (i === this.props.server.ownId) {
+                break;
+            }
+
+            playerAngles.set(i, this.getPlayerAngle_(counter));
+            counter++;
+        };
+
         this.setState({
-            width: (ReactDOM.findDOMNode(this) as HTMLElement).clientWidth
+            width: (ReactDOM.findDOMNode(this) as HTMLElement).clientWidth,
+            playerAngles
         })
     }
 
@@ -55,11 +72,6 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     updateView = () => {
         this.setState({});
     }
-
-    storePlayerRef = (player: number) => (ref: Player) => this.playerRefs_.set(player, {
-        model: this.props.server.game.players[player],
-        view: ReactDOM.findDOMNode(ref) as HTMLElement
-    });
 
     clickCard = (player: PlayerData, card: CardData) => () => {
         const pos = player.selection.indexOf(card);
@@ -87,17 +99,22 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.props.server.game.forceStart();
     }
 
-    getPlayerAngle = (index: number) => {
-        const count = this.props.server.game.players.length - 2;
-        return (((-count / 2 + index) * Math.PI / count) || 0) - Math.PI / 2;
-    }
-
-    getRemotePlayerPosition(player: PlayerData, index: number): { transform: string } {
+    getPlayerPos = (playerId: number) => {
         const height = 280;
-        const angle = this.getPlayerAngle(index);
+        const angle = this.state.playerAngles.get(playerId)!;
 
         return {
-            transform: `translate(${Math.cos(angle) * this.state.width / 3}px, ${Math.sin(angle) * height}px)`
+            angle,
+            x: Math.cos(angle) * this.state.width / 3,
+            y: Math.sin(angle) * height
+        };
+    }
+
+    getRemotePlayerPosition(player: PlayerData): { transform: string } {
+        const { x, y } = this.getPlayerPos(player.id);
+
+        return {
+            transform: `translate(${x}px, ${y}px)`
         };
     }
 
@@ -127,12 +144,13 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
         return (
             <div className="imploding-puppies-game">
+                <div className="active-player-highlight" style={this.getRemotePlayerPosition(this.props.server.game.currentPlayer)}/>
                 <div className="remote-area">
-                    {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} style={this.getRemotePlayerPosition(player, i)} />)}
+                    {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} style={this.getRemotePlayerPosition(player)} />)}
 
                     <Deck
                         game={this.props.server.game}
-                        getPlayerAngle={this.getPlayerAngle} />
+                        getPlayerAngle={this.getPlayerPos} />
                 </div>
 
                 <Player player={ownPlayer} />
@@ -142,6 +160,11 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                 </ul>
             </div>
         );
+    }
+
+    private getPlayerAngle_(index: number) {
+        const count = this.props.server.game.players.length - 2;
+        return (((-count / 2 + index) * Math.PI / count) || 0) - Math.PI / 2;
     }
 }
 

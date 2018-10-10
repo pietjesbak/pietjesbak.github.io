@@ -25,7 +25,7 @@ class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivE
         const { player, className, ...rest } = this.props;
         return (
             <div className={classNames('imploding-puppies-player', 'remote-player', className)} {...rest}>
-                <div className="player player-avatar" style={{ background: this.props.player.color }}>
+                <div className={classNames('player', 'player-avatar', {'dead': !player.alive})} style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>
                 </div>

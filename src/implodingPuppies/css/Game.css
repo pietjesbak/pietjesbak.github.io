@@ -10,10 +10,6 @@
     position: relative;
 }
 
-.imploding-puppies-player.active {
-    background: lightgray;
-}
-
 .imploding-puppies-player .card {
     position: absolute!important;
     top: 0;
@@ -106,7 +102,19 @@
     }
 
     100% {
-      transform: translateY(-20px);
-      opacity: 0;
+        transform: translateY(-20px);
+        opacity: 0;
     }
-  }
+}
+
+
+.imploding-puppies-game .active-player-highlight {
+    position: absolute;
+    top: 220px;
+    left: 425px;
+    width: 200px;
+    height: 200px;
+    background: rgba(230, 230, 0, 0.5);
+    border-radius: 50%;
+    transition: transform 0.3s;
+}

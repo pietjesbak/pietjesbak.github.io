@@ -233,7 +233,7 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
 
         return (
             <div className={classNames('imploding-puppies-player', { 'interactive': this.props.interactive }, { 'active': this.state.option !== Options.NONE })}>
-                <div className="player player-avatar" style={{ background: this.props.player.color }}>
+                <div className={classNames('player', 'player-avatar', {'dead': !this.props.player.alive})} style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>
                 </div>
