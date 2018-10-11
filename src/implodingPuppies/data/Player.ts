@@ -54,6 +54,10 @@ export class Player {
         return this.alive_;
     }
 
+    set alive(alive: boolean) {
+        this.alive_ = alive;
+    }
+
     get selection() {
         return this.selection_;
     }
@@ -64,10 +68,6 @@ export class Player {
 
     set name(name: string) {
         this.name_ = name;
-    }
-
-    set alive(alive: boolean) {
-        this.alive_ = alive;
     }
 
     get color() {

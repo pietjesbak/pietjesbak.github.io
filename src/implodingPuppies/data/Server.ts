@@ -184,7 +184,7 @@ export class Server extends PeerBase {
 
                 case DataType.PLAYER_SELECT:
                     if (conn !== undefined && conn.callbacks.playerSelectCallback !== undefined) {
-                        conn.callbacks.playerSelectCallback(this.players[data.player]);
+                        conn.callbacks.playerSelectCallback(this.game.players[data.player]);
                     }
                     break;
 

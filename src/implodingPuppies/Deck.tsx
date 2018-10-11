@@ -52,6 +52,7 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
         const { game, onClick, className, getPlayerAngle, ...rest } = this.props;
         const size = game.deck.cards.length / 10;
         const { addedCards } = diffCardstate(this.state.discardPile, this.props.game.discardPile);
+        const offset = Math.max(0, this.props.game.discardPile.length - 10);
 
         return (
             <div className={classNames(className, 'imploding-puppies-deck-holder')} {...rest}>
@@ -64,7 +65,7 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
                 <div className={classNames('imploding-puppies-discard')}>
                     <div className="discard-placeholder" />
                     {game.discardPile.slice(-10).map((card, i) => <Card
-                        key={card.id}
+                        key={offset + i}
                         type={card.prototype.type}
                         interactive={false}
                         style={this.getCardStyles(i, card, addedCards)} />)}

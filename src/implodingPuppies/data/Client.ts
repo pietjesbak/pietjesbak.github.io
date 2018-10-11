@@ -21,7 +21,7 @@ export class Client extends PeerBase {
                 this.error_ = 'You have been disconnected from the server!';
                 this.update_();
                 this.peer_.destroy();
-            })
+            });
         });
     }
 
@@ -75,13 +75,16 @@ export class Client extends PeerBase {
                     conn.player.name = data.players[i].name;
                     conn.player.alive = data.players[i].alive;
 
-                    const ids = conn.player.cards.map(card => card.id);
-                    conn.player.cards = data.players[i].cards.map((type: CardTypes, j: number) => new Card(type, undefined, ids[j]));
+                    const idMap = new Map<CardTypes, number[]>();
+                    conn.player.cards.forEach(card => idMap.set(card.prototype.type, [...idMap.get(card.prototype.type) || [], card.id]))
+                    idMap.forEach(arr => arr.sort((a, b) => b - a));
+                    conn.player.cards = data.players[i].cards.map((type: CardTypes) => new Card(type, undefined, (idMap.get(type) || []).pop()));
+
                     conn.player.clearSelection();
                 });
 
                 this.game_.setDeckClient(data.deck);
-                this.game_.setDiscardClient((data.discard as DiscardData[]).map(({type, owner}) => new Card(type, { type: OwnerType.PLAYER, data: owner})));
+                this.game_.setDiscardClient((data.discard as DiscardData[]).map(({ type, owner }) => new Card(type, { type: OwnerType.PLAYER, data: owner })));
                 this.game_.setPlayersClient(this.players.sort((a, b) => a.id - b.id));
                 this.game_.setCurrentPlayerClient(this.currentPlayer_!);
                 this.update_();
