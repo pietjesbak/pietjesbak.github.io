@@ -10,7 +10,8 @@ interface Props {
 }
 
 interface State {
-    discardPile: CardData[]
+    discardPile: CardData[];
+    orderIndex: number;
 }
 
 class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>, State> {
@@ -18,7 +19,8 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
         super(props);
 
         this.state = {
-            discardPile: [...this.props.game.discardPile]
+            discardPile: [...this.props.game.discardPile],
+            orderIndex: 0
         }
     }
 
@@ -35,17 +37,26 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
     }
 
     getCardStyles(i: number, card: CardData, addedCards: CardData[]) {
+        let transform: string;
+        const offset = Math.max(0, this.props.game.discardPile.length - 10);
         if (addedCards.indexOf(card) !== -1 && card.owner.type === OwnerType.PLAYER) {
             const { angle, x, y } = this.props.getPlayerAngle(card.owner.data!);
-            return {
-                transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`
-            }
+            transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`
+        } else if (this.state.orderIndex > i + offset) {
+            transform = `rotate(0deg) translate(${-i / 2}px, ${20 - i / 2}px)`
+        } else {
+            transform = `rotate(${Math.sin(i + offset) * 20}deg) translate(${Math.sin(i + offset) * 20}px, ${Math.cos(i + offset) * 20}px)`
         }
 
-        const offset = Math.max(0, this.props.game.discardPile.length - 10);
         return {
-            transform: `rotate(${Math.sin(i + offset) * 20}deg) translate(${Math.sin(i + offset) * 20}px, ${Math.cos(i + offset) * 20}px)`
-        }
+            transform
+        };
+    }
+
+    orderDiscard = () => {
+        this.setState({
+            orderIndex: this.props.game.discardPile.length
+        });
     }
 
     render() {
@@ -63,7 +74,7 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
                 ) : null}
 
                 <div className={classNames('imploding-puppies-discard')}>
-                    <div className="discard-placeholder" />
+                    <div className="discard-placeholder" onClick={this.orderDiscard} />
                     {game.discardPile.slice(-10).map((card, i) => <Card
                         key={offset + i}
                         type={card.prototype.type}

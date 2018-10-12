@@ -45,7 +45,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
         let i = this.props.server.ownId;
         let counter = 0;
-        while(true) {
+        while (true) {
             i++;
             if (i >= this.props.server.players.length) {
                 i = 0;
@@ -144,16 +144,15 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
         return (
             <div className="imploding-puppies-game">
-                <div className="active-player-highlight" style={this.getRemotePlayerPosition(this.props.server.game.currentPlayer)}/>
+                <div className="active-player-highlight" style={this.getRemotePlayerPosition(this.props.server.game.currentPlayer)} />
                 <div className="remote-area">
                     {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} style={this.getRemotePlayerPosition(player)} />)}
-
-                    <Deck
-                        game={this.props.server.game}
-                        getPlayerAngle={this.getPlayerPos} />
                 </div>
-
                 <Player player={ownPlayer} />
+
+                <Deck
+                    game={this.props.server.game}
+                    getPlayerAngle={this.getPlayerPos} />
 
                 <ul className="announcements">
                     {this.renderAnnouncements()}
