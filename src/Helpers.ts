@@ -22,7 +22,7 @@ export function blendColors(c0: string, c1: string, p: number) {
  * @param withHour Include the hour and minutes in the output?
  */
 export function readableDate(date: Date, withHour: boolean) {
-    return  date.toLocaleString('nl', {
+    return date.toLocaleString('nl', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -32,9 +32,8 @@ export function readableDate(date: Date, withHour: boolean) {
     });
 };
 
-
 /**
- * Shuffles an array.
+ * Shuffles an array in place.
  * @param a The array to shuffle.
  */
 export function shuffle<T>(a: T[]) {
@@ -44,6 +43,7 @@ export function shuffle<T>(a: T[]) {
         a[i] = a[j];
         a[j] = x;
     }
+
     return a;
 }
 
@@ -51,7 +51,7 @@ export function shuffle<T>(a: T[]) {
  * Creates an empty array with the given amount of spots that can be mapped right away.
  * @param count The size of the array.
  */
-export function repeat(count: number) : null[] {
+export function repeat(count: number): null[] {
     return new Array(count).fill(null);
 }
 
@@ -63,4 +63,21 @@ export function repeat(count: number) : null[] {
  */
 export function clamp(min: number, value: number, max: number) {
     return Math.max(Math.min(value, max), min);
+}
+
+/**
+ * Get a random element, number or character from the input.
+ * @param param An array or string to get a random element from. Or a max value for a random number.
+ * @param max When given, a random number between param and max is returned.
+ */
+export function random<T>(param: T[] | T, max?: number): T {
+    if (typeof param === 'number') {
+        if (max !== undefined) {
+            return Math.floor(Math.random() * (max - param) + param) as any;
+        } else {
+            return Math.floor(Math.random() * param) as any;
+        }
+    } else {
+        return param[random((param as any).length)];
+    }
 }

@@ -1,6 +1,7 @@
 import { repeat } from '../../Helpers';
 import { AIPlayer } from './AIPlayer';
 import { Announcement } from './Announcement';
+import { getBotName } from './BotNames';
 import { CardTypes } from './Cards';
 import { Connection, DataType, PeerBase } from './PeerBase';
 import { Player } from './Player';
@@ -10,7 +11,6 @@ export class Server extends PeerBase {
     constructor(key: string) {
         super(true, key);
         this.game_.setAnnouncementCallback(this.announce_);
-        this.game_.gameLoop();
 
         this.peer_.on('connection', (conn) => {
             conn.on('data', this.onData_(conn));
@@ -34,14 +34,13 @@ export class Server extends PeerBase {
 
     start = () => {
         if (this.players.length >= 2) {
-            this.game_.forceStart();
+            this.game.setPlayers([...this.players]);
+            this.game_.gameLoop();
 
-            // Todo: find way to remove this timeout.
-            window.setTimeout(() => {
-                this.ownId_ = this.connections_.find(conn => conn.connection === undefined)!.player.id;
-                this.started_ = true;
-                this.update_();
-            }, 0);
+            this.ownId_ = this.connections_.find(conn => conn.connection === undefined)!.player.id;
+            this.started_ = true;
+            this.update_();
+            this.game_.forceStart();
         }
     }
 
@@ -85,22 +84,18 @@ export class Server extends PeerBase {
             connection: undefined,
             callbacks: {}
         });
-
-        this.game_.join(player);
     }
 
     /**
      * Add an ai player.
      */
     addAI = () => {
-        const player = new AIPlayer(this.game_, 'AI', this.connections_.length);
+        const player = new AIPlayer(this.game_, getBotName(this.players.map(p => p.name)), this.connections_.length);
         this.connections_.push({
             player,
             connection: undefined,
             callbacks: {}
         });
-
-        this.game_.join(player);
         this.syncPlayers_();
         this.update_();
     }
@@ -145,8 +140,6 @@ export class Server extends PeerBase {
                         player: new Player(data.name, this.connections_.length),
                         callbacks: {}
                     };
-
-                    this.game_.join(conn.player);
 
                     this.connections_.push(conn);
                     this.setPlayerCallbacks_(conn.player, conn);

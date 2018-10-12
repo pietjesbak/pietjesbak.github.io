@@ -113,7 +113,7 @@
 .imploding-puppies-game .active-player-highlight {
     position: absolute;
     top: 220px;
-    left: 425px;
+    left: calc(50% - 100px);
     width: 200px;
     height: 200px;
     background: rgba(230, 230, 0, 0.5);

@@ -8,8 +8,18 @@ interface Props {
 }
 
 class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>> {
+    private lastCardCount_ = 0;
+    private lastAlive_ = true;
+
     constructor(props: Props & React.HTMLAttributes<HTMLDivElement>) {
         super(props);
+    }
+
+    shouldComponentUpdate() {
+        const shouldUpdate = this.props.player.cards.length !== this.lastCardCount_ || this.props.player.alive !== this.lastAlive_;
+        this.lastCardCount_ = this.props.player.cards.length;
+        this.lastAlive_ = this.props.player.alive;
+        return shouldUpdate;
     }
 
     getCardStyles(index: number) {

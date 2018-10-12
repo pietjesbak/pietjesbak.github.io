@@ -121,9 +121,7 @@ export class Game extends AsyncHandler {
 
     private runningKey_: string;
 
-    private startKey_: string;
-
-    private startRoundKey_: string;
+    private startKey_?: string;
 
     private logs_: Logs[] = [];
 
@@ -167,6 +165,7 @@ export class Game extends AsyncHandler {
     shutDown() {
         this.getPromise(this.runningKey_).catch(error => error);
         this.rejectRemaining([this.runningKey_], 'Server shut down', true);
+        this.startKey_ = undefined;
     }
 
     serialize() {
@@ -187,9 +186,9 @@ export class Game extends AsyncHandler {
      * Start the game regardless of the amount of players that joined.
      */
     forceStart() {
-        if (this.playerCount_ > 1) {
+        if (this.playerCount_ > 1 && this.startKey_ !== undefined) {
             const promise = this.getPromise(this.startKey_);
-            this.rejectRemaining([this.startKey_], 'Force Start');
+            this.rejectRemaining([this.startKey_], 'Force Start', true);
 
             return promise;
         }
@@ -234,10 +233,15 @@ export class Game extends AsyncHandler {
     }
 
     /**
-     * Set the players for the client.
+     * Set the players. This can only be done before the round has started.
      * @param players The players
      */
-    setPlayersClient(players: Player[]) {
+    setPlayers(players: Player[]) {
+        if (this.startKey_ !== undefined) {
+            throw new Error('Can not set players on a running game!');
+        }
+
+        this.playerCount_ = players.length;
         this.players_ = players;
     }
 
@@ -265,18 +269,13 @@ export class Game extends AsyncHandler {
         this.currentPlayer_ = id;
     }
 
-    startRound() {
-        this.resolve(this.startRoundKey_);
-    }
-
     async waitForPlayers(): Promise<Player[]> {
         this.slots_ = new Array(Game.MAX_PLAYER_COUNT).fill(null).map(() => this.createPromise(AsyncActions.JOIN));
-        this.startKey_ = this.createPromise(AsyncActions.START);
         const copy = [...this.slots_];
 
         // Wait for all slots to be filled or the force start to be called.
         const promises = this.getPromises<AsyncJoin>(copy);
-        await Promise.race([Promise.all(promises), this.getPromise(this.startKey_).catch(reject => reject)]);
+        await Promise.race([Promise.all(promises), this.getPromise(this.startKey_!).catch(reject => reject)]);
 
         // When the force start button is pressed, we reject the remaining slots, so all promises resolve.
         // Then we filter out the rejected ones.
@@ -304,13 +303,16 @@ export class Game extends AsyncHandler {
     }
 
     async gameLoop() {
-        this.startRoundKey_ = this.createPromise(AsyncActions.START);
-        this.players_ = await this.waitForPlayers();
+        this.startKey_ = this.createPromise(AsyncActions.START);
+        if (this.players_.length === 0) {
+            this.players_ = await this.waitForPlayers();
+        }
+
         this.initDeck();
         this.waitForUpdates();
         this.update_();
 
-        await this.getPromise(this.startRoundKey_);
+        await this.getPromise(this.startKey_!).catch(reject => reject);
 
         let gameOver = false;
         while (!gameOver) {
@@ -484,8 +486,9 @@ export class Game extends AsyncHandler {
             const keys = repeat(this.playerCount_).map((unused, i) => this.createPromise(AsyncActions.NOPE, { player: this.players_[i] }, Game.NOPE_TIMEOUT_MILLIS));
             const promises = this.getPromises<AsyncNope>(keys);
             keys.forEach((key, i) => {
-                if (excludedPlayer.id !== i && this.players[i].find(CardTypes.NOPE) !== undefined) {
-                    this.players_[i].allowNope(this.createNopeAction(key))
+                const card = this.players_[i].find(CardTypes.NOPE);
+                if (excludedPlayer.id !== i && card !== undefined) {
+                    this.players_[i].allowNope(this.createNopeAction(key));
                 }
             });
 

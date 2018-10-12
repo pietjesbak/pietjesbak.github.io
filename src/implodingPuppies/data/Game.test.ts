@@ -1,7 +1,7 @@
 import { repeat } from '../../Helpers';
 import { Card, CardTypes } from './Cards';
 import { Deck } from './Deck';
-import { Game } from './Game';
+import { AsyncActions, Game } from './Game';
 import { Player } from './Player';
 import { TestSerializer } from './Serializers';
 
@@ -32,7 +32,6 @@ function startServer(server: Game, players: Player[], count: number = 3, deck?: 
 
             // Wait for the next event loop.
             return new Promise(resolve => setTimeout(resolve, 0))
-                .then(() => server.startRound());
         });
 }
 
@@ -45,6 +44,7 @@ describe('Server', () => {
 
     it('Works when 5 players join the server', (callback) => {
         const server = new Game(true);
+        server['startKey_'] = server.createPromise(AsyncActions.START);
         server.waitForPlayers().then(players => {
             server.shutDown();
             callback();
@@ -57,6 +57,7 @@ describe('Server', () => {
 
     it('Works when force start is called with less than 5 players.', (callback) => {
         const server = new Game(true);
+        server['startKey_'] = server.createPromise(AsyncActions.START);
         server.waitForPlayers().then(players => {
             callback();
         });

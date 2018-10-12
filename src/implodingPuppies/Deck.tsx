@@ -30,9 +30,11 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
 
             // There is a settimeout here to trick react into first rendering the card in the start position,
             // and then in the end position right away so css transitions take care of the rest.
-            window.setTimeout(() => this.setState({
-                discardPile: [...this.props.game.discardPile]
-            }), 0);
+            window.setTimeout(() => {
+                this.setState({
+                    discardPile: [...this.props.game.discardPile]
+                });
+            }, 0);
         }
     }
 

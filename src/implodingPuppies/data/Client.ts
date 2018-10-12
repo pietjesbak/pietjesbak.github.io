@@ -18,9 +18,9 @@ export class Client extends PeerBase {
 
             this.serverConnection_.on('data', this.onData_(this.peer_, this.serverConnection_));
             this.serverConnection_.on('close', () => {
+                this.peer_.destroy();
                 this.error_ = 'You have been disconnected from the server!';
                 this.update_();
-                this.peer_.destroy();
             });
         });
     }
@@ -85,7 +85,7 @@ export class Client extends PeerBase {
 
                 this.game_.setDeckClient(data.deck);
                 this.game_.setDiscardClient((data.discard as DiscardData[]).map(({ type, owner }) => new Card(type, { type: OwnerType.PLAYER, data: owner })));
-                this.game_.setPlayersClient(this.players.sort((a, b) => a.id - b.id));
+                this.game_.setPlayers(this.players.sort((a, b) => a.id - b.id));
                 this.game_.setCurrentPlayerClient(this.currentPlayer_!);
                 this.update_();
                 break;

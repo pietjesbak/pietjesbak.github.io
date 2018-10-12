@@ -33,8 +33,8 @@ interface State {
     cards: CardData[];
 }
 
-class Player extends React.Component<Props & React.ClassAttributes<Player>, State> {
-    constructor(props: Props & React.ClassAttributes<Player>) {
+class Player extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>, State> {
+    constructor(props: Props & React.HTMLAttributes<HTMLDivElement>) {
         super(props);
 
         this.props.player.setCallbacks({
@@ -66,6 +66,7 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
         }
     }
 
+    //#region Callbacks
     giveOptions = (drawCallback: () => void, playCallback: (selection: CardTypes[]) => void) => {
         this.setState({
             option: Options.DRAW_PLAY,
@@ -77,6 +78,7 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
     }
 
     allowNope = (nopeCallback: () => void) => {
+        this.props.player.selection.push(this.props.player.find(CardTypes.NOPE)!);
         this.setState({
             option: Options.NOPE,
             callbacks: {
@@ -124,8 +126,10 @@ class Player extends React.Component<Props & React.ClassAttributes<Player>, Stat
             future: types
         });
     }
+    //#endregion
 
     clearCallbacks = () => {
+        this.props.player.clearSelection();
         this.setState({
             option: Options.NONE,
             callbacks: {},

@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom';
 import { Card as CardData } from './data/Cards';
 import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
+import { Server } from './data/Server';
 import Deck from './Deck';
 import Player from './Player';
 import RemotePlayer from './RemotePlayer';
@@ -33,11 +34,6 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     componentDidMount() {
-        this.props.server.setUpdateCallback(this.updateView);
-        if (this.props.server.isHost) {
-            this.props.server.game.startRound();
-        }
-
         // Calculate the correct angle for every player.
         // The own player should be a the bottom and the others around him in the right order.
         const playerAngles = new Map<number, number>();
@@ -69,10 +65,6 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.props.server.shutDown();
     }
 
-    updateView = () => {
-        this.setState({});
-    }
-
     clickCard = (player: PlayerData, card: CardData) => () => {
         const pos = player.selection.indexOf(card);
         if (pos === -1) {
@@ -96,7 +88,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     forceStart = () => {
-        this.props.server.game.forceStart();
+        (this.props.server as Server).start();
     }
 
     getPlayerPos = (playerId: number) => {
