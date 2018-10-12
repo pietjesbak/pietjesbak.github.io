@@ -95,9 +95,32 @@ export class Game extends AsyncHandler {
         return this.announcements_;
     }
 
-    static MAX_PLAYER_COUNT = 5;
+    static MAX_PLAYER_COUNT = 9;
+
+    static MIN_PLAYER_COUNT = 2;
+
+    static PLAYERS_PER_DECK = 5;
 
     static NOPE_TIMEOUT_MILLIS = 2000;
+
+    static getDeckInfo(playerCount: number) {
+        const decks = Math.ceil(playerCount / Game.PLAYERS_PER_DECK);
+        const cardTypes: {[key in CardTypes]: number} = {} as any;
+        let cardCount = 0;
+        Object.values(CardTypes).forEach((type: CardTypes) => {
+            const card = cards.get(type)!;
+            const count = typeof card.count === 'number' ? card.count * decks : card.count(playerCount);
+            cardTypes[type] = count;
+            cardCount += count;
+        });
+
+        return {
+            decks,
+            ...cardTypes,
+            cards: cardCount,
+            deckSize: cardCount - playerCount * 5
+        };
+    }
 
     private isHost_: boolean;
 
@@ -186,7 +209,7 @@ export class Game extends AsyncHandler {
      * Start the game regardless of the amount of players that joined.
      */
     forceStart() {
-        if (this.playerCount_ > 1 && this.startKey_ !== undefined) {
+        if (this.playerCount_ >= Game.MIN_PLAYER_COUNT && this.startKey_ !== undefined) {
             const promise = this.getPromise(this.startKey_);
             this.rejectRemaining([this.startKey_], 'Force Start', true);
 
@@ -201,6 +224,7 @@ export class Game extends AsyncHandler {
      */
     initDeck() {
         const deck: Card[] = [];
+        const multiplier = Math.ceil(this.playerCount / Game.PLAYERS_PER_DECK); // How many decks are we using?
 
         Object.values(CardTypes)
             .filter((type: CardTypes) => type !== CardTypes.BOMB && type !== CardTypes.DEFUSE)
@@ -208,7 +232,7 @@ export class Game extends AsyncHandler {
                 const card = cards.get(type)!;
                 const count = typeof card.count === 'number' ? card.count : card.count(this.playerCount_);
 
-                for (let i = 0; i < count; i++) {
+                for (let i = 0; i < count * multiplier; i++) {
                     deck.push(new Card(type));
                 }
             });
@@ -224,7 +248,7 @@ export class Game extends AsyncHandler {
             deck.push(new Card(CardTypes.BOMB));
         }
 
-        for (let i = 0; i < 6 - this.playerCount_; i++) {
+        for (let i = 0; i < (6 * multiplier) - this.playerCount_; i++) {
             deck.push(new Card(CardTypes.DEFUSE));
         }
 

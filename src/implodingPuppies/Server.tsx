@@ -2,7 +2,9 @@ import './css/Server.css';
 
 import classNames from 'classnames';
 import * as React from 'react';
+import { cards, CardTypes } from './data/Cards';
 import { Client as ClientData } from './data/Client';
+import { Game as GameData } from './data/Game';
 import { PeerBase } from './data/PeerBase';
 import { Player } from './data/Player';
 import { Server as ServerData } from './data/Server';
@@ -101,45 +103,55 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
 
     renderLobby() {
         const { className, ...rest } = this.props;
+        const info = GameData.getDeckInfo(this.state.server!.players.length);
+
         return (
             <div className={classNames('server-lobby', 'imploding-puppies-game', className)} {...rest}>
-                <h3>Lobby</h3>
-                <div className="players">
-                    {this.state.server!.players.map(player => (
-                        <div className="player player-avatar" key={player.id} style={{ background: player.color }}>
-                            <span className="avatar">{player.avatar}</span>
-                            <span className="name" title={player.name}>{player.name}</span>
-                            {this.state.server!.isHost ? <span className="host-actions"><i className="icon-logout" title="Kick" onClick={this.kick(player)} /></span> : null}
-                        </div>
-                    ))}
+                <h3>Lobby ({this.state.server!.players.length}/{GameData.MAX_PLAYER_COUNT})</h3>
+                <div className="server-row">
+                    <div className="players">
+                        {this.state.server!.players.map(player => (
+                            <div className="player player-avatar" key={player.id} style={{ background: player.color }}>
+                                <span className="avatar">{player.avatar}</span>
+                                <span className="name" title={player.name}>{player.name}</span>
+                                {this.state.server!.isHost ? <span className="host-actions"><i className="icon-logout" title="Kick" onClick={this.kick(player)} /></span> : null}
+                            </div>
+                        ))}
 
-                    {this.state.server!.players.length < 5 ? (
-                        <div className="player player-avatar loader">
-                            <span className="avatar"><i className="icon-spin1 animate-spin" /></span>
-                        </div>
-                    ) : null}
+                        {this.state.server!.players.length < 5 ? (
+                            <div className="player player-avatar loader">
+                                <span className="avatar"><i className="icon-spin1 animate-spin" /></span>
+                            </div>
+                        ) : null}
+                    </div>
+
+                    {this.state.server!.isHost ? <div className="admin-buttons">
+                        <button
+                            className="force-start"
+                            disabled={this.state.server!.players.length < GameData.MIN_PLAYER_COUNT}
+                            onClick={(this.state.server as ServerData).start}>
+                            Force start
+                    </button>
+                        <button
+                            className="add-ai"
+                            disabled={this.state.server!.players.length >= GameData.MAX_PLAYER_COUNT}
+                            onClick={(this.state.server as ServerData).addAI}>
+                            Add AI
+                    </button>
+                    </div> : null}
                 </div>
 
-                {this.state.server!.isHost ? <div className="admin-buttons">
-                    <button
-                        className="force-start"
-                        disabled={this.state.server!.players.length < 2}
-                        onClick={(this.state.server as ServerData).start}>
-                        Force start
-                    </button>
-                    <button
-                        className="add-ai"
-                        disabled={this.state.server!.players.length >= 5}
-                        onClick={(this.state.server as ServerData).addAI}>
-                        Add AI
-                    </button>
-                </div> : null}
+                <div className="lobby-info">
+                    {info.decks} deck(s) will be used to play with {this.state.server!.players.length} player(s).
+                    There will be {info.deckSize} cards in the deck, including {info.bomb} imploding puppies ({cards.get(CardTypes.BOMB)!.icon})
+                    and {info.defuse} defuses ({cards.get(CardTypes.DEFUSE)!.icon})!
+                </div>
             </div>
         );
     }
 
     renderGame() {
-        return <Game playerCount={5} server={this.state.server!} />
+        return <Game server={this.state.server!} />
     }
 
     render() {

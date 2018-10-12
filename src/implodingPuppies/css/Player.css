@@ -85,6 +85,7 @@
     height: 130px;
     vertical-align: top;
     position: relative;
+    color: white;
 }
 
 .imploding-puppies-game .player.loader {

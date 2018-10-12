@@ -11,7 +11,6 @@ import Player from './Player';
 import RemotePlayer from './RemotePlayer';
 
 interface Props {
-    playerCount: number;
     server: PeerBase;
 }
 
@@ -132,7 +131,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     render() {
         const players = this.props.server.game.players;
         const ownPlayer = players.find(player => player.id === this.props.server.ownId)!;
-        const remotePlayers = players.filter(player => player.id !== this.props.server.ownId);
+        const remotePlayers = players.filter(player => player.id !== this.props.server.ownId).reverse(); // Render in reverse order to get better stacking.
 
         return (
             <div className="imploding-puppies-game">

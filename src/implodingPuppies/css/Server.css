@@ -24,6 +24,10 @@
     margin-right: 4%;
 }
 
+.server-lobby {
+    margin: 0!important;
+}
+
 .server-lobby .host-actions {
     position: absolute;
     top: 0;
@@ -35,8 +39,12 @@
     cursor: pointer;
 }
 
+.server-lobby .server-row {
+    display: flex;
+    margin-bottom: 20px;
+}
 .server-lobby .players {
-    width: calc(100% - 142px);
+    flex: 1;
     display: inline-block;
     overflow: auto;
     white-space: nowrap;
@@ -46,8 +54,11 @@
 }
 
 .server-lobby .admin-buttons {
-    width: 132px;
     display: inline-block;
     margin-left: 10px;
     vertical-align: top;
+}
+
+.server-lobby .admin-buttons button {
+    display: block;
 }

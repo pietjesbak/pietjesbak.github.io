@@ -42,7 +42,7 @@ describe('Server', () => {
         jest.restoreAllMocks();
     });
 
-    it('Works when 5 players join the server', (callback) => {
+    it('Works when 9 players join the server', (callback) => {
         const server = new Game(true);
         server['startKey_'] = server.createPromise(AsyncActions.START);
         server.waitForPlayers().then(players => {
@@ -50,7 +50,7 @@ describe('Server', () => {
             callback();
         });
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 9; i++) {
             server.join(new Player());
         }
     });

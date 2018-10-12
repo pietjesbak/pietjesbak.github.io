@@ -12,9 +12,9 @@ export interface PlayerOptions {
 }
 
 export class Player {
-    static colors = ['#5bc0eb', '#fde74c', '#9bc53d', '#e55934', '#fa7921'];
+    static colors = ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#3B3EAC', '#0099C6', '#DD4477', '#66AA00'];
 
-    static avatars = ['🐕', '🐈', '🐦', '🐟', '🐔'];
+    static avatars = ['🐕', '🐈', '🐦', '🐟', '🐔', '🐘', '🐖', '🐒', '🐎', '🐄'];
 
     private id_: number;
 
