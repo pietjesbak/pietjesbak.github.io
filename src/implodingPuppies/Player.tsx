@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import * as React from 'react';
 import Card from './Card';
 import { Card as CardData, CardTypes, diffCardstate } from './data/Cards';
+import { Game } from './data/Game';
 import { IPlayerCallbacks } from './data/IPlayerCallbacks';
 import { Player as PlayerData } from './data/Player';
 import DeckInsert from './DeckInsert';
@@ -20,6 +21,7 @@ export const enum Options {
 
 interface Props {
     player: PlayerData;
+    game: Game;
     interactive?: IPlayerCallbacks;
 }
 
@@ -179,7 +181,7 @@ class Player extends React.Component<Props & React.HTMLAttributes<HTMLDivElement
 
     getPlayButton() {
         const text = this.props.player.selection.length === 0 ? 'Draw' : 'Play';
-        const disabled = this.props.player.selection.length !== 0 && !this.props.player.canPlay();
+        const disabled = this.props.player.selection.length !== 0 && !this.props.player.canPlay(this.props.game);
 
         return (
             <button disabled={disabled} onClick={this.clickButton}>{text}</button>

@@ -53,6 +53,16 @@ export interface CardPrototype {
     count: ((playerCount: number) => number) | number;
 
     /**
+     * Does this card require the player to select a player when using?
+     */
+    requireTarget: boolean;
+
+    /**
+     * Creates a custom announcement for when this card is played.
+     */
+    announce?: (player: Player, game: Game, target?: Player) => Announcement;
+
+    /**
      * Function that returns true for cards that can be played during this turn.
      */
     playTest: (player: Player, selection: Card[]) => boolean;
@@ -60,7 +70,7 @@ export interface CardPrototype {
     /**
      * Function that executes the effect when a player plays this card.
      */
-    playEffect?: (player: Player, game: Game) => Promise<void>;
+    playEffect?: (player: Player, game: Game, target?: Player) => Promise<void>;
 
     /**
      * Function that executes when a player draws this card.
@@ -123,6 +133,7 @@ cards.set(CardTypes.BOMB, {
     name: 'Imploding Puppy',
     description: 'You are out of the game if you draw this card!',
     count: (playerCount) => playerCount - 1,
+    requireTarget: false,
     playTest: () => false,
     playEffect: async (player, game) => {
         // A player can only use this card by playing a defuse, so the play effect of this card is just putting it back in the deck.
@@ -155,6 +166,7 @@ cards.set(CardTypes.DEFUSE, {
     name: 'Defuse',
     description: 'Use this card to put another card back in the deck.',
     count: 6,
+    requireTarget: false,
     playTest: () => false,
     playEffect: async (player, game) => {
         // A player can only play this as a result of drawing a bomb, so he must have one in his hand.
@@ -170,8 +182,10 @@ cards.set(CardTypes.SHUFFLE, {
     name: 'Shuffle',
     description: 'Use this card to shuffle the deck.',
     count: 4,
+    requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.SHUFFLE) || twoOrThreeSame(player, selection, CardTypes.SHUFFLE),
     playEffect: async (player, game) => {
+        game.announce(new Announcement(AnnouncementTypes.SHUFFLE, undefined, player));
         game.deck.shuffle();
     },
     score: (player: Player, game: Game) => Math.floor(game.deck.cards.length / 10) + count(player, CardTypes.SHUFFLE)
@@ -184,6 +198,7 @@ cards.set(CardTypes.NOPE, {
     name: 'Nope',
     description: 'Use this card to prevent another player\'s action.',
     count: 5,
+    requireTarget: false,
     playTest: (player, selection) => fiveDifferent(player, selection, CardTypes.NOPE) || twoOrThreeSame(player, selection, CardTypes.NOPE),
     score: (player: Player) => 4 + count(player, CardTypes.NOPE)
 });
@@ -195,6 +210,7 @@ cards.set(CardTypes.SKIP, {
     name: 'Skip',
     description: 'Use this card to skip drawing a card.',
     count: 4,
+    requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.SKIP) || twoOrThreeSame(player, selection, CardTypes.SKIP),
     playEffect: async (player, game) => game.processSkip(),
     score: (player: Player) => 3 + count(player, CardTypes.SKIP)
@@ -207,6 +223,7 @@ cards.set(CardTypes.ATTACK, {
     name: 'Attack',
     description: 'Use this card to skip drawing a card and make the next player take 2 turns',
     count: 4,
+    requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
     playEffect: async (player, game) => game.processAttack(),
     score: (player: Player) => 4 + count(player, CardTypes.ATTACK)
@@ -219,8 +236,21 @@ cards.set(CardTypes.FAVOR, {
     name: 'Favor',
     description: 'Use this card to ask another player\'s card.',
     count: 4,
+    requireTarget: true,
+    announce: (player, game, target) => new Announcement(AnnouncementTypes.FAVOR_FROM, undefined, player, target),
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FAVOR) || twoOrThreeSame(player, selection, CardTypes.FAVOR),
-    playEffect: async (player, game) => game.processFavor(),
+    playEffect: async (player, game, target) => {
+        if (target!.cards.length > 0) {
+            const options = [...new Set(target!.cards.map(card => card.prototype.type))];
+            const selectedType = (await game.selectCard(target!, options)).data!.selection;
+
+            const selectedCard = target!.stealCard(selectedType, game);
+            if (selectedCard !== undefined) {
+                player.addCard(selectedCard, game);
+                game.announce(new Announcement(AnnouncementTypes.TAKE, undefined, player, target));
+            }
+        }
+    },
     score: (player: Player) => 1 + count(player, CardTypes.FAVOR)
 });
 
@@ -231,6 +261,7 @@ cards.set(CardTypes.FUTURE, {
     name: 'See the future',
     description: 'Use this card to see the top three cards.',
     count: 5,
+    requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FUTURE) || twoOrThreeSame(player, selection, CardTypes.FUTURE),
     playEffect: async (player, game) => game.processFuture(),
     score: (player: Player) => 2 + count(player, CardTypes.SHUFFLE)
@@ -245,12 +276,11 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         name: 'Animal',
         description: 'A collectable. Combine 2 or 3 of the same type to steal a card.',
         count: 4,
+        requireTarget: false,
         playTest: (player, selection) => fiveDifferent(player, selection, type) || twoOrThreeSame(player, selection, type),
         score: (player: Player) => count(player, type)
     });
 });
-
-let cardCounter = 0;
 
 export enum OwnerType {
     PLAYER = 'player',
@@ -263,13 +293,30 @@ interface Owner {
     data?: number;
 }
 
+let cardCounter = 0;
 export class Card {
+    /**
+     * A function to sort cards.
+     * @param a The left card.
+     * @param b The right card.
+     */
     static sortFn(a: Card, b: Card) {
         return a.prototype.type.localeCompare(b.prototype.type);
     }
 
+    /**
+     * An id used to identify otherwise identical cards.
+     */
     id: number;
+
+    /**
+     * All data and mechanics of the card.
+     */
     prototype: CardPrototype;
+
+    /**
+     * The entity that currently holds the card.
+     */
     owner: Owner;
 
     constructor(type: CardTypes, owner?: Owner, id?: number) {

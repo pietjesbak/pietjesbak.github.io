@@ -117,8 +117,10 @@ export abstract class PeerBase {
     protected removePeer_(connection: Peer.DataConnection | Player) {
         const conn = this.findConnection_(connection);
         if (conn !== undefined) {
-            this.connections_.splice(this.connections_.indexOf(conn, 1));
+            this.connections_.splice(this.connections_.indexOf(conn, 1), 1);
         }
+
+        this.connections_.forEach((data, i) => data.player.id = i);
     }
 
     /**

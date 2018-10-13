@@ -136,10 +136,16 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         return (
             <div className="imploding-puppies-game">
                 <div className="active-player-highlight" style={this.getRemotePlayerPosition(this.props.server.game.currentPlayer)} />
+                {this.props.server.game.lastTarget ? (
+                    <div className="target-player-highlight"
+                        key={this.props.server.game.lastTarget.timestamp}
+                        style={this.getRemotePlayerPosition(this.props.server.game.lastTarget.target)} />
+                ) : null}
+
                 <div className="remote-area">
                     {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} style={this.getRemotePlayerPosition(player)} />)}
                 </div>
-                <Player player={ownPlayer} />
+                <Player player={ownPlayer} game={this.props.server.game} />
 
                 <Deck
                     game={this.props.server.game}
@@ -153,8 +159,9 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     private getPlayerAngle_(index: number) {
+        const range = this.props.server.game.players.length === 3 ? Math.PI * 1 / 2 : Math.PI;
         const count = this.props.server.game.players.length - 2;
-        return (((-count / 2 + index) * Math.PI / count) || 0) - Math.PI / 2;
+        return (((-count / 2 + index) * range / count) || 0) - Math.PI / 2;
     }
 }
 

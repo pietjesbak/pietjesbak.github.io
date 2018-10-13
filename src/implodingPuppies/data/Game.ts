@@ -4,6 +4,7 @@ import { AsyncData, AsyncHandler } from './AsyncHandler';
 import { Card, cards, CardTypes } from './Cards';
 import { Deck } from './Deck';
 import { Player } from './Player';
+import { plays } from './Plays';
 import { GameState, ISerializer, TestSerializer } from './Serializers';
 
 export enum AsyncActions {
@@ -71,6 +72,10 @@ export class Game extends AsyncHandler {
         return this.players_[this.currentPlayer_];
     }
 
+    get lastTarget() {
+        return this.lastTarget_;
+    }
+
     get players() {
         return this.players_;
     }
@@ -101,11 +106,11 @@ export class Game extends AsyncHandler {
 
     static PLAYERS_PER_DECK = 5;
 
-    static NOPE_TIMEOUT_MILLIS = 2000;
+    static NOPE_TIMEOUT_MILLIS = 4000;
 
     static getDeckInfo(playerCount: number) {
         const decks = Math.ceil(playerCount / Game.PLAYERS_PER_DECK);
-        const cardTypes: {[key in CardTypes]: number} = {} as any;
+        const cardTypes: { [key in CardTypes]: number } = {} as any;
         let cardCount = 0;
         Object.values(CardTypes).forEach((type: CardTypes) => {
             const card = cards.get(type)!;
@@ -113,6 +118,9 @@ export class Game extends AsyncHandler {
             cardTypes[type] = count;
             cardCount += count;
         });
+
+        // Every player will start with a guaranteed defuse so these won't be in the deck.
+        cardTypes.defuse -= playerCount;
 
         return {
             decks,
@@ -133,6 +141,8 @@ export class Game extends AsyncHandler {
     private playerCount_ = 0;
 
     private currentPlayer_ = 0;
+
+    private lastTarget_?: { timestamp: number, target: Player };
 
     private currentPlayerIndex_ = 0;
 
@@ -182,6 +192,10 @@ export class Game extends AsyncHandler {
         }
 
         this.log(announcement.message, announcement.source);
+        if (announcement.isStealAction) {
+            this.lastTarget_ = { timestamp: announcement.timestamp, target: announcement.target! };
+        }
+
         this.update_();
     }
 
@@ -385,79 +399,29 @@ export class Game extends AsyncHandler {
 
     async playerPlay(selection: CardTypes[]) {
         this.currentPlayer.clearSelection();
-        if (!this.currentPlayer.canPlay(selection)) {
-            return;
+
+        let target: Player | undefined;
+        const play = plays.find(p => p.test(selection, this.currentPlayer, this));
+        if (play !== undefined) {
+            selection.forEach(type => this.currentPlayer.discardCard(type, this));
+            this.update_();
+
+            if (play.requireTarget(selection, this.currentPlayer, this)) {
+                target = (await this.selectTarget()).data!.target;
+            }
+
+            play.announce(selection, this.currentPlayer, this, target);
+            if (!await this.processNopes(selection)) {
+                await play.action(selection, this.currentPlayer, this, target);
+            }
+
+            this.update_();
         }
-
-        selection.forEach(type => this.currentPlayer.discardCard(type, this));
-        this.update_();
-
-        if (selection.length === 1 && cards.get(selection[0])!.playEffect !== undefined) {
-            const card = cards.get(selection[0])!;
-            this.announce(new Announcement(AnnouncementTypes.PLAY_CARD, selection, this.currentPlayer));
-
-            if (!await this.processNopes(selection)) {
-                await card.playEffect!(this.currentPlayer, this);
-            }
-
-        } else if (selection.length === 2 && selection[0] === selection[1]) {
-            this.announce(new Announcement(AnnouncementTypes.TWO_OF_A_KIND, selection, this.currentPlayer));
-
-            if (!await this.processNopes(selection)) {
-                const target = (await this.selectTarget()).data!.target;
-                this.announce(new Announcement(AnnouncementTypes.STEAL_FROM, selection, this.currentPlayer, target));
-
-                if (!await this.processNopes(selection)) {
-                    const card = target.stealCard(undefined, this);
-                    if (card !== undefined) {
-                        this.currentPlayer.addCard(card, this);
-                        this.announce(new Announcement(AnnouncementTypes.TAKE, undefined, this.currentPlayer, target));
-                    }
-                }
-            }
-
-        } else if (selection.length === 3 && selection.every(type => type === selection[0])) {
-            this.announce(new Announcement(AnnouncementTypes.THREE_OF_A_KIND, selection, this.currentPlayer));
-
-            if (!await this.processNopes(selection)) {
-                const target = (await this.selectTarget()).data!.target;
-                this.announce(new Announcement(AnnouncementTypes.STEAL_FROM, selection, this.currentPlayer, target));
-
-                if (!await this.processNopes(selection)) {
-                    const options = Object.values(CardTypes).filter(type => type !== CardTypes.BOMB);
-                    const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
-                        player: this.currentPlayer,
-                        options
-                    });
-                    this.clearPlayers_();
-                    this.currentPlayer.allowSelectCard(options, this.createSelectCardAction(key));
-                    const selectedType = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
-                    this.announce(new Announcement(AnnouncementTypes.WANTS, [selectedType], this.currentPlayer, target));
-
-                    const selectedCard = target.stealCard(selectedType, this);
-                    if (selectedCard !== undefined) {
-                        this.currentPlayer.addCard(selectedCard, this);
-                        this.announce(new Announcement(AnnouncementTypes.TAKE, [selectedType], this.currentPlayer, target));
-                    }
-                }
-            }
-
-        } else if (selection.length === 5 && new Set(selection).size === 5 && this.discardPile_.length > 0) {
-            this.announce(new Announcement(AnnouncementTypes.FIVE_DIFFERENT, selection, this.currentPlayer));
-
-            if (!await this.processNopes(selection)) {
-                const type = (await this.selectCard()).data!.selection;
-                const card = this.discardPile_.find(c => c.prototype.type === type)!;
-                this.announce(new Announcement(AnnouncementTypes.TAKE, [type], this.currentPlayer));
-
-                this.discardPile_.splice(this.discardPile_.indexOf(card), 1);
-                this.currentPlayer.addCard(card, this);
-            }
-        }
-
-        this.update_();
     }
 
+    /**
+     * Allows the current player to select a target (player).
+     */
     selectTarget() {
         this.clearPlayers_();
         const options = this.players_.filter(player => player.alive && player !== this.currentPlayer);
@@ -470,14 +434,18 @@ export class Game extends AsyncHandler {
         return this.getPromise<AsyncSelectPlayer>(key);
     }
 
-    selectCard() {
+    /**
+     * Allows a player to select a card.
+     * @param player The player that needs to select a card.
+     * @param options The options that the player can choose from.
+     */
+    selectCard(player: Player, options: CardTypes[]) {
         this.clearPlayers_();
-        const options = [...new Set(this.discardPile_.map(card => card.prototype.type))].filter(type => type !== CardTypes.BOMB);
         const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
             player: this.currentPlayer,
             options
         });
-        this.currentPlayer.allowSelectCard(options, this.createSelectCardAction(key));
+        player.allowSelectCard(options, this.createSelectCardAction(key));
 
         return this.getPromise<AsyncSelectCard>(key);
     }
@@ -558,27 +526,6 @@ export class Game extends AsyncHandler {
 
         this.nextTurn();
         this.playerQueue_.push(this.currentPlayer_);
-    }
-
-    async processFavor() {
-        const target = (await this.selectTarget()).data!.target;
-        this.announce(new Announcement(AnnouncementTypes.FAVOR_FROM, undefined, this.currentPlayer, target));
-
-        if (!await this.processNopes([CardTypes.FAVOR]) && target.cards.length > 0) {
-            this.clearPlayers_();
-            const options = [...new Set(target.cards.map(card => card.prototype.type))];
-            const key = this.createPromise<AsyncSelectCard>(AsyncActions.SELECT_CARD, {
-                player: this.currentPlayer,
-                options
-            });
-            target.allowSelectCard(options, this.createSelectCardAction(key));
-            const type = (await this.getPromise<AsyncSelectCard>(key)).data!.selection;
-            const selectedCard = target.stealCard(type, this);
-            if (selectedCard !== undefined) {
-                this.currentPlayer.addCard(selectedCard, this);
-                this.announce(new Announcement(AnnouncementTypes.TAKE, undefined, this.currentPlayer, target));
-            }
-        }
     }
 
     async processFuture() {

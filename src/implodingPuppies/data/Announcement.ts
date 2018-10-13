@@ -5,7 +5,7 @@ import { Player } from './Player';
 export const enum AnnouncementTypes {
     DRAW_CARD,
     PLAY_CARD,
-    STEAL_FROM,
+    SHUFFLE,
     FAVOR_FROM,
     TWO_OF_A_KIND,
     THREE_OF_A_KIND,
@@ -30,17 +30,17 @@ export class Announcement {
             case AnnouncementTypes.PLAY_CARD:
                 return `${this.source_!.name} plays a ${this.cardName}!`;
 
-            case AnnouncementTypes.STEAL_FROM:
-                return `${this.source_!.name} wants to steal from ${this.target_!.name} (${this.cards_!.length === 2 ? 'random' : 'specific card'})!`;
-
             case AnnouncementTypes.FAVOR_FROM:
                 return `${this.source_!.name} wants a favor from ${this.target_!.name}!`;
 
+            case AnnouncementTypes.SHUFFLE:
+                return `${this.source_!.name} shuffles the deck!`;
+
             case AnnouncementTypes.TWO_OF_A_KIND:
-                return `${this.source_!.name} plays two of a kind to steal a random card!`;
+                return `${this.source_!.name} plays two of a kind to steal a random card from ${this.target_!.name}!`;
 
             case AnnouncementTypes.THREE_OF_A_KIND:
-                return `${this.source_!.name} plays three of a kind to steal a specific card!`;
+                return `${this.source_!.name} plays three of a kind to steal a specific card from ${this.target_!.name}!`;
 
             case AnnouncementTypes.WANTS:
                 return `${this.source_!.name} wants to steal a ${this.cardName} from ${this.target_!.name}!`;
@@ -84,6 +84,14 @@ export class Announcement {
 
     get timestamp() {
         return this.timestamp_;
+    }
+
+    get isStealAction() {
+        return this.target_ !== undefined && (
+            this.type_ === AnnouncementTypes.TWO_OF_A_KIND ||
+            this.type_ === AnnouncementTypes.THREE_OF_A_KIND ||
+            this.type_ === AnnouncementTypes.FAVOR_FROM
+        );
     }
 
     private get cardName() {
