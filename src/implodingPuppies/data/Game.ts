@@ -5,7 +5,6 @@ import { Card, cards, CardTypes } from './Cards';
 import { Deck } from './Deck';
 import { Player } from './Player';
 import { plays } from './Plays';
-import { GameState, ISerializer, TestSerializer } from './Serializers';
 
 export enum AsyncActions {
     START = 'start',
@@ -150,8 +149,6 @@ export class Game extends AsyncHandler {
 
     private slots_: string[];
 
-    private serializer_: ISerializer;
-
     private runningKey_: string;
 
     private startKey_?: string;
@@ -164,11 +161,10 @@ export class Game extends AsyncHandler {
 
     private announcementCallback_?: (announcement: Announcement) => void;
 
-    constructor(isHost: boolean, serializer?: ISerializer) {
+    constructor(isHost: boolean) {
         super();
 
         this.isHost_ = isHost;
-        this.serializer_ = serializer || new TestSerializer();
         this.runningKey_ = this.createPromise(AsyncActions.RUNNING);
     }
 
@@ -203,10 +199,6 @@ export class Game extends AsyncHandler {
         this.getPromise(this.runningKey_).catch(error => error);
         this.rejectRemaining([this.runningKey_], 'Server shut down', true);
         this.startKey_ = undefined;
-    }
-
-    serialize() {
-        return this.serializer_.serializeFull(this);
     }
 
     /**
@@ -327,19 +319,6 @@ export class Game extends AsyncHandler {
             });
     }
 
-    async waitForUpdates() {
-        while (true) {
-            let response: GameState;
-            try {
-                response = await Promise.race([this.serializer_.deserializeFull(), this.getPromise(this.runningKey_)]) as GameState;
-            } catch (e) {
-                return;
-            }
-
-            this.deserialize_(response.players, response.deck, response.discardPile);
-        }
-    }
-
     async gameLoop() {
         this.startKey_ = this.createPromise(AsyncActions.START);
         if (this.players_.length === 0) {
@@ -347,7 +326,6 @@ export class Game extends AsyncHandler {
         }
 
         this.initDeck();
-        this.waitForUpdates();
         this.update_();
 
         await this.getPromise(this.startKey_!).catch(reject => reject);
@@ -357,6 +335,7 @@ export class Game extends AsyncHandler {
             this.clearPlayers_();
             const keys = [this.createPromise(AsyncActions.DRAW), this.createPromise(AsyncActions.PLAY)];
             const promises = this.getPromises(keys);
+
             this.currentPlayer.giveOptions(this.createDefaultAction(keys[0]), this.createPlayAction(keys[1]));
             this.update_();
 
@@ -506,12 +485,17 @@ export class Game extends AsyncHandler {
         return result;
     }
 
-    nextTurn() {
+    nextTurn(): boolean {
         if (this.playerQueue_.length === 0) {
             this.playerQueue_.push(this.getNextAlivePlayer_().id);
         }
 
         this.currentPlayer_ = this.playerQueue_.pop()!;
+
+        // If the next player in the queue was dead, skip this turn.
+        if (!this.currentPlayer.alive) {
+            return this.nextTurn();
+        }
 
         return this.players_.filter(player => player.alive).length <= 1;
     }
@@ -557,24 +541,6 @@ export class Game extends AsyncHandler {
             currentPlayer = this.players[++this.currentPlayerIndex_ % this.players.length];
         } while (!currentPlayer.alive);
         return currentPlayer;
-    }
-
-    private deserialize_(players?: Player[], deck?: Card[], discardPile?: Card[]) {
-        if (players !== undefined) {
-            this.players_.forEach((player, i) => {
-                const match = players[i];
-                player.cards = match.cards;
-                player.id = match.id;
-            });
-        }
-
-        if (deck !== undefined) {
-            this.deck_.updateCards(deck);
-        }
-
-        if (discardPile !== undefined) {
-            this.discardPile_ = discardPile;
-        }
     }
 
     private update_() {

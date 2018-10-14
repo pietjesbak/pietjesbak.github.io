@@ -3,36 +3,28 @@ import { Card, CardTypes } from './Cards';
 import { Deck } from './Deck';
 import { AsyncActions, Game } from './Game';
 import { Player } from './Player';
-import { TestSerializer } from './Serializers';
 
-function startServer(server: Game, players: Player[], count: number = 3, deck?: CardTypes[], playerCards?: CardTypes[], discardPile?: CardTypes[]) {
-    for (let i = 0; i < count; i++) {
-        players[i] = new Player();
-        server.join(players[i]);
-    }
+function startServer(count: number = 3, deck?: CardTypes[], playerCards?: CardTypes[], discardPile?: CardTypes[]) {
+    deck = deck || repeat(10).map(() => CardTypes.PUPPY_1);
+    playerCards = playerCards || [CardTypes.DEFUSE];
+    discardPile = discardPile || [];
 
-    return server.forceStart()!
-        .catch(reject => reject)
-        .then(() => {
-            deck = deck || repeat(10).map(() => CardTypes.PUPPY_1);
-            playerCards = playerCards || [CardTypes.DEFUSE];
-            discardPile = discardPile || [];
+    const server = new Game(true);
+    const players = repeat(count).map((unused, i) => new Player('', i));
+    server.setPlayers(players);
 
-            const newPlayers = repeat(count).map((unused, i) => {
-                const player = new Player(undefined, i);
-                player.cards = playerCards!.map(type => new Card(type));
-                return player;
-            });
+    const round = server.gameLoop();
+    server['deck_'] = new Deck(deck!.map(type => new Card(type)));
+    server.setDiscardClient(discardPile!.map(type => new Card(type)!));
+    server.players.forEach(player => player.cards = playerCards!.map(type => new Card(type)));
 
-            (server['serializer_'] as TestSerializer).queueState({
-                players: newPlayers,
-                deck: deck!.map(type => new Card(type)),
-                discardPile: discardPile!.map(type => new Card(type))
-            });
+    server.forceStart()!.catch(reject => reject);
 
-            // Wait for the next event loop.
-            return new Promise(resolve => setTimeout(resolve, 0))
-        });
+    return {
+        server,
+        players,
+        round
+    };
 }
 
 describe('Server', () => {
@@ -69,9 +61,8 @@ describe('Server', () => {
         server.forceStart();
     });
 
-    it('A player can draw a card', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player can draw a card', async () => {
+        const { server, round } = startServer();
 
         let first = true;
         jest.spyOn(Game.prototype, 'playerDraw');
@@ -81,19 +72,13 @@ describe('Server', () => {
             first = false;
         });
 
-        server.gameLoop().then(() => {
-            expect(server.playerDraw).toBeCalled();
-            expect(server.playerPlay).not.toBeCalled();
-
-            callback();
-        });
-
-        startServer(server, players);
+        await round;
+        expect(server.playerDraw).toBeCalled();
+        expect(server.playerPlay).not.toBeCalled();
     });
 
-    it('A player can play one or more cards', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player can play one or more cards', async () => {
+        const { server, round } = startServer(3, undefined, [CardTypes.ATTACK, CardTypes.SKIP]);
 
         let turn = 0;
         jest.spyOn(Game.prototype, 'playerDraw');
@@ -109,94 +94,77 @@ describe('Server', () => {
             turn++;
         });
 
-        server.gameLoop().then(() => {
-            expect(server.playerDraw).not.toBeCalled();
-            expect(server.playerPlay).toHaveBeenCalledTimes(2);
-            expect(server.playerPlay).toBeCalledWith([CardTypes.ATTACK]);
-            expect(server.playerPlay).toBeCalledWith([CardTypes.SKIP]);
+        await round;
+        expect(server.playerDraw).not.toBeCalled();
+        expect(server.playerPlay).toHaveBeenCalledTimes(2);
+        expect(server.playerPlay).toBeCalledWith([CardTypes.ATTACK]);
+        expect(server.playerPlay).toBeCalledWith([CardTypes.SKIP]);
 
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.ATTACK, CardTypes.SKIP]);
     });
 
     it('Noping should only be possible during the timeout', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+        const { server } = startServer(3, undefined, [CardTypes.NOPE]);
 
         jest.spyOn(Player.prototype, 'allowNope');
 
-        server.gameLoop();
-        startServer(server, players, 3, undefined, [CardTypes.NOPE]).then(() => {
-            server.processNopes([CardTypes.SKIP]).then(noped => {
-                expect(noped).toBe(false);
-                expect(Player.prototype.allowNope).toHaveBeenCalledTimes(2);
+        server.processNopes([CardTypes.SKIP]).then(noped => {
+            expect(noped).toBe(false);
+            expect(Player.prototype.allowNope).toHaveBeenCalledTimes(2);
 
-                server.shutDown();
-                callback();
-            });
+            server.shutDown();
+            callback();
         });
     });
 
     it('It should be possible to nope a card', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+        const { server } = startServer(3, undefined, [CardTypes.NOPE]);
         const nopes: Array<() => void> = [];
 
         jest.spyOn(Player.prototype, 'allowNope').mockImplementation((fn: () => void) => nopes.push(fn));
 
-        server.gameLoop();
-        startServer(server, players, 3, undefined, [CardTypes.NOPE]).then(() => {
-            const promise = server.processNopes([CardTypes.SKIP]);
+        const promise = server.processNopes([CardTypes.SKIP]);
 
-            expect(nopes).toHaveLength(2);
-            nopes[0]();
+        expect(nopes).toHaveLength(2);
+        nopes[0]();
 
-            promise.then(noped => {
-                expect(noped).toBe(true);
+        promise.then(noped => {
+            expect(noped).toBe(true);
 
-                server.shutDown();
-                callback();
-            });
+            server.shutDown();
+            callback();
         });
     });
 
     it('It should be possible to nope a nope', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+        const { server } = startServer(3, undefined, [CardTypes.NOPE]);
         const nopes = new Map<number, () => void>();
 
         jest.spyOn(Player.prototype, 'allowNope').mockImplementation(function (this: Player, fn: () => void) { nopes.set(this.id, fn) });
 
-        server.gameLoop();
-        startServer(server, players, 3, undefined, [CardTypes.NOPE]).then(() => {
-            const promise = server.processNopes([CardTypes.SKIP]);
+        const promise = server.processNopes([CardTypes.SKIP]);
 
-            expect([...nopes.keys()]).toEqual([1, 2]);
-            nopes.get(1)!.call(null);
+        expect([...nopes.keys()]).toEqual([1, 2]);
+        nopes.get(1)!.call(null);
+        nopes.clear();
+
+        setTimeout(() => {
+            expect([...nopes.keys()]).toEqual([0, 2]);
+            nopes.get(0)!.call(null);
             nopes.clear();
+        }, 0);
 
-            setTimeout(() => {
-                expect([...nopes.keys()]).toEqual([0, 2]);
-                nopes.get(0)!.call(null);
-                nopes.clear();
-            }, 0);
+        promise.then(nope => {
+            expect([...nopes.keys()]).toEqual([2]);
+            expect(Player.prototype.allowNope).toHaveBeenCalledTimes(5);
+            expect(nope).toBe(false);
 
-            promise.then(nope => {
-                expect([...nopes.keys()]).toEqual([2]);
-                expect(Player.prototype.allowNope).toHaveBeenCalledTimes(5);
-                expect(nope).toBe(false);
-
-                server.shutDown();
-                callback();
-            });
+            server.shutDown();
+            callback();
         });
     });
 
-    it('A player plays a defuse when drawing a bomb', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays a defuse when drawing a bomb', async () => {
+        const { server, round } = startServer(3, [CardTypes.BOMB, CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation((drawFn: () => void) => {
@@ -208,21 +176,15 @@ describe('Server', () => {
             insertCallback(1);
         });
 
-        server.gameLoop().then(() => {
-            expect(Player.prototype.allowInsertIntoDeck).toBeCalled();
-            expect(server.players[0].cards.map(card => card.prototype.type)).toEqual([]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE]);
-            expect(server.deck.cards[1].prototype.type).toBe(CardTypes.BOMB);
-
-            callback();
-        });
-
-        startServer(server, players, 3, [CardTypes.BOMB, CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+        await round;
+        expect(Player.prototype.allowInsertIntoDeck).toBeCalled();
+        expect(server.players[0].cards.map(card => card.prototype.type)).toEqual([]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE]);
+        expect(server.deck.cards[1].prototype.type).toBe(CardTypes.BOMB);
     });
 
-    it('A player plays a favor to gain a card', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays a favor to gain a card', async () => {
+        const { server, round } = startServer(3, undefined, [CardTypes.FAVOR]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation((drawFn: () => void, playCallback: (selection: CardTypes[]) => void) => {
@@ -240,22 +202,16 @@ describe('Server', () => {
             selectCallback(CardTypes.FAVOR);
         });
 
-        server.gameLoop().then(() => {
-            expect(Player.prototype.allowSelectTarget).toBeCalled();
-            expect(Player.prototype.allowSelectCard).toBeCalled();
-            expect(server.players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.FAVOR]);
-            expect(server.players[1].cards.map(card => card.prototype.type)).toEqual([]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.FAVOR]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.FAVOR]);
+        await round;
+        expect(Player.prototype.allowSelectTarget).toBeCalled();
+        expect(Player.prototype.allowSelectCard).toBeCalled();
+        expect(server.players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.FAVOR]);
+        expect(server.players[1].cards.map(card => card.prototype.type)).toEqual([]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.FAVOR]);
     });
 
-    it('A player plays a skip to not have to draw a card', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays a skip to not have to draw a card', async () => {
+        const { server, round } = startServer(3, undefined, [CardTypes.SKIP]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation((drawFn: () => void, playCallback: (selection: CardTypes[]) => void) => {
@@ -263,20 +219,14 @@ describe('Server', () => {
             first = false;
         });
 
-        server.gameLoop().then(() => {
-            expect(server.currentPlayer.id).toBe(1);
-            expect(server.players[0].cards.map(card => card.prototype.type)).toEqual([]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.SKIP]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.SKIP]);
+        await round;
+        expect(server.currentPlayer.id).toBe(1);
+        expect(server.players[0].cards.map(card => card.prototype.type)).toEqual([]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.SKIP]);
     });
 
-    it('A player plays an attack to not have to draw a card', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays an attack to not have to draw a card', async () => {
+        const { server, round } = startServer(3, undefined, [CardTypes.ATTACK]);
         const turns: number[] = [];
 
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -291,20 +241,14 @@ describe('Server', () => {
             }
         });
 
-        server.gameLoop().then(() => {
-            expect(turns).toEqual([0, 1, 1, 2]);
-            expect(server.players[1].cards.map(card => card.prototype.type)).toEqual([ CardTypes.ATTACK, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.ATTACK]);
+        await round;
+        expect(turns).toEqual([0, 1, 1, 2]);
+        expect(server.players[1].cards.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK]);
     });
 
-    it('A player plays a see the future to see the top 3 cards', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays a see the future to see the top 3 cards', async () => {
+        const { server, round } = startServer(3, [CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK, CardTypes.PUPPY_1], [CardTypes.FUTURE]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -317,19 +261,13 @@ describe('Server', () => {
             confirmFn();
         });
 
-        server.gameLoop().then(() => {
-            expect(Player.prototype.seeFuture).toBeCalled();
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.FUTURE]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, [CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK, CardTypes.PUPPY_1], [CardTypes.FUTURE]);
+        await round;
+        expect(Player.prototype.seeFuture).toBeCalled();
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.FUTURE]);
     });
 
-    it('A player plays a shuffle to shuffle the deck', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays a shuffle to shuffle the deck', async () => {
+        const { server, round } = startServer(3, [CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK], [CardTypes.SHUFFLE]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -338,19 +276,13 @@ describe('Server', () => {
         });
         jest.spyOn(Deck.prototype, 'shuffle');
 
-        server.gameLoop().then(() => {
-            expect(Deck.prototype.shuffle).toBeCalled();
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.SHUFFLE]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, [CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK], [CardTypes.SHUFFLE]);
+        await round;
+        expect(Deck.prototype.shuffle).toBeCalled();
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.SHUFFLE]);
     });
 
-    it('A player plays 2 puppies to steal a card', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays 2 puppies to steal a card', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -363,19 +295,13 @@ describe('Server', () => {
             selectCallback(players[1]);
         });
 
-        server.gameLoop().then(() => {
-            expect(players[2].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
+        await round;
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
     });
 
-    it('A player plays 3 puppies to steal a card the target doesnt have', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays 3 puppies to steal a card the target doesnt have', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -393,19 +319,13 @@ describe('Server', () => {
             selectCallback(CardTypes.DEFUSE);
         });
 
-        server.gameLoop().then(() => {
-            expect(players[2].cards.map(card => card.prototype.type)).toEqual([]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
+        await round;
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
     });
 
-    it('A player plays 3 puppies to steal a card the target has', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays 3 puppies to steal a card the target has', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.DEFUSE]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -423,19 +343,13 @@ describe('Server', () => {
             selectCallback(CardTypes.DEFUSE);
         });
 
-        server.gameLoop().then(() => {
-            expect(players[2].cards.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE, CardTypes.DEFUSE]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.DEFUSE]);
+        await round;
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE, CardTypes.DEFUSE]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1]);
     });
 
-    it('A player plays 5 different cards to take a card from the discard pile', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player plays 5 different cards to take a card from the discard pile', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2, CardTypes.PUPPY_3, CardTypes.PUPPY_4, CardTypes.PUPPY_5], [CardTypes.DEFUSE, CardTypes.SHUFFLE]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -448,19 +362,13 @@ describe('Server', () => {
             selectCallback(CardTypes.DEFUSE);
         });
 
-        server.gameLoop().then(() => {
-            expect(players[2].cards.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.SHUFFLE, CardTypes.PUPPY_1, CardTypes.PUPPY_2, CardTypes.PUPPY_3, CardTypes.PUPPY_4, CardTypes.PUPPY_5]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2, CardTypes.PUPPY_3, CardTypes.PUPPY_4, CardTypes.PUPPY_5], [CardTypes.DEFUSE, CardTypes.SHUFFLE]);
+        await round;
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.SHUFFLE, CardTypes.PUPPY_1, CardTypes.PUPPY_2, CardTypes.PUPPY_3, CardTypes.PUPPY_4, CardTypes.PUPPY_5]);
     });
 
-    it('A player nopes another player trying to steal from him', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('A player nopes another player trying to steal from him', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.DEFUSE, CardTypes.NOPE]);
 
         let first = true;
         let noped = false;
@@ -480,19 +388,14 @@ describe('Server', () => {
             }
         });
 
-        server.gameLoop().then(() => {
-            expect(players[2].cards.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE, CardTypes.NOPE]);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.NOPE]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.DEFUSE, CardTypes.NOPE]);
+        await round;
+        expect(noped).toBe(true);
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.DEFUSE, CardTypes.NOPE]);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.PUPPY_1, CardTypes.NOPE]);
     });
 
-    it('Attacking an attack means you dont have to play twice', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('Attacking an attack means you dont have to play twice', async () => {
+        const { server, round } = startServer(3, undefined, [CardTypes.ATTACK]);
 
         let turn = 0;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -500,19 +403,13 @@ describe('Server', () => {
             turn++;
         });
 
-        server.gameLoop().then(() => {
-            expect(server.currentPlayer.id).toBe(2);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK, CardTypes.ATTACK]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.ATTACK]);
+        await round;
+        expect(server.currentPlayer.id).toBe(2);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK, CardTypes.ATTACK]);
     });
 
-    it('It is not possible to play a card without effect', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('It is not possible to play a card without effect', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -520,20 +417,14 @@ describe('Server', () => {
             first = false;
         });
 
-        server.gameLoop().then(() => {
-            expect(server.currentPlayer.id).toBe(0);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([]);
-            expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
-
-            callback();
-        });
-
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+        await round;
+        expect(server.currentPlayer.id).toBe(0);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([]);
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
     });
 
-    it('It is not possible to play incorrect combinations', (callback) => {
-        const server = new Game(true);
-        let players: Player[] = [];
+    it('It is not possible to play incorrect combinations', async () => {
+        const { players, server, round } = startServer(3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
 
         let first = true;
         jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
@@ -541,14 +432,30 @@ describe('Server', () => {
             first = false;
         });
 
-        server.gameLoop().then(() => {
-            expect(server.currentPlayer.id).toBe(0);
-            expect(server.discardPile.map(card => card.prototype.type)).toEqual([]);
-            expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+        await round;
+        expect(server.currentPlayer.id).toBe(0);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([]);
+        expect(players[0].cards.map(card => card.prototype.type)).toEqual([CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+    });
 
-            callback();
+    it('When a player dies by an attack he does not get to draw a second card', async () => {
+        const { players, server, round } = startServer(3, [CardTypes.BOMB, CardTypes.BOMB], [CardTypes.ATTACK]);
+
+        let turn = 0;
+        jest.spyOn(Player.prototype, 'giveOptions').mockImplementation(function (this: Player, drawFn: () => void, playCallback: (selection: CardTypes[]) => void) {
+            if (turn === 0) {
+                playCallback([CardTypes.ATTACK]);
+            } else if (turn === 1) {
+                drawFn();
+            } else {
+                server.shutDown();
+            }
+            turn++;
         });
 
-        startServer(server, players, 3, undefined, [CardTypes.PUPPY_1, CardTypes.PUPPY_2]);
+        await round;
+        expect(server.currentPlayer.id).toBe(2);
+        expect(server.discardPile.map(card => card.prototype.type)).toEqual([CardTypes.ATTACK, CardTypes.BOMB, CardTypes.ATTACK]);
+        expect(players[1].alive).toBeFalsy();
     });
 });

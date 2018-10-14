@@ -54,7 +54,7 @@ export class AsyncHandler {
      * @param data Optional data that is passed along to the promise, will be merged with the initial data.
      */
     resolve<T extends object>(key: string, data?: Partial<T>) {
-        const promise = this.promises_.get(key) as PromiseStore<Partial<T>>|undefined;
+        const promise = this.promises_.get(key) as PromiseStore<Partial<T>> | undefined;
         if (promise === undefined) {
             throw new Error(`Promise ${key} does not exist or has already been resolved!`);
         }
@@ -100,7 +100,7 @@ export class AsyncHandler {
      * @param message The message to reject the promises with.
      * @param keep Should this promise be kept after rejecting?
      */
-    protected rejectRemaining(keys: string[], message?: string|string[], keep?: boolean) {
+    protected rejectRemaining(keys: string[], message?: string | string[], keep?: boolean) {
         this.get(keys).forEach(dict => {
             let reason = typeof message === 'object' ? message[0] : message;
             dict.reject(reason || 'Reject remaining');
@@ -121,6 +121,10 @@ export class AsyncHandler {
         });
     }
 
+    /**
+     * Get all promises with the given keys.
+     * @param keys An array of keys to get.
+     */
     private get<T = {}>(keys: string[]) {
         return keys.map(key => this.promises_.get(key))
             .filter(dict => dict !== undefined) as Array<PromiseStore<T>>;
