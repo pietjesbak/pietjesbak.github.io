@@ -117,12 +117,11 @@
 }
 
 .imploding-puppies-game .player.dead {
-    opacity: 0.8;
+    filter: grayscale();
 }
 
 .imploding-puppies-game .player.dead .name {
     text-decoration: line-through;
-    color: red;
 }
 
 /** Card selection */

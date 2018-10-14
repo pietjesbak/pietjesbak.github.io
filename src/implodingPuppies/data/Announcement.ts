@@ -20,58 +20,150 @@ export const enum AnnouncementTypes {
     GAME_OVER
 }
 
+export const enum AnnouncementSubject {
+    TEXT,
+    PLAYER,
+    ACTION
+}
+
 export class Announcement {
 
     get message() {
+        return this.formattedMessage.map(([subject, text]) => text).join('');
+    }
+
+    get formattedMessage(): Array<[AnnouncementSubject, string]> {
         switch (this.type_) {
             case AnnouncementTypes.DRAW_CARD:
-                return `${this.source_!.name} draws a ${this.cardName}!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' draws a '],
+                    [AnnouncementSubject.TEXT, this.cardName],
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.PLAY_CARD:
-                return `${this.source_!.name} plays a ${this.cardName}!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' plays a '],
+                    [AnnouncementSubject.ACTION, this.cardName],
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.FAVOR_FROM:
-                return `${this.source_!.name} wants a favor from ${this.target_!.name}!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' wants a favor from '],
+                    [AnnouncementSubject.PLAYER, this.target_!.name],
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.SHUFFLE:
-                return `${this.source_!.name} shuffles the deck!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' shuffles the deck!']
+                ];
 
             case AnnouncementTypes.TWO_OF_A_KIND:
-                return `${this.source_!.name} plays two of a kind to steal a random card from ${this.target_!.name}!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' plays two of a kind to steal a random card from '],
+                    [AnnouncementSubject.PLAYER, this.target_!.name],
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.THREE_OF_A_KIND:
-                return `${this.source_!.name} plays three of a kind to steal a specific card from ${this.target_!.name}!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' plays three of a kind to steal a specific card from '],
+                    [AnnouncementSubject.PLAYER, this.target_!.name],
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.WANTS:
-                return `${this.source_!.name} wants to steal a ${this.cardName} from ${this.target_!.name}!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' wants to steal a '],
+                    [AnnouncementSubject.ACTION, this.cardName],
+                    [AnnouncementSubject.TEXT, ' from '],
+                    [AnnouncementSubject.PLAYER, this.target!.name],
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.FIVE_DIFFERENT:
-                return `${this.source_!.name} plays 5 different cards to take from the discard pile!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' plays 5 different cards to take from the discard pile!']
+                ];
+
 
             case AnnouncementTypes.TAKE:
-                return `${this.source_!.name} takes a ${this.cardName}${this.target_ !== undefined ? ` from ${this.target_.name}` : ''}!`;
+                let bits: Array<[AnnouncementSubject, string]> = [];
+                if (this.target_ !== undefined) {
+                    bits = [
+                        [AnnouncementSubject.TEXT, ' from '],
+                        [AnnouncementSubject.PLAYER, this.target_!.name]
+                    ];
+                }
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' takes a '],
+                    [AnnouncementSubject.TEXT, this.cardName],
+                    ...bits,
+                    [AnnouncementSubject.TEXT, '!']
+                ];
 
             case AnnouncementTypes.PUT_BOMB:
-                return `${this.source_!.name} defused and puts a bomb back in the deck!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' defused and puts the bomb back in the deck!']
+                ];
 
             case AnnouncementTypes.NOPE:
-                return `${this.source_!.name} nopes ${this.target_!.name}'s ${this.cardName}! -- NOPE`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' nopes '],
+                    [AnnouncementSubject.PLAYER, this.target_!.name],
+                    [AnnouncementSubject.TEXT, '\'s '],
+                    [AnnouncementSubject.ACTION, this.cardName],
+                    [AnnouncementSubject.TEXT, '!'],
+                    [AnnouncementSubject.ACTION, ' -- NOPE']
+                ];
 
             case AnnouncementTypes.YUP:
-                return `${this.source_!.name} nopes ${this.target_!.name}'s ${this.cardName}! -- YUP`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' nopes '],
+                    [AnnouncementSubject.PLAYER, this.target_!.name],
+                    [AnnouncementSubject.TEXT, '\'s '],
+                    [AnnouncementSubject.ACTION, this.cardName],
+                    [AnnouncementSubject.TEXT, '!'],
+                    [AnnouncementSubject.ACTION, ' -- YUP']
+                ];
 
             case AnnouncementTypes.FUTURE:
-                return `${this.source_!.name} sees the future!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' sees the future!']
+                ];
 
             case AnnouncementTypes.DIE:
-                return `${this.source_!.name} explodes!`;
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' explodes!']
+                ];
 
             case AnnouncementTypes.GAME_OVER:
-                return `Game over! ${this.source_!.name} wins the game!`;
+                return [
+                    [AnnouncementSubject.ACTION, 'Game over! '],
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' wins the game!']
+                ];
 
             default:
                 throw new Error('Incomplete announcement!');
         }
+
     }
 
     get source() {

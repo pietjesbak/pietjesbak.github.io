@@ -2,6 +2,7 @@ import './css/Game.css';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { Announcement, AnnouncementSubject } from './data/Announcement';
 import { Card as CardData } from './data/Cards';
 import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
@@ -21,6 +22,11 @@ interface State {
 }
 
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
+    static announcementSubjectClasses = {
+        [AnnouncementSubject.ACTION]: 'action',
+        [AnnouncementSubject.TEXT]: '',
+        [AnnouncementSubject.PLAYER]: 'action',
+    };
 
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
@@ -64,6 +70,11 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.props.server.shutDown();
     }
 
+    enterAnnouncements = (event: React.MouseEvent) => {
+        const target = event.target as HTMLElement;
+        target.scroll(0, target.scrollHeight);
+    }
+
     clickCard = (player: PlayerData, card: CardData) => () => {
         const pos = player.selection.indexOf(card);
         if (pos === -1) {
@@ -75,15 +86,6 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         }
 
         this.setState({});
-    }
-
-    joinPlayer = () => {
-        const player = new PlayerData('', this.state.players.length);
-
-        this.props.server.game.join(player);
-        this.setState({
-            players: [...this.state.players, player]
-        });
     }
 
     forceStart = () => {
@@ -109,6 +111,10 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         };
     }
 
+    renderAnnouncementMessage(announcement: Announcement) {
+        return announcement.formattedMessage.map(([subject, text], i) => <span key={i} className={Game.announcementSubjectClasses[subject]}>{text}</span>);
+    }
+
     renderAnnouncements() {
         const elements: JSX.Element[] = [];
 
@@ -120,10 +126,15 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                 break;
             }
 
-            elements.push(<li key={i}>
-                {announcement.message}
+            elements.push(<li key={'a' + i} className="animated-announcement">
+                {this.renderAnnouncementMessage(announcement)}
             </li>);
         }
+
+        // The announcements that will be shown on hover.
+        elements.push(...announcements.map((announcement, i) => <li key={i} >
+            {this.renderAnnouncementMessage(announcement)}
+        </li>));
 
         return elements;
     }
@@ -151,7 +162,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                     game={this.props.server.game}
                     getPlayerAngle={this.getPlayerPos} />
 
-                <ul className="announcements">
+                <ul className="announcements" onMouseEnter={this.enterAnnouncements}>
                     {this.renderAnnouncements()}
                 </ul>
             </div>

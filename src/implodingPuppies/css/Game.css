@@ -44,6 +44,7 @@
 }
 
 /** Discard pile */
+
 .imploding-puppies-discard {
     position: relative;
     display: inline-block;
@@ -60,7 +61,7 @@
     width: 100px;
 }
 
-.imploding-puppies-discard > .card {
+.imploding-puppies-discard>.card {
     transform-origin: center!important;
     position: absolute!important;
     top: -20px;
@@ -75,19 +76,41 @@
 }
 
 /** Announcements */
+
 .imploding-puppies-game .announcements {
     position: absolute;
-    top: 0;
+    top: -70px;
     left: 0;
+    width: 33%;
+    height: 300px;
+    overflow-x: visible;
+    overflow-y: auto;
+}
+
+.imploding-puppies-game .announcements:not(:hover):after {
+    content: '\e80c';
+    font-family: "icons";
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 10px 20px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.6);
+    position: relative;
+    top: 5px;
 }
 
 .imploding-puppies-game .announcements li {
+    display: none;
+    color: white;
+}
+
+.imploding-puppies-game .announcements li.animated-announcement {
+    display: inline;
     position: absolute;
     top: 0;
-    white-space: nowrap;
-    margin: 5px 0;
     background: rgba(0, 0, 0, 0.6);
-    color: white;
+    margin: 5px 0;
     padding: 5px 10px;
     animation: fade-announcement 2s linear 1 forwards;
     z-index: 100;
@@ -95,18 +118,36 @@
 
 @keyframes fade-announcement {
     0% {
-        transform: translateY(100px);
+        transform: translateY(140px);
         opacity: 1;
     }
-
     80% {
         opacity: 1;
     }
-
     100% {
-        transform: translateY(-20px);
+        transform: translateY(20px);
         opacity: 0;
     }
+}
+
+.imploding-puppies-game .announcements li .action {
+    font-weight: bold;
+}
+
+.imploding-puppies-game .announcements:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.6);
+}
+
+.imploding-puppies-game .announcements:hover li.animated-announcement {
+    left: -99999px;
+}
+
+.imploding-puppies-game .announcements:hover li {
+    display: block;
+    margin: 5px;
 }
 
 .imploding-puppies-game .active-player-highlight {
@@ -125,7 +166,7 @@
     width: 200px;
     height: 200px;
     top: 220px;
-    left: calc(50% - 100px);;
+    left: calc(50% - 100px);
     background: rgba(230, 73, 0, 0.5);
     border-radius: 50%;
     animation: fade-target 2s linear 1 forwards;
@@ -136,15 +177,12 @@
     20% {
         opacity: 0.4;
     }
-
     40% {
         opacity: 1;
     }
-
     60% {
         opacity: 0.4;
     }
-
     80% {
         opacity: 1;
         width: 200px;
@@ -152,7 +190,6 @@
         top: 220px;
         left: calc(50% - 100px);
     }
-
     100% {
         width: 300px;
         height: 300px;
