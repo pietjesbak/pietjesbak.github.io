@@ -19,6 +19,7 @@
     "object-literal-sort-keys": false,
     "jsx-no-string-ref": false,
     "no-bitwise": false,
-    "prefer-const": false
+    "prefer-const": false,
+    "no-var-requires": false
   }
 }

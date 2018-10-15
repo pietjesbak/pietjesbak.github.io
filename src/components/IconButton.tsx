@@ -5,6 +5,8 @@ import * as React from 'react';
 import Tooltip from 'react-simple-tooltip';
 import { ICONBUTTON_MIN_SCREEN_WIDTH } from '../data/Constants';
 
+const debounce = require('debounce');
+
 export interface State {
     windowWidth: number;
     active: boolean;
@@ -32,6 +34,14 @@ export default class IconButton extends React.Component<Props, State> {
         behaviour: IconButtonBehavour.AUTO
     }
 
+    handleResize = debounce(() => {
+        if (this.props.behaviour === IconButtonBehavour.AUTO) {
+            this.setState({
+                windowWidth: window.innerWidth
+            });
+        }
+    });
+
     constructor(props: Props) {
         super(props);
 
@@ -39,14 +49,6 @@ export default class IconButton extends React.Component<Props, State> {
             windowWidth: window.innerWidth,
             active: false
         };
-    }
-
-    handleResize = () => {
-        if (this.props.behaviour === IconButtonBehavour.AUTO) {
-            this.setState({
-                windowWidth: window.innerWidth
-            });
-        }
     }
 
     componentDidMount() {

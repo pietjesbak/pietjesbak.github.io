@@ -95,11 +95,11 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
 
     touchDecider() {
         return (
-            <Container>
+            <Container className="no-overflow">
                 <p>
                     Deze app kan gebruikt worden om een start speler te bepalen. Iedere speler plaatst 1 vinger op het scherm, de speler wiens kleur het volledige scherm inneemt, is de start speler!
                 </p>
-                {'ontouchstart' in document.documentElement ? null : <span className="mute">PS: Dit werkt enkel op apparaten met een touchscreen.</span>}
+                {'ontouchstart' in document.documentElement! ? null : <span className="mute">PS: Dit werkt enkel op apparaten met een touchscreen.</span>}
                 <TouchDecider />
             </Container>
         );
