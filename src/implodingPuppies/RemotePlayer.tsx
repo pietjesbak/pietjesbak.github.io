@@ -15,10 +15,16 @@ class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivE
         super(props);
     }
 
-    shouldComponentUpdate() {
+    shouldComponentUpdate(newProps: Props & React.HTMLAttributes<HTMLDivElement>) {
         const shouldUpdate = this.props.player.cards.length !== this.lastCardCount_ || this.props.player.alive !== this.lastAlive_;
         this.lastCardCount_ = this.props.player.cards.length;
         this.lastAlive_ = this.props.player.alive;
+
+        // Also check the transform prop. If there are more changing props in the future, consider a proper shallow compare.
+        if (newProps.style && this.props.style && newProps.style.transform !== this.props.style.transform) {
+            return true;
+        }
+
         return shouldUpdate;
     }
 
@@ -35,7 +41,7 @@ class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivE
         const { player, className, ...rest } = this.props;
         return (
             <div className={classNames('imploding-puppies-player', 'remote-player', className)} {...rest}>
-                <div className={classNames('player', 'player-avatar', {'dead': !player.alive})} style={{ background: this.props.player.color }}>
+                <div className={classNames('player', 'player-avatar', { 'dead': !player.alive })} style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>
                 </div>

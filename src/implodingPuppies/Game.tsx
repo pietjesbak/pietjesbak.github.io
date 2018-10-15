@@ -2,7 +2,7 @@ import './css/Game.css';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Announcement, AnnouncementSubject } from './data/Announcement';
+import Announcements from './Announcements';
 import { Card as CardData } from './data/Cards';
 import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
@@ -22,12 +22,6 @@ interface State {
 }
 
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
-    static announcementSubjectClasses = {
-        [AnnouncementSubject.ACTION]: 'action',
-        [AnnouncementSubject.TEXT]: '',
-        [AnnouncementSubject.PLAYER]: 'action',
-    };
-
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
 
@@ -39,8 +33,10 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
     }
 
     componentDidMount() {
+        window.addEventListener('resize', this.updateWidth);
+
         // Calculate the correct angle for every player.
-        // The own player should be a the bottom and the others around him in the right order.
+        // The own player should be at the bottom and the others around him in the right order.
         const playerAngles = new Map<number, number>();
         playerAngles.set(this.props.server.ownId, Math.PI / 2);
 
@@ -63,16 +59,18 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         this.setState({
             width: (ReactDOM.findDOMNode(this) as HTMLElement).clientWidth,
             playerAngles
-        })
+        });
     }
 
     componentWillUnmount() {
         this.props.server.shutDown();
+        window.removeEventListener('resize', this.updateWidth);
     }
 
-    enterAnnouncements = (event: React.MouseEvent) => {
-        const target = event.target as HTMLElement;
-        target.scroll(0, target.scrollHeight);
+    updateWidth = () => {
+        this.setState({
+            width: (ReactDOM.findDOMNode(this) as HTMLElement).clientWidth,
+        });
     }
 
     clickCard = (player: PlayerData, card: CardData) => () => {
@@ -111,34 +109,6 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         };
     }
 
-    renderAnnouncementMessage(announcement: Announcement) {
-        return announcement.formattedMessage.map(([subject, text], i) => <span key={i} className={Game.announcementSubjectClasses[subject]}>{text}</span>);
-    }
-
-    renderAnnouncements() {
-        const elements: JSX.Element[] = [];
-
-        const cutoff = Date.now() - 2000;
-        const announcements = this.props.server.game.announcements;
-        for (let i = announcements.length - 1; i >= 0; i--) {
-            const announcement = announcements[i];
-            if (announcement.timestamp < cutoff) {
-                break;
-            }
-
-            elements.push(<li key={'a' + i} className="animated-announcement">
-                {this.renderAnnouncementMessage(announcement)}
-            </li>);
-        }
-
-        // The announcements that will be shown on hover.
-        elements.push(...announcements.map((announcement, i) => <li key={i} >
-            {this.renderAnnouncementMessage(announcement)}
-        </li>));
-
-        return elements;
-    }
-
     render() {
         const players = this.props.server.game.players;
         const ownPlayer = players.find(player => player.id === this.props.server.ownId)!;
@@ -162,9 +132,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                     game={this.props.server.game}
                     getPlayerAngle={this.getPlayerPos} />
 
-                <ul className="announcements" onMouseEnter={this.enterAnnouncements}>
-                    {this.renderAnnouncements()}
-                </ul>
+                <Announcements announcements={this.props.server.game.announcements} />
             </div>
         );
     }

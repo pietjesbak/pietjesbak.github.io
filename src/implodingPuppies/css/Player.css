@@ -137,7 +137,7 @@
 
     position: absolute;
     bottom: 0;
-    left: 43%;
+    left: calc(50% - 75px);
 }
 
 .imploding-puppies-game .remote-player .cards {

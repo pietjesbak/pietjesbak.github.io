@@ -108,7 +108,7 @@ export class Announcement {
                 return [
                     [AnnouncementSubject.PLAYER, this.source_!.name],
                     [AnnouncementSubject.TEXT, ' takes a '],
-                    [AnnouncementSubject.TEXT, this.cardName],
+                    [AnnouncementSubject.ACTION, this.cardName],
                     ...bits,
                     [AnnouncementSubject.TEXT, '!']
                 ];

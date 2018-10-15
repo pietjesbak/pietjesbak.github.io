@@ -136,7 +136,7 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
                             className="add-ai"
                             disabled={this.state.server!.players.length >= GameData.MAX_PLAYER_COUNT}
                             onClick={(this.state.server as ServerData).addAI}>
-                            Add AI
+                            Add bot
                     </button>
                     </div> : null}
                 </div>

@@ -35,7 +35,7 @@ interface State {
     cards: CardData[];
 }
 
-class Player extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>, State> {
+class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivElement>, State> {
     constructor(props: Props & React.HTMLAttributes<HTMLDivElement>) {
         super(props);
 
@@ -167,7 +167,7 @@ class Player extends React.Component<Props & React.HTMLAttributes<HTMLDivElement
                 this.props.player.selection.push(card);
             }
 
-            this.setState({});
+            this.forceUpdate();
         }
     }
 

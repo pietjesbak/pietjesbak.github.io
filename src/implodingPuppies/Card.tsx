@@ -3,6 +3,7 @@ import './css/Card.css';
 import classNames from 'classnames';
 import * as React from 'react';
 import { cards, CardTypes } from './data/Cards';
+
 interface Props {
     type?: CardTypes;
     selected?: boolean;

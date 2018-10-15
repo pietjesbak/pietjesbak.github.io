@@ -1,5 +1,5 @@
 import { repeat } from '../../Helpers';
-import { CardTypes } from './Cards';
+import { cards, CardTypes } from './Cards';
 import { Game } from './Game';
 import { Player } from './Player';
 
@@ -89,7 +89,7 @@ export class AIPlayer extends Player {
      */
     allowSelectCard(options: CardTypes[], cardSelectCallback: (selection: CardTypes) => void) {
         window.setTimeout(() => {
-            const scores = this.getCardsScore_().sort((a, b) => a.score - b.score);
+            const scores = this.getCardsScore_(options).sort((a, b) => a.score - b.score);
             cardSelectCallback(scores[0].type);
         }, AIPlayer.PLAY_DELAY);
     }
@@ -108,13 +108,13 @@ export class AIPlayer extends Player {
 
     /**
      * Used to pass show the future to this player.
-     * @param cards The future cards.
+     * @param types The future cards.
      * @param confirmCallback Callback when done seeing the future.
      */
-    seeFuture(cards: CardTypes[], confirmCallback: () => void) {
+    seeFuture(types: CardTypes[], confirmCallback: () => void) {
         window.setTimeout(() => {
-            for (let i = 0; i < cards.length; i++) {
-                if (cards[i] === CardTypes.BOMB) {
+            for (let i = 0; i < types.length; i++) {
+                if (types[i] === CardTypes.BOMB) {
                     this.bombPosition_ = this.game_.deck.cards.length - i;
                 }
             }
@@ -130,14 +130,15 @@ export class AIPlayer extends Player {
         // Callback
     }
 
-    private getCardsScore_() {
+    private getCardsScore_(options?: CardTypes[]) {
         const scores: { [type in CardTypes]?: number } = {};
-        for (let card of this.cards) {
-            if (card.prototype.type in scores) {
+        options = options || this.cards.map(card => card.prototype.type);
+        for (let type of options) {
+            if (type in scores) {
                 continue;
             }
 
-            scores[card.prototype.type] = card.prototype.score(this, this.game_);
+            scores[type] = cards.get(type)!.score(this, this.game_);
         }
 
         const scoreArr: Array<{ type: CardTypes, score: number }> = [];
@@ -248,7 +249,7 @@ export class AIPlayer extends Player {
     }
 
     private checkIfPlayedThisRound_(type: CardTypes) {
-        return this.playsThisTurn_.find(cards => cards.length === 1 && cards[0] === type) !== undefined;
+        return this.playsThisTurn_.find(types => types.length === 1 && types[0] === type) !== undefined;
     }
 
 }
