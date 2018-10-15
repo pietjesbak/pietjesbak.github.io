@@ -81,3 +81,13 @@ export function random<T>(param: T[] | T, max?: number): T {
         return param[random((param as any).length)];
     }
 }
+
+/**
+ * Creates a promise that resolves after the given time.
+ * @param milis The amount of miliseconds to wait.
+ */
+export function wait(milis: number) {
+    return new Promise(resolve => {
+        window.setTimeout(resolve, milis);
+    });
+}

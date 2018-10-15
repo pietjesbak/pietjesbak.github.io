@@ -5,6 +5,7 @@ import { Player as PlayerData } from './data/Player';
 
 interface Props {
     player: PlayerData;
+    small?: boolean;
 }
 
 class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>> {
@@ -37,20 +38,28 @@ class RemotePlayer extends React.Component<Props & React.HTMLAttributes<HTMLDivE
         };
     }
 
+    renderSmallCards() {
+        return <span>🃏 {this.props.player.cards.length}</span>
+    }
+
+    renderCards() {
+        return this.props.player.cards.map((card, i) => <Card
+            style={this.getCardStyles(i)}
+            key={i}
+        />);
+    }
+
     render() {
-        const { player, className, ...rest } = this.props;
+        const { player, small, className, ...rest } = this.props;
         return (
-            <div className={classNames('imploding-puppies-player', 'remote-player', className)} {...rest}>
+            <div className={classNames('imploding-puppies-player', 'remote-player', { 'small': small }, className)} {...rest}>
                 <div className={classNames('player', 'player-avatar', { 'dead': !player.alive })} style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>
                 </div>
 
                 <div className="cards">
-                    {this.props.player.cards.map((card, i) => <Card
-                        style={this.getCardStyles(i)}
-                        key={i}
-                    />)}
+                    {small ? this.renderSmallCards() : this.renderCards()}
                 </div>
             </div>
         );

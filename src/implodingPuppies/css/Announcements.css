@@ -7,6 +7,7 @@
     height: 300px;
     overflow-x: visible;
     overflow-y: auto;
+    z-index: 10;
 }
 
 .imploding-puppies-game .announcements:not(:hover):after {

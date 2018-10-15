@@ -17,6 +17,7 @@ export const enum AnnouncementTypes {
     YUP,
     FUTURE,
     DIE,
+    SELECT_TARGET,
     GAME_OVER
 }
 
@@ -96,7 +97,6 @@ export class Announcement {
                     [AnnouncementSubject.TEXT, ' plays 5 different cards to take from the discard pile!']
                 ];
 
-
             case AnnouncementTypes.TAKE:
                 let bits: Array<[AnnouncementSubject, string]> = [];
                 if (this.target_ !== undefined) {
@@ -151,6 +151,12 @@ export class Announcement {
                 return [
                     [AnnouncementSubject.PLAYER, this.source_!.name],
                     [AnnouncementSubject.TEXT, ' explodes!']
+                ];
+
+            case AnnouncementTypes.SELECT_TARGET:
+                return [
+                    [AnnouncementSubject.PLAYER, this.source_!.name],
+                    [AnnouncementSubject.TEXT, ' is selecting a target!']
                 ];
 
             case AnnouncementTypes.GAME_OVER:

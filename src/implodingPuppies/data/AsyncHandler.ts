@@ -112,16 +112,6 @@ export class AsyncHandler {
     }
 
     /**
-     * Creates a promise that resolves after the given time.
-     * @param milis The amount of miliseconds to wait.
-     */
-    protected wait(milis: number) {
-        return new Promise(resolve => {
-            window.setTimeout(resolve, milis);
-        });
-    }
-
-    /**
      * Get all promises with the given keys.
      * @param keys An array of keys to get.
      */

@@ -1,9 +1,9 @@
 import './css/Game.css';
 
+import classNames from 'classnames';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import Announcements from './Announcements';
-import { Card as CardData } from './data/Cards';
 import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
 import { Server } from './data/Server';
@@ -22,6 +22,9 @@ interface State {
 }
 
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
+
+    static MIN_SCREEN_WIDTH = 600;
+
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
 
@@ -30,6 +33,10 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
             width: 960,
             playerAngles: new Map()
         }
+    }
+
+    get isSmall() {
+        return this.state.width < Game.MIN_SCREEN_WIDTH;
     }
 
     componentDidMount() {
@@ -73,32 +80,36 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         });
     }
 
-    clickCard = (player: PlayerData, card: CardData) => () => {
-        const pos = player.selection.indexOf(card);
-        if (pos === -1) {
-            if (card.prototype.playTest(player, player.selection)) {
-                player.selection.push(card);
-            }
-        } else {
-            player.selection.splice(pos, 1);
-        }
-
-        this.setState({});
-    }
-
     forceStart = () => {
         (this.props.server as Server).start();
     }
 
     getPlayerPos = (playerId: number) => {
-        const height = 280;
+        const newId = playerId > this.props.server.ownId ? playerId - 1 : playerId;
         const angle = this.state.playerAngles.get(playerId)!;
+        const height = 280;
 
-        return {
-            angle,
-            x: Math.cos(angle) * this.state.width / 3,
-            y: Math.sin(angle) * height
-        };
+        if (!this.isSmall) {
+            return {
+                angle,
+                x: Math.cos(angle) * this.state.width / 3,
+                y: Math.sin(angle) * height
+            };
+        } else {
+            if (playerId === this.props.server.ownId) {
+                return {
+                    angle,
+                    x: -this.state.width / 2 + 75,
+                    y: 168
+                };
+            } else {
+                return {
+                    angle,
+                    x: (newId % 2 === 0 ? 0 : this.state.width / 2) - this.state.width / 4 - 25,
+                    y: Math.floor(newId / 2) * 70 - height
+                };
+            }
+        }
     }
 
     getRemotePlayerPosition(player: PlayerData): { transform: string } {
@@ -116,17 +127,24 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
         return (
             <div className="imploding-puppies-game">
-                <div className="active-player-highlight" style={this.getRemotePlayerPosition(this.props.server.game.currentPlayer)} />
+                <div className={classNames('player-hightlight', 'active-player-highlight', { 'small': this.isSmall })} style={this.getRemotePlayerPosition(this.props.server.game.currentPlayer)} />
                 {this.props.server.game.lastTarget ? (
-                    <div className="target-player-highlight"
+                    <div className={classNames('player-hightlight', 'target-player-highlight', { 'small': this.isSmall })}
                         key={this.props.server.game.lastTarget.timestamp}
                         style={this.getRemotePlayerPosition(this.props.server.game.lastTarget.target)} />
                 ) : null}
 
                 <div className="remote-area">
-                    {remotePlayers.map((player, i) => <RemotePlayer key={i} player={player} style={this.getRemotePlayerPosition(player)} />)}
+                    {remotePlayers.map((player, i) => <RemotePlayer
+                        key={i}
+                        player={player}
+                        small={this.isSmall}
+                        style={this.getRemotePlayerPosition(player)} />)}
                 </div>
-                <Player player={ownPlayer} game={this.props.server.game} />
+                <Player
+                    player={ownPlayer}
+                    small={this.isSmall}
+                    game={this.props.server.game} />
 
                 <Deck
                     game={this.props.server.game}

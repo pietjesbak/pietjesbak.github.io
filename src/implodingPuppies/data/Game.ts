@@ -1,4 +1,4 @@
-import { repeat, shuffle } from '../../Helpers';
+import { repeat, shuffle, wait } from '../../Helpers';
 import { Announcement, AnnouncementTypes } from './Announcement';
 import { AsyncData, AsyncHandler } from './AsyncHandler';
 import { Card, cards, CardTypes } from './Cards';
@@ -365,13 +365,14 @@ export class Game extends AsyncHandler {
 
         this.clearPlayers_();
         if (gameOver) {
+            await wait(500);
             this.announce(new Announcement(AnnouncementTypes.GAME_OVER, undefined, this.currentPlayer));
         }
     }
 
     async playerDraw() {
         const card = this.deck_.pick();
-        this.announce(new Announcement(AnnouncementTypes.DRAW_CARD, undefined, this.currentPlayer))
+        this.announce(new Announcement(AnnouncementTypes.DRAW_CARD, card.prototype.type === CardTypes.BOMB ? [CardTypes.BOMB] : undefined, this.currentPlayer))
         await this.currentPlayer.drawCard(card, this);
         this.update_();
     }
@@ -386,6 +387,7 @@ export class Game extends AsyncHandler {
             this.update_();
 
             if (play.requireTarget(selection, this.currentPlayer, this)) {
+                this.announce(new Announcement(AnnouncementTypes.SELECT_TARGET, selection, this.currentPlayer));
                 target = (await this.selectTarget()).data!.target;
             }
 

@@ -84,6 +84,11 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
                     <button onClick={this.createServer}>Create server</button>
                     <button onClick={this.joinServer}>Join server</button>
                 </div>
+                <br />
+                <div>
+                    Imploding puppies is based on <a href="https://explodingkittens.com/">Exploding kittens</a>.
+                    You can read how to play the game <a href="https://explodingkittens.com/downloads/rules/Exploding_Kittens_Rules.pdf">here</a>.
+                </div>
             </div>
         );
     }

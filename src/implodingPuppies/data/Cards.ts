@@ -1,3 +1,4 @@
+import { wait } from 'src/Helpers';
 import { Announcement, AnnouncementTypes } from './Announcement';
 import { Game } from './Game';
 import { Player } from './Player';
@@ -142,6 +143,7 @@ cards.set(CardTypes.BOMB, {
     drawEffect: async (player, game) => {
         const defuse = player.find(CardTypes.DEFUSE);
         if (defuse === undefined) {
+            await wait(500);
             await player.die();
             game.announce(new Announcement(AnnouncementTypes.DIE, undefined, player));
 
@@ -336,9 +338,9 @@ export function diffCardstate(state: Card[], props: Card[]) {
     const removedCards: Card[] = [];
 
     let j = 0;
-    for (let i = 0; i < props.length; i++) {
+    for (let i = 0; i < props.length || i < state.length; i++) {
         const card = props[i];
-        if (state[j] !== undefined && card.id === state[j].id) {
+        if (state[j] !== undefined && card !== undefined && card.id === state[j].id) {
             j++;
         } else if (props.length > state.length) {
             addedCards.push(card);

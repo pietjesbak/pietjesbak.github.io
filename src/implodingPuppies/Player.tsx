@@ -22,7 +22,7 @@ export const enum Options {
 interface Props {
     player: PlayerData;
     game: Game;
-    interactive?: IPlayerCallbacks;
+    small?: boolean;
 }
 
 interface State {
@@ -153,7 +153,7 @@ class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEle
         const range = Math.sqrt(count / 2) * 36;
 
         return {
-            transform: `translate(${(-count / 2 + index) * 10}px, 0px) rotate(${(-count / 2 + index) * range / count}deg)`
+            transform: `translate(${(-count / 2 + index) * 10 }px, 50px) rotate(${(-count / 2 + index) * range / count}deg)`
         };
     }
 
@@ -238,27 +238,29 @@ class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEle
         const { addedCards } = diffCardstate(this.state.cards, this.props.player.cards);
 
         return (
-            <div className={classNames('imploding-puppies-player', { 'interactive': this.props.interactive }, { 'active': this.state.option !== Options.NONE })}>
-                <div className={classNames('player', 'player-avatar', {'dead': !this.props.player.alive})} style={{ background: this.props.player.color }}>
+            <div className={classNames('imploding-puppies-player', { 'small': this.props.small }, { 'active': this.state.option !== Options.NONE })}>
+                <div className={classNames('player', 'player-avatar', { 'dead': !this.props.player.alive })} style={{ background: this.props.player.color }}>
                     <span className="avatar">{this.props.player.avatar}</span>
                     <span className="name">{this.props.player.name}</span>
                 </div>
 
                 {this.state.option === Options.DRAW_PLAY ? this.getPlayButton() : null}
-                {this.state.option === Options.NOPE ? <button onClick={this.state.callbacks.nopeCallback}>Nope!</button> : null}
+                {this.state.option === Options.NOPE ? <button className="nope" onClick={this.state.callbacks.nopeCallback}>Nope!</button> : null}
                 {this.state.option === Options.SELECT_TARGET ? this.renderPlayerSelection() : null}
                 {this.state.option === Options.SELECT_CARD ? this.renderCardSelection() : null}
                 {this.state.option === Options.SEE_FUTURE ? this.renderFuture() : null}
                 {this.state.option === Options.INSERT_IN_DECK ? this.renderInsertInDeck() : null}
 
-                {this.props.player.cards.map((card, i) => <Card
-                    key={card.id}
-                    style={this.getCardStyles(i, card, addedCards)}
-                    canSelect={this.state.option === Options.DRAW_PLAY && card.prototype.playTest(this.props.player, this.props.player.selection)}
-                    selected={this.props.player.selection.indexOf(card) !== -1}
-                    onClick={this.clickCard(i)}
-                    type={card.prototype.type}
-                />)}
+                <div className="own-cards">
+                    {this.props.player.cards.map((card, i) => <Card
+                        key={card.id}
+                        style={this.getCardStyles(i, card, addedCards)}
+                        canSelect={this.state.option === Options.DRAW_PLAY && card.prototype.playTest(this.props.player, this.props.player.selection)}
+                        selected={this.props.player.selection.indexOf(card) !== -1}
+                        onClick={this.clickCard(i)}
+                        type={card.prototype.type}
+                    />)}
+                </div>
             </div>
         );
     }

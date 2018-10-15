@@ -27,7 +27,6 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
     componentDidUpdate() {
         const { addedCards, removedCards } = diffCardstate(this.state.discardPile, this.props.game.discardPile);
         if (addedCards.length > 0 || removedCards.length > 0) {
-
             // There is a settimeout here to trick react into first rendering the card in the start position,
             // and then in the end position right away so css transitions take care of the rest.
             window.setTimeout(() => {
@@ -41,9 +40,14 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
     getCardStyles(i: number, card: CardData, addedCards: CardData[]) {
         let transform: string;
         const offset = Math.max(0, this.props.game.discardPile.length - 10);
-        if (addedCards.indexOf(card) !== -1 && card.owner.type === OwnerType.PLAYER) {
-            const { angle, x, y } = this.props.getPlayerAngle(card.owner.data!);
-            transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`
+        if (addedCards.indexOf(card) !== -1) {
+            if (card.owner.type === OwnerType.PLAYER) {
+                const { angle, x, y } = this.props.getPlayerAngle(card.owner.data!);
+                transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
+            } else {
+                // Assume it came from the deck.
+                transform = `translate(-100px, 0px) rotate(0deg)`;
+            }
         } else if (this.state.orderIndex > i + offset) {
             transform = `rotate(0deg) translate(${-i / 2}px, ${20 - i / 2}px)`
         } else {
