@@ -85,6 +85,7 @@
     vertical-align: top;
     position: relative;
     color: white;
+    box-shadow: 3px 3px 5px rgba(0, 0,0,0.5);
 }
 
 .imploding-puppies-game .player.loader {
@@ -193,7 +194,7 @@
     transform: scale(0.8);
 }
 
-.imploding-puppies-player.small .cards {
+.imploding-puppies-player.small > .cards {
     transform: none;
     top: 50px;
     left: 60px;
@@ -202,14 +203,13 @@
     opacity: 0.8;
 }
 
-.imploding-puppies-player.small .player {
+.imploding-puppies-player.small > .player {
     text-align: left;
     width: 150px;
     height: 55px!important;
-    box-shadow: 3px 3px 5px rgba(0, 0,0,0.5);
 }
 
-.imploding-puppies-player.small .avatar {
+.imploding-puppies-player.small > .player .avatar {
     display: inline-block;
     font-size: 15px;
     height: 30px;
@@ -219,6 +219,6 @@
     text-align: center;
 }
 
-.imploding-puppies-player.small .name {
+.imploding-puppies-player.small > .player .name {
     display: inline-block;
 }

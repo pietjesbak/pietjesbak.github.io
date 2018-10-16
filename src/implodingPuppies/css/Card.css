@@ -9,6 +9,7 @@
     width: 100px;
     transform-origin: 50% 250%;
     background: #fff;
+    cursor: pointer;
 }
 
 .imploding-puppies-game .card:before, .imploding-puppies-game .card-deck:before {

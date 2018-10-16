@@ -29,7 +29,7 @@ class Card extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEleme
                 <div
                     style={{ color: card.color, ...style }} className={classNames(className, 'card', { 'selected': selected }, { 'disabled': canSelect === false && !selected }, { 'interactive': interactive !== false })}
                     {...rest} >
-                    <span style={{ color: card.color }} className="card-value">{card.name}</span>
+                    <span style={{ color: card.color }} className="card-value">{card.icon} {card.name}</span>
                     <span className="card-face">{card.icon}</span>
                 </div>
             );

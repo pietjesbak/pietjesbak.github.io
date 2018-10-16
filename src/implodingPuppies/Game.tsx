@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import Announcements from './Announcements';
+import { Game as GameData } from './data/Game';
 import { PeerBase } from './data/PeerBase';
 import { Player as PlayerData } from './data/Player';
 import { Server } from './data/Server';
@@ -24,6 +25,8 @@ interface State {
 class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
 
     static MIN_SCREEN_WIDTH = 600;
+
+    private playerDrawFn_?: () => void;
 
     constructor(props: Props & React.ClassAttributes<Game>) {
         super(props);
@@ -84,6 +87,16 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
         (this.props.server as Server).start();
     }
 
+    onDeckClick = () => {
+        if (typeof this.playerDrawFn_ === 'function') {
+            this.playerDrawFn_();
+        }
+    }
+
+    setDrawFn = (drawFn?: () => void) => {
+        this.playerDrawFn_ = drawFn;
+    }
+
     getPlayerPos = (playerId: number) => {
         const newId = playerId > this.props.server.ownId ? playerId - 1 : playerId;
         const angle = this.state.playerAngles.get(playerId)!;
@@ -106,7 +119,7 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                 return {
                     angle,
                     x: (newId % 2 === 0 ? 0 : this.state.width / 2) - this.state.width / 4 - 25,
-                    y: Math.floor(newId / 2) * 70 - height
+                    y: Math.floor(newId / 2) * 70 - height + Math.floor((GameData.MAX_PLAYER_COUNT - this.props.server.game.playerCount) / 2) * 70
                 };
             }
         }
@@ -134,6 +147,11 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                         style={this.getRemotePlayerPosition(this.props.server.game.lastTarget.target)} />
                 ) : null}
 
+                <Deck
+                    game={this.props.server.game}
+                    getPlayerAngle={this.getPlayerPos}
+                    onClick={this.onDeckClick}
+                    small={this.isSmall} />
                 <div className="remote-area">
                     {remotePlayers.map((player, i) => <RemotePlayer
                         key={i}
@@ -144,11 +162,8 @@ class Game extends React.Component<Props & React.ClassAttributes<Game>, State> {
                 <Player
                     player={ownPlayer}
                     small={this.isSmall}
-                    game={this.props.server.game} />
-
-                <Deck
                     game={this.props.server.game}
-                    getPlayerAngle={this.getPlayerPos} />
+                    exposeDrawFn={this.setDrawFn} />
 
                 <Announcements announcements={this.props.server.game.announcements} />
             </div>

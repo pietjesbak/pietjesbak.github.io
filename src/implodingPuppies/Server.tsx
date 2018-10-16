@@ -2,6 +2,7 @@ import './css/Server.css';
 
 import classNames from 'classnames';
 import * as React from 'react';
+import Tooltip from 'react-simple-tooltip';
 import { cards, CardTypes } from './data/Cards';
 import { Client as ClientData } from './data/Client';
 import { Game as GameData } from './data/Game';
@@ -75,11 +76,21 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
             <div className={classNames('server-dialog', className)} {...rest}>
                 <h3>Join or create a server</h3>
                 <div>
-                    <h4>Name:</h4>
+                    <h4>
+                        Name:
+                        <Tooltip placement="right" content={<div style={{ width: 200 }}>This is your nickname in the game and will be shown to other players.</div>}>
+                            <i className="icon-info" />
+                        </Tooltip>
+                    </h4>
                     <input autoFocus={true} value={this.state.name} onChange={this.updateName} />
                 </div>
                 <div>
-                    <h4>Key:</h4>
+                    <h4>
+                        Key:
+                        <Tooltip placement="right" content={<div style={{ width: 200 }}>Share this key with the people you want to play the game with. Players with the same key join the same server.</div>}>
+                            <i className="icon-info" />
+                        </Tooltip>
+                    </h4>
                     <input value={this.state.key} onChange={this.updateKey} />
                     <button onClick={this.createServer}>Create server</button>
                     <button onClick={this.joinServer}>Join server</button>
@@ -123,7 +134,7 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
                             </div>
                         ))}
 
-                        {this.state.server!.players.length < 5 ? (
+                        {this.state.server!.players.length < GameData.MAX_PLAYER_COUNT ? (
                             <div className="player player-avatar loader">
                                 <span className="avatar"><i className="icon-spin1 animate-spin" /></span>
                             </div>

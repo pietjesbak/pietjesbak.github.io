@@ -6,6 +6,7 @@ import { Game as GameData } from './data/Game';
 
 interface Props {
     game: GameData;
+    small?: boolean;
     getPlayerAngle(playerId: number): { angle: number, x: number, y: number };
 }
 
@@ -27,13 +28,11 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
     componentDidUpdate() {
         const { addedCards, removedCards } = diffCardstate(this.state.discardPile, this.props.game.discardPile);
         if (addedCards.length > 0 || removedCards.length > 0) {
-            // There is a settimeout here to trick react into first rendering the card in the start position,
+            // There is a requestanimationframe here to trick react into first rendering the card in the start position,
             // and then in the end position right away so css transitions take care of the rest.
-            window.setTimeout(() => {
-                this.setState({
+            requestAnimationFrame(() => this.setState({
                     discardPile: [...this.props.game.discardPile]
-                });
-            }, 0);
+            }));
         }
     }
 
@@ -66,13 +65,13 @@ class Deck extends React.Component<Props & React.HTMLAttributes<HTMLDivElement>,
     }
 
     render() {
-        const { game, onClick, className, getPlayerAngle, ...rest } = this.props;
+        const { game, onClick, className, small, getPlayerAngle, ...rest } = this.props;
         const size = game.deck.cards.length / 10;
         const { addedCards } = diffCardstate(this.state.discardPile, this.props.game.discardPile);
         const offset = Math.max(0, this.props.game.discardPile.length - 10);
 
         return (
-            <div className={classNames(className, 'imploding-puppies-deck-holder')} {...rest}>
+            <div className={classNames(className, 'imploding-puppies-deck-holder', { 'small': small })} {...rest}>
                 {size > 0 ? (
                     <div onClick={onClick} className={classNames('imploding-puppies-deck', 'card-deck')} style={{ transform: `translate(${-size * 2}px, ${-size * 2}px)`, boxShadow: `${size}px ${size}px ${size}px ${size}px #333` }}>
                         <span>{game.deck.cards.length}</span>

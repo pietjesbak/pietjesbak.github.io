@@ -145,6 +145,9 @@ export class App extends React.Component<Props & React.ClassAttributes<App>, Sta
                 <NavLink exact={true} activeClassName="hidden" to="/startspeler">
                     Startspeler kiezen
                 </NavLink>
+                <NavLink exact={true} activeClassName="hidden" to="/game">
+                    Imploding puppies
+                </NavLink>
                 {/* <NavLink exact={true} activeClassName="hidden" to="/speelkaarten">
                     Kaarten trekken
                 </NavLink> */}

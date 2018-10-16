@@ -23,6 +23,7 @@ interface Props {
     player: PlayerData;
     game: Game;
     small?: boolean;
+    exposeDrawFn?: (drawFn?: () => void) => void;
 }
 
 interface State {
@@ -60,11 +61,11 @@ class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEle
         const { addedCards, removedCards } = diffCardstate(this.state.cards, this.props.player.cards);
         if (addedCards.length > 0 || removedCards.length > 0) {
 
-            // There is a settimeout here to trick react into first rendering the card in the start position,
+            // There is a requesanimationframe here to trick react into first rendering the card in the start position,
             // and then in the end position right away so css transitions take care of the rest.
-            window.setTimeout(() => this.setState({
+            window.requestAnimationFrame(() => this.setState({
                 cards: [...this.props.player.cards]
-            }), 0);
+            }));
         }
     }
 
@@ -77,6 +78,10 @@ class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEle
                 playCallback
             }
         });
+
+        if (this.props.exposeDrawFn !== undefined) {
+            this.props.exposeDrawFn(drawCallback);
+        }
     }
 
     allowNope = (nopeCallback: () => void) => {
@@ -140,6 +145,10 @@ class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEle
             deckOption: undefined,
             future: undefined
         });
+
+        if (this.props.exposeDrawFn !== undefined) {
+            this.props.exposeDrawFn(undefined);
+        }
     }
 
     getCardStyles(index: number, card: CardData, addedCards: CardData[]) {
@@ -150,10 +159,10 @@ class Player extends React.PureComponent<Props & React.HTMLAttributes<HTMLDivEle
         }
 
         const count = this.props.player.cards.length - 1;
-        const range = Math.sqrt(count / 2) * 36;
+        const range = Math.sqrt(count / 2) * (this.props.small ? 20 : 36);
 
         return {
-            transform: `translate(${(-count / 2 + index) * 10 }px, 50px) rotate(${(-count / 2 + index) * range / count}deg)`
+            transform: `translate(${(-count / 2 + index) * 10}px, 50px) rotate(${(-count / 2 + index) * range / count}deg)`
         };
     }
 

@@ -16,7 +16,11 @@
     position: absolute;
     bottom: 290px;
     white-space: nowrap;
-    z-index: 1;
+    z-index: 10;
+}
+
+.imploding-puppies-deck-holder.small {
+    transform: scale(0.5) translate(-100%, 110px);
 }
 
 /** Discard pile */
@@ -80,6 +84,10 @@
     animation: fade-target 2s linear 1 forwards;
 }
 
+.imploding-puppies-game .target-player-highlight.small {
+    animation: fade-small-target 2s linear 1 forwards;
+}
+
 @keyframes fade-target {
     20% {
         opacity: 0.4;
@@ -102,6 +110,32 @@
         height: 300px;
         top: 170px;
         left: calc(50% - 150px);
+        opacity: 0;
+    }
+}
+
+@keyframes fade-small-target {
+    20% {
+        opacity: 0.4;
+    }
+    40% {
+        opacity: 1;
+    }
+    60% {
+        opacity: 0.4;
+    }
+    80% {
+        opacity: 1;
+        width: 200px;
+        height: 100px;
+        left: calc(50% - 75px);
+        top: 235px;
+    }
+    100% {
+        width: 300px;
+        height: 200px;
+        left: calc(50% - 125px);
+        top: 175px;
         opacity: 0;
     }
 }

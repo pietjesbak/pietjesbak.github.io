@@ -334,25 +334,12 @@ export class Card {
  * @param props The cards stored in the react component's props.
  */
 export function diffCardstate(state: Card[], props: Card[]) {
-    const addedCards: Card[] = [];
-    const removedCards: Card[] = [];
+    const stateMap: {[key: number]: boolean} = {};
+    state.forEach(card => stateMap[card.id] = true);
+    const propsMap: {[key: number]: boolean} = {};
+    props.forEach(card => propsMap[card.id] = true);
 
-    let j = 0;
-    for (let i = 0; i < props.length || i < state.length; i++) {
-        const card = props[i];
-        if (state[j] !== undefined && card !== undefined && card.id === state[j].id) {
-            j++;
-        } else if (props.length > state.length) {
-            addedCards.push(card);
-        } else {
-            removedCards.push(state[j]);
-            i--;
-            j++;
-            if (j > state.length) {
-                break;
-            }
-        }
-    }
-
+    const addedCards = props.filter(card => !stateMap[card.id]);
+    const removedCards = state.filter(card => !propsMap[card.id]);
     return { addedCards, removedCards };
 }

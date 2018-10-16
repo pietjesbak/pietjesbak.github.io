@@ -58,4 +58,5 @@ button[disabled], .button[disabled], .small-button[disabled] {
     color: #000!important;
     font-weight: 300;
     position: initial!important; /** These buttons do not get pressed in on hover. */
+    text-align: left;
 }
