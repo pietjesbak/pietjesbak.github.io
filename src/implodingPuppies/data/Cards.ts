@@ -79,9 +79,9 @@ export interface CardPrototype {
     drawEffect?: (player: Player, game: Game) => Promise<boolean>;
 
     /**
-     * Function give a value to the card, used by the ai player.
+     * Function give a value to the card, used by the bots.
      */
-    score: (player: Player, game: Game) => number;
+    score: (hand: CardTypes[], game: Game) => number;
 }
 
 /**
@@ -118,11 +118,11 @@ const twoOrThreeSame = (player: Player, selection: Card[], type: CardTypes) => {
 
 /**
  * Counts the amount of cards a player has of a given type.
- * @param player The current player.
+ * @param hand The other cards the player has.
  * @param type The type of the card that's being checked.
  */
-const count = (player: Player, type: CardTypes) => {
-    return player.cards.filter(card => card.prototype.type === type).length;
+const count = (hand: CardTypes[], type: CardTypes) => {
+    return hand.filter(card => card === type).length;
 }
 
 export const cards = new Map<CardTypes, CardPrototype>();
@@ -190,7 +190,7 @@ cards.set(CardTypes.SHUFFLE, {
         game.announce(new Announcement(AnnouncementTypes.SHUFFLE, undefined, player));
         game.deck.shuffle();
     },
-    score: (player: Player, game: Game) => Math.floor(game.deck.cards.length / 10) + count(player, CardTypes.SHUFFLE)
+    score: (hand: CardTypes[], game: Game) => Math.floor(game.deck.cards.length / 10) + count(hand, CardTypes.SHUFFLE)
 });
 
 cards.set(CardTypes.NOPE, {
@@ -202,7 +202,7 @@ cards.set(CardTypes.NOPE, {
     count: 5,
     requireTarget: false,
     playTest: (player, selection) => fiveDifferent(player, selection, CardTypes.NOPE) || twoOrThreeSame(player, selection, CardTypes.NOPE),
-    score: (player: Player) => 4 + count(player, CardTypes.NOPE)
+    score: (hand: CardTypes[]) => 4 + count(hand, CardTypes.NOPE)
 });
 
 cards.set(CardTypes.SKIP, {
@@ -215,7 +215,7 @@ cards.set(CardTypes.SKIP, {
     requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.SKIP) || twoOrThreeSame(player, selection, CardTypes.SKIP),
     playEffect: async (player, game) => game.processSkip(),
-    score: (player: Player) => 3 + count(player, CardTypes.SKIP)
+    score: (hand: CardTypes[]) => 3 + count(hand, CardTypes.SKIP)
 });
 
 cards.set(CardTypes.ATTACK, {
@@ -228,7 +228,7 @@ cards.set(CardTypes.ATTACK, {
     requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.ATTACK) || twoOrThreeSame(player, selection, CardTypes.ATTACK),
     playEffect: async (player, game) => game.processAttack(),
-    score: (player: Player) => 4 + count(player, CardTypes.ATTACK)
+    score: (hand: CardTypes[]) => 4 + count(hand, CardTypes.ATTACK)
 });
 
 cards.set(CardTypes.FAVOR, {
@@ -253,7 +253,7 @@ cards.set(CardTypes.FAVOR, {
             }
         }
     },
-    score: (player: Player) => 1 + count(player, CardTypes.FAVOR)
+    score: (hand: CardTypes[]) => 1 + count(hand, CardTypes.FAVOR)
 });
 
 cards.set(CardTypes.FUTURE, {
@@ -266,7 +266,7 @@ cards.set(CardTypes.FUTURE, {
     requireTarget: false,
     playTest: (player, selection) => selection.length === 0 || fiveDifferent(player, selection, CardTypes.FUTURE) || twoOrThreeSame(player, selection, CardTypes.FUTURE),
     playEffect: async (player, game) => game.processFuture(),
-    score: (player: Player) => 2 + count(player, CardTypes.SHUFFLE)
+    score: (hand: CardTypes[]) => 2 + count(hand, CardTypes.SHUFFLE)
 });
 
 const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
@@ -280,7 +280,7 @@ const icons = ['🐕', '🐈', '🐦', '🐟', '🐔'];
         count: 4,
         requireTarget: false,
         playTest: (player, selection) => fiveDifferent(player, selection, type) || twoOrThreeSame(player, selection, type),
-        score: (player: Player) => count(player, type)
+        score: (hand: CardTypes[]) => count(hand, type)
     });
 });
 

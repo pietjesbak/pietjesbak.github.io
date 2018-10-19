@@ -1,9 +1,9 @@
 import { repeat } from '../../Helpers';
 import { AIPlayer } from './AIPlayer';
 import { Announcement } from './Announcement';
-import { getBotName } from './BotNames';
 import { CardTypes } from './Cards';
-import { Connection, DataType, PeerBase } from './PeerBase';
+import { Game } from './Game';
+import { Connection, DataConnection, DataType, PeerBase, PeerData } from './PeerBase';
 import { Player } from './Player';
 
 export class Server extends PeerBase {
@@ -90,14 +90,11 @@ export class Server extends PeerBase {
      * Add an ai player.
      */
     addAI = () => {
-        const player = new AIPlayer(this.game_, getBotName(this.players.map(p => p.name)), this.connections_.length);
-        this.connections_.push({
-            player,
-            connection: undefined,
-            callbacks: {}
+        const connection = new AIPlayer(this.game);
+        connection.on('data', this.onData_(connection));
+        connection.on('close', () => {
+            this.removePeer_(connection);
         });
-        this.syncPlayers_();
-        this.update_();
     }
 
     kick(player: Player) {
@@ -124,80 +121,86 @@ export class Server extends PeerBase {
     /**
      * Handle all data that is sent from the client to the server.
      */
-    private onData_ = (connection: PeerJs.DataConnection) => {
+    private onData_ = (connection: DataConnection) => {
         let conn: Connection | undefined;
-        return (data: any) => {
-            switch (data.type) {
-                case DataType.JOIN:
-                    // You can only join once.
-                    if (this.findConnection_(connection) || this.started_) {
+        return (data: PeerData) => {
+            try {
+                switch (data.type) {
+                    case DataType.JOIN:
+                        // You can only join once.
+                        if (this.findConnection_(connection) || this.started_) {
+                            connection.close();
+                            return;
+                        }
+
+                        conn = {
+                            connection,
+                            player: new Player(data.name, this.connections_.length),
+                            callbacks: {}
+                        };
+
+                        this.connections_.push(conn);
+                        this.setPlayerCallbacks_(conn.player, conn);
+                        this.syncPlayers_();
+
+                        this.update_();
+                        if (this.players.length >= Game.MAX_PLAYER_COUNT) {
+                            this.start();
+                        }
+                        break;
+
+                    case DataType.LEAVE:
                         connection.close();
-                        return;
-                    }
+                        this.removePeer_(connection);
+                        break;
 
-                    conn = {
-                        connection,
-                        player: new Player(data.name, this.connections_.length),
-                        callbacks: {}
-                    };
+                    // call the correct callback.
+                    case DataType.DRAW:
+                        if (conn !== undefined && conn.callbacks.drawCallback !== undefined) {
+                            conn.callbacks.drawCallback();
+                        }
+                        break;
 
-                    this.connections_.push(conn);
-                    this.setPlayerCallbacks_(conn.player, conn);
-                    this.syncPlayers_();
+                    case DataType.PLAY:
+                        if (conn !== undefined && conn.callbacks.playCallback !== undefined) {
+                            conn.callbacks.playCallback(data.selection);
+                        }
+                        break;
 
-                    this.update_();
-                    if (this.players.length >= 5) {
-                        this.start();
-                    }
-                    break;
+                    case DataType.NOPE:
+                        if (conn !== undefined && conn.callbacks.nopeCallback !== undefined) {
+                            conn.callbacks.nopeCallback();
+                        }
+                        break;
 
-                case DataType.LEAVE:
-                    connection.close();
-                    this.removePeer_(connection);
-                    break;
+                    case DataType.PLAYER_SELECT:
+                        if (conn !== undefined && conn.callbacks.playerSelectCallback !== undefined) {
+                            conn.callbacks.playerSelectCallback(this.game.players[data.player]);
+                        }
+                        break;
 
-                // call the correct callback.
-                case DataType.DRAW:
-                    if (conn !== undefined && conn.callbacks.drawCallback !== undefined) {
-                        conn.callbacks.drawCallback();
-                    }
-                    break;
+                    case DataType.CARD_SELECT:
+                        if (conn !== undefined && conn.callbacks.cardSelectCallback !== undefined) {
+                            conn.callbacks.cardSelectCallback(data.cardType);
+                        }
+                        break;
 
-                case DataType.PLAY:
-                    if (conn !== undefined && conn.callbacks.playCallback !== undefined) {
-                        conn.callbacks.playCallback(data.selection);
-                    }
-                    break;
+                    case DataType.INSERT_CARD:
+                        if (conn !== undefined && conn.callbacks.insertCallback !== undefined) {
+                            conn.callbacks.insertCallback(data.position);
+                        }
+                        break;
 
-                case DataType.NOPE:
-                    if (conn !== undefined && conn.callbacks.nopeCallback !== undefined) {
-                        conn.callbacks.nopeCallback();
-                    }
-                    break;
-
-                case DataType.PLAYER_SELECT:
-                    if (conn !== undefined && conn.callbacks.playerSelectCallback !== undefined) {
-                        conn.callbacks.playerSelectCallback(this.game.players[data.player]);
-                    }
-                    break;
-
-                case DataType.CARD_SELECT:
-                    if (conn !== undefined && conn.callbacks.cardSelectCallback !== undefined) {
-                        conn.callbacks.cardSelectCallback(data.cardType);
-                    }
-                    break;
-
-                case DataType.INSERT_CARD:
-                    if (conn !== undefined && conn.callbacks.insertCallback !== undefined) {
-                        conn.callbacks.insertCallback(data.position);
-                    }
-                    break;
-
-                case DataType.CONFIRM:
-                    if (conn !== undefined && conn.callbacks.confirmCallback !== undefined) {
-                        conn.callbacks.confirmCallback();
-                    }
-                    break;
+                    case DataType.CONFIRM:
+                        if (conn !== undefined && conn.callbacks.confirmCallback !== undefined) {
+                            conn.callbacks.confirmCallback();
+                        }
+                        break;
+                }
+            } catch (e) {
+                console.log(`Disconnecting player ${conn && conn.player.name} due to an error while processing their command`);
+                console.error(e);
+                connection.close();
             }
         }
     }

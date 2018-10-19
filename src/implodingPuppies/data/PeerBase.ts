@@ -6,8 +6,20 @@ import { Player } from './Player';
 
 export interface Connection {
     player: Player;
-    connection?: PeerJs.DataConnection;
+    connection?: DataConnection;
     callbacks: Partial<IPlayerCallbacks>;
+}
+
+export interface DataConnection {
+    close(): void;
+    send(data: PeerData): void;
+    on(event: 'data', cb: (data: PeerData) => void): void;
+    on(event: 'close', cb: () => void): void;
+}
+
+export interface PeerData {
+    type: DataType;
+    [key: string]: any;
 }
 
 export const enum DataType {
@@ -106,7 +118,7 @@ export abstract class PeerBase {
         this.updateCallback_ = callback;
     }
 
-    protected findConnection_(connection: Peer.DataConnection | Player) {
+    protected findConnection_(connection: DataConnection | Player) {
         if (connection instanceof Player) {
             return this.connections_.find(conn => conn.player === connection);
         } else {
@@ -114,7 +126,7 @@ export abstract class PeerBase {
         }
     }
 
-    protected removePeer_(connection: Peer.DataConnection | Player) {
+    protected removePeer_(connection: DataConnection | Player) {
         const conn = this.findConnection_(connection);
         if (conn !== undefined) {
             this.connections_.splice(this.connections_.indexOf(conn, 1), 1);

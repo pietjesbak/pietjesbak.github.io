@@ -1,7 +1,7 @@
 import * as Peer from 'peerjs';
 import { Announcement } from './Announcement';
 import { Card, CardTypes, OwnerType } from './Cards';
-import { DataType, DiscardData, PeerBase } from './PeerBase';
+import { DataConnection, DataType, DiscardData, PeerBase } from './PeerBase';
 import { Player } from './Player';
 
 export class Client extends PeerBase {
@@ -41,7 +41,7 @@ export class Client extends PeerBase {
         }
     }
 
-    private join_(connection: Peer.DataConnection) {
+    private join_(connection: DataConnection) {
         if (this.name_ !== undefined) {
             connection.send({
                 type: DataType.JOIN,

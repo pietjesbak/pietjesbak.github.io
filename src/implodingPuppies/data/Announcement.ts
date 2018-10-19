@@ -172,12 +172,20 @@ export class Announcement {
 
     }
 
+    get type() {
+        return this.type_;
+    }
+
     get source() {
         return this.source_;
     }
 
     get target() {
         return this.target_;
+    }
+
+    get cards() {
+        return this.cards_;
     }
 
     get timestamp() {
