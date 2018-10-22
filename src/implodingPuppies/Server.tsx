@@ -56,6 +56,14 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
         this.setState({ server: client });
     }
 
+    offlineServer = () => {
+        const server = new ServerData();
+        server.connectSelf(this.state.name);
+        server.setUpdateCallback(this.updateCallback);
+
+        this.setState({ server });
+    }
+
     updateCallback = () => {
         this.forceUpdate();
     }
@@ -68,6 +76,19 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
         this.setState({
             server: undefined
         });
+    }
+
+    renderButtons() {
+        if (location.protocol === 'http:') {
+            return [
+                <button onClick={this.createServer} key="create">Create server</button>,
+                <button onClick={this.joinServer} key="join">Join server</button>
+            ];
+        } else {
+            return [
+                <button onClick={this.offlineServer} key="offline">Play offline</button>
+            ];
+        }
     }
 
     renderForm() {
@@ -92,8 +113,7 @@ class Server extends React.PureComponent<React.HTMLAttributes<HTMLDivElement>, S
                         </Tooltip>
                     </h4>
                     <input value={this.state.key} onChange={this.updateKey} />
-                    <button onClick={this.createServer}>Create server</button>
-                    <button onClick={this.joinServer}>Join server</button>
+                    {this.renderButtons()}
                 </div>
                 <br />
                 <div>

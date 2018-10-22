@@ -195,7 +195,7 @@ export class AIPlayer extends BotConnection {
                     newPosition++;
                 }
 
-                this.bombPositions_.push(newPosition);
+                this.bombPositions_.push(maxPosition - newPosition + 1);
                 this.dataAction({
                     type: DataType.INSERT_CARD,
                     position: newPosition
@@ -251,6 +251,10 @@ export class AIPlayer extends BotConnection {
                 this.safePositions_ = [];
                 this.lastBombDeckSize_ = -1;
                 this.lastBombedPlayer_ = -1;
+
+                if (this.lastBombedPlayer_ === this.ownId_) {
+                    this.playerKarma_.set(this.currentPlayer_, this.playerKarma_.get(this.currentPlayer_)! - 0.5);
+                }
                 break;
 
             case AnnouncementTypes.DIE:
@@ -260,10 +264,24 @@ export class AIPlayer extends BotConnection {
 
             case AnnouncementTypes.YUP:
                 this.currentNopeResult_ = false;
+                if (announcement.source!.id !== this.ownId_) {
+                    if (this.currentTarget_ === this.ownId_) {
+                        this.playerKarma_.set(announcement.source!.id, this.playerKarma_.get(announcement.source!.id)! - 1);
+                    } else if (this.currentPlayer_ === this.ownId_) {
+                        this.playerKarma_.set(announcement.source!.id, this.playerKarma_.get(announcement.source!.id)! + 1);
+                    }
+                }
                 break;
 
             case AnnouncementTypes.NOPE:
                 this.currentNopeResult_ = true;
+                if (announcement.source!.id !== this.ownId_) {
+                    if (this.currentTarget_ === this.ownId_) {
+                        this.playerKarma_.set(announcement.source!.id, this.playerKarma_.get(announcement.source!.id)! + 1);
+                    } else if (this.currentPlayer_ === this.ownId_) {
+                        this.playerKarma_.set(announcement.source!.id, this.playerKarma_.get(announcement.source!.id)! - 1);
+                    }
+                }
                 break;
 
             case AnnouncementTypes.PUT_BOMB:
@@ -484,9 +502,9 @@ export class AIPlayer extends BotConnection {
      * Get the player that is the target of an attack or a skip.
      */
     getNextPlayerTarget() {
-        let nextTarget: number;
+        let nextTarget = this.currentPlayer_;
         do {
-            nextTarget = (this.currentPlayer_ + 1) % this.game_.playerCount;
+            nextTarget = (nextTarget + 1) % this.game_.playerCount;
         } while (!this.game_.players[nextTarget].alive);
 
         return nextTarget;

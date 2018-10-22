@@ -12,13 +12,13 @@ export class Client extends PeerBase {
     constructor(key: string) {
         super(false);
 
-        this.serverConnection_ = this.peer_.connect(PeerBase.PREFIX + key);
+        this.serverConnection_ = this.peer_!.connect(PeerBase.PREFIX + key);
         this.serverConnection_.on('open', () => {
             this.join_(this.serverConnection_);
 
-            this.serverConnection_.on('data', this.onData_(this.peer_, this.serverConnection_));
+            this.serverConnection_.on('data', this.onData_(this.peer_!, this.serverConnection_));
             this.serverConnection_.on('close', () => {
-                this.peer_.destroy();
+                this.peer_!.destroy();
                 this.error_ = 'You have been disconnected from the server!';
                 this.update_();
             });

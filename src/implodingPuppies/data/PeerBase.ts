@@ -50,7 +50,7 @@ export abstract class PeerBase {
 
     static DEBUG_LEVEL = 0;
 
-    protected peer_: Peer;
+    protected peer_?: Peer;
 
     protected game_: Game;
 
@@ -66,18 +66,20 @@ export abstract class PeerBase {
 
     protected updateCallback_?: () => void;
 
-    constructor(isHost: boolean, key?: string) {
+    constructor(isHost: boolean, key?: string, offline?: boolean) {
         this.game_ = new Game(isHost);
         this.game.setUpdateCallback(() => {
             this.update_();
         });
 
-        if (key === undefined) {
-            this.peer_ = new Peer({ debug: PeerBase.DEBUG_LEVEL });
-        } else {
-            this.peer_ = new Peer(PeerBase.PREFIX + key, { debug: PeerBase.DEBUG_LEVEL });
+        if (offline !== true) {
+            if (key === undefined) {
+                this.peer_ = new Peer({ debug: PeerBase.DEBUG_LEVEL });
+            } else {
+                this.peer_ = new Peer(PeerBase.PREFIX + key, { debug: PeerBase.DEBUG_LEVEL });
+            }
+            this.peer_.on('error', this.onError_(this.peer_));
         }
-        this.peer_.on('error', this.onError_(this.peer_));
     }
 
     abstract get isHost(): boolean;

@@ -8,16 +8,18 @@ import { Player } from './Player';
 
 export class Server extends PeerBase {
 
-    constructor(key: string) {
-        super(true, key);
+    constructor(key?: string) {
+        super(true, key, key === undefined);
         this.game_.setAnnouncementCallback(this.announce_);
 
-        this.peer_.on('connection', (conn) => {
-            conn.on('data', this.onData_(conn));
-            conn.on('close', () => {
-                this.removePeer_(conn);
+        if (this.peer_ !== undefined) {
+            this.peer_.on('connection', (conn) => {
+                conn.on('data', this.onData_(conn));
+                conn.on('close', () => {
+                    this.removePeer_(conn);
+                });
             });
-        });
+        }
     }
 
     get isHost() {
