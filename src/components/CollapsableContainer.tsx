@@ -23,7 +23,7 @@ export enum headerState {
     SHOWN_COLLAPSED
 }
 
-export interface Props extends React.HTMLAttributes<CollapsableContainer> {
+export interface Props extends React.HTMLAttributes<HTMLDivElement> {
     /**
      * Is the container open or closed by default.
      * Default open.

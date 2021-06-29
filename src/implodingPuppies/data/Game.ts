@@ -341,7 +341,7 @@ export class Game extends AsyncHandler {
 
             let result: AsyncData<AsyncPlay | {}>;
             try {
-                result = await Promise.race([...promises, this.getPromise(this.runningKey_)]);
+                result = await Promise.race([...promises, this.getPromise<AsyncPlay>(this.runningKey_)]);
             } catch (e) {
                 // Server shut down.
                 this.rejectRemaining(keys);

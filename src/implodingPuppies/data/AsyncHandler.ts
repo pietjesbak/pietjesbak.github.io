@@ -33,7 +33,7 @@ export class AsyncHandler {
         };
 
         dict.promise = new Promise<AsyncData<Partial<T>>>((resolve, reject) => {
-            dict.resolve = resolve;
+            dict.resolve = resolve as any;
             dict.reject = reject;
 
             if (withTimeout !== undefined) {

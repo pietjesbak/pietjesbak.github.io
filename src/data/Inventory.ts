@@ -233,7 +233,7 @@ export class Inventory {
      * Logs out from firebase.
      */
     logout() {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             auth.signOut().then(() => {
                 this.user_ = null;
                 resolve();

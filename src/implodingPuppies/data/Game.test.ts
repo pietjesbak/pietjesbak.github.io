@@ -255,7 +255,7 @@ describe('Server', () => {
             first ? playCallback([CardTypes.FUTURE]) : server.shutDown();
             first = false;
         });
-        jest.spyOn(Player.prototype, 'seeFuture').mockImplementation(function (this: Player, cards: CardTypes, confirmFn: () => void) {
+        jest.spyOn(Player.prototype, 'seeFuture').mockImplementation(function (this: Player, cards: CardTypes[], confirmFn: () => void) {
             expect(this.id).toBe(0);
             expect(cards).toEqual([CardTypes.BOMB, CardTypes.DEFUSE, CardTypes.ATTACK]);
             confirmFn();

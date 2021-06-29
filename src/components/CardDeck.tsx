@@ -17,7 +17,7 @@ interface CardProps {
     value: number
 }
 
-export function Card<T extends React.HTMLAttributes<React.Component>>(props: T & CardProps) {
+export function Card<T extends React.HTMLAttributes<HTMLDivElement>>(props: T & CardProps) {
     // @ts-ignore Spreading types with generics is not supported (yet).
     const { className, face, value, ...rest } = props;
     const color = (face === CardFaces.CLUBS || face === CardFaces.SPADES) ? 'black' : 'red';

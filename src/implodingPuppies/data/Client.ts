@@ -53,7 +53,7 @@ export class Client extends PeerBase {
     /**
      * Handle all data that is sent from the client to the server.
      */
-    private onData_ = (peer: Peer, connection: PeerJs.DataConnection) => (data: any) => {
+    private onData_ = (peer: Peer, connection: Peer.DataConnection) => (data: any) => {
         let player;
         switch (data.type) {
             case DataType.JOIN:

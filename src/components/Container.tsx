@@ -15,7 +15,7 @@ export interface Props {
     children?: React.ReactNode;
 }
 
-export function Container<T extends React.HTMLAttributes<React.Component>>(props: T & Props) {
+export function Container<T extends React.HTMLAttributes<HTMLDivElement>>(props: T & Props) {
     // @ts-ignore Spreading types with generics is not supported (yet).
     const { className, error, ...rest } = props;
 
