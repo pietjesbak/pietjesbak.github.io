@@ -2,7 +2,7 @@ import "leaflet/dist/leaflet.css";
 
 import { Icon } from "leaflet";
 import * as React from "react";
-import { Map, Marker, TileLayer, Tooltip } from "react-leaflet";
+import { MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
 import { MAPBOX_KEY } from "../data/Constants";
 import * as img from "../Pietjesbak.png";
 
@@ -28,7 +28,7 @@ class SimpleMap extends React.Component<Props> {
 
   render() {
     return (
-      <Map
+      <MapContainer
         style={{ width: "100%", height: 400, position: "relative" }}
         center={this.props.center!}
         zoom={this.props.zoom!}
@@ -52,7 +52,7 @@ class SimpleMap extends React.Component<Props> {
             </span>
           </Tooltip>
         </Marker>
-      </Map>
+      </MapContainer>
     );
   }
 }
