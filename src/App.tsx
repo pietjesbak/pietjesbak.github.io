@@ -1,230 +1,257 @@
-import './css/App.css';
+import "./css/App.css";
 
-import * as React from 'react';
-import { HashRouter, NavLink, Route, Switch } from 'react-router-dom';
-import Tooltip from 'react-simple-tooltip';
-import AsyncMap from './components/AsyncMap';
-import BggList from './components/BggList';
-import BggRequests from './components/BggRequests';
-import CardDeck from './components/CardDeck';
-import { Container } from './components/Container';
-import EventCard from './components/EventCard';
-import IconLink from './components/IconLink';
-import OptionIconButton from './components/OptionIconButton';
-import ScrollToTop from './components/ScrollToTop';
-import TouchDecider from './components/TouchDecider';
-import { ChangeEvent, Inventory } from './data/Inventory';
-import Server from './implodingPuppies/Server';
-import { withInventory } from './InventoryProvider';
+import * as React from "react";
+import { HashRouter, NavLink, Route, Switch } from "react-router-dom";
+import Tooltip from "react-simple-tooltip";
+import AsyncMap from "./components/AsyncMap";
+import BggList from "./components/BggList";
+import BggRequests from "./components/BggRequests";
+import CardDeck from "./components/CardDeck";
+import { Container } from "./components/Container";
+import EventCard from "./components/EventCard";
+import IconLink from "./components/IconLink";
+import OptionIconButton from "./components/OptionIconButton";
+import ScrollToTop from "./components/ScrollToTop";
+import TouchDecider from "./components/TouchDecider";
+import { ChangeEvent, Inventory } from "./data/Inventory";
+import Server from "./implodingPuppies/Server";
+import { withInventory } from "./InventoryProvider";
 
 export interface State {
-    username: string;
+  username: string;
 }
 
 export interface Props {
-    inventory: Inventory
+  inventory: Inventory;
 }
 
-export class App extends React.Component<Props & React.ClassAttributes<App>, State> {
-    constructor(props: Props & React.ClassAttributes<App>) {
-        super(props);
-        this.state = {
-            username: ''
-        };
-    }
+export class App extends React.Component<
+  Props & React.ClassAttributes<App>,
+  State
+> {
+  constructor(props: Props & React.ClassAttributes<App>) {
+    super(props);
+    this.state = {
+      username: "",
+    };
+  }
 
-    componentDidMount() {
-        this.props.inventory.addChangeListener(ChangeEvent.USER, user => {
-            if (user) {
-                this.setState({ username: (user as FirebaseUser).displayName });
-            }
-        });
-    }
+  componentDidMount() {
+    this.props.inventory.addChangeListener(ChangeEvent.USER, (user) => {
+      if (user) {
+        this.setState({ username: (user as FirebaseUser).displayName });
+      }
+    });
+  }
 
-    logout = async () => {
-        await this.props.inventory.logout();
-        this.setState({
-            username: ''
-        });
-    }
+  logout = async () => {
+    await this.props.inventory.logout();
+    this.setState({
+      username: "",
+    });
+  };
 
-    login = async () => {
-        const user = await this.props.inventory.login();
-        this.setState({
-            username: user.displayName
-        });
-    }
+  login = async () => {
+    const user = await this.props.inventory.login();
+    this.setState({
+      username: user.displayName,
+    });
+  };
 
-    home = () => {
-        return (
-            <div>
-                <EventCard />
-                <BggRequests />
-            </div>
-        );
-    }
+  home = () => {
+    return (
+      <div>
+        <EventCard />
+        <BggRequests />
+      </div>
+    );
+  };
 
-    games() {
-        return (
-            <BggList />
-        );
-    }
+  games() {
+    return <BggList />;
+  }
 
-    info() {
-        return (
-            <div>
-                <Container>
-                    <h3>Wie zijn wij?</h3>
-                    Spellenclub De pietjesbak is een spellenclub in Gent / Mariakerke. <br />
-                    Elke derde vrijdag van de maand (behalve in juli en augustus) <br /><br />
+  info() {
+    return (
+      <div>
+        <Container>
+          <h3>Wie zijn wij?</h3>
+          Spellenclub De pietjesbak is een spellenclub in Gent / Mariakerke.{" "}
+          <br />
+          Elke derde vrijdag van de maand (behalve in juli en augustus) <br />
+          <br />
+          Voor 1 € inkom is iedereen welkom om een nieuw of oud spel mee te
+          komen spelen. <br />
+          Oud of Jong, moeilijk of makkelijk, we brengen steeds een grote
+          variatie aan spellen mee die ter plaatse uitgelegd worden. <br />
+          We starten rond 19u30 en gaan door tot ± 23 a 24u.
+          <h3>In 't Geestje</h3>
+          <span className="location">
+            Zandloperstraat 83 <br />
+            9030 Mariakerke
+          </span>
+          <AsyncMap />
+        </Container>
+      </div>
+    );
+  }
 
-                    Voor 1 € inkom is iedereen welkom om een nieuw of oud spel mee te komen spelen. <br />
-                    Oud of Jong, moeilijk of makkelijk, we brengen steeds een grote variatie aan spellen mee die ter plaatse uitgelegd worden. <br />
-                    We starten rond 19u30 en gaan door tot ± 23 a 24u.
+  touchDecider() {
+    return (
+      <Container className="no-overflow">
+        <p>
+          Deze app kan gebruikt worden om een start speler te bepalen. Iedere
+          speler plaatst 1 vinger op het scherm, de speler wiens kleur het
+          volledige scherm inneemt, is de start speler!
+        </p>
+        {"ontouchstart" in document.documentElement! ? null : (
+          <span className="mute">
+            PS: Dit werkt enkel op apparaten met een touchscreen.
+          </span>
+        )}
+        <TouchDecider />
+      </Container>
+    );
+  }
 
-                    <h3>In 't Geestje</h3>
-                    <span className="location">
-                        Zandloperstraat 83 <br />
-                        9030 Mariakerke
-                    </span>
-                    <AsyncMap />
-                </Container>
-            </div>
-        );
-    }
+  implodingPuppies() {
+    return (
+      <Container>
+        <Server />
+      </Container>
+    );
+  }
 
-    touchDecider() {
-        return (
-            <Container className="no-overflow">
-                <p>
-                    Deze app kan gebruikt worden om een start speler te bepalen. Iedere speler plaatst 1 vinger op het scherm, de speler wiens kleur het volledige scherm inneemt, is de start speler!
-                </p>
-                {'ontouchstart' in document.documentElement! ? null : <span className="mute">PS: Dit werkt enkel op apparaten met een touchscreen.</span>}
-                <TouchDecider />
-            </Container>
-        );
-    }
+  cardDeck() {
+    return (
+      <Container>
+        <CardDeck shuffle={true} />
+      </Container>
+    );
+  }
 
-    implodingPuppies() {
-        return (
-            <Container>
-                <Server />
-            </Container>
-        );
-    }
+  noRoute() {
+    return (
+      <div className="center not-found">
+        <span>404</span>
+        <div style={{ fontSize: 14 + "vw", whiteSpace: "nowrap" }}>
+          ¯\_(ツ)_/¯
+        </div>
+      </div>
+    );
+  }
 
-    cardDeck() {
-        return (
-            <Container>
-                <CardDeck shuffle={true} />
-            </Container>
-        );
-    }
-
-    noRoute() {
-        return (
-            <div className="center not-found">
-                <span>404</span>
-                <div style={{ fontSize: 14 + "vw", whiteSpace: "nowrap" }}>¯\_(ツ)_/¯</div>
-            </div>
-        )
-    }
-
-    renderLoginButton() {
-        return (
-            <OptionIconButton text="menu" icon="menu" placement="left">
-                {this.props.inventory.user !== null ? (
-                    <button onClick={this.logout}>
-                        <i className="icon-logout" /> Log uit
-                    </button>
-                ) : (
-                        <button onClick={this.login}>
-                            <i className="icon-login" /> Log in
-                    </button>
-                    )}
-                <NavLink exact={true} activeClassName="hidden" to="/startspeler">
-                    Startspeler kiezen
-                </NavLink>
-                <NavLink exact={true} activeClassName="hidden" to="/game">
-                    Imploding puppies
-                </NavLink>
-                {/* <NavLink exact={true} activeClassName="hidden" to="/speelkaarten">
+  renderLoginButton() {
+    return (
+      <OptionIconButton text="menu" icon="menu" placement="left">
+        {this.props.inventory.user !== null ? (
+          <button onClick={this.logout}>
+            <i className="icon-logout" /> Log uit
+          </button>
+        ) : (
+          <button onClick={this.login}>
+            <i className="icon-login" /> Log in
+          </button>
+        )}
+        <NavLink exact={true} activeClassName="hidden" to="/startspeler">
+          Startspeler kiezen
+        </NavLink>
+        <NavLink exact={true} activeClassName="hidden" to="/game">
+          Imploding puppies
+        </NavLink>
+        {/* <NavLink exact={true} activeClassName="hidden" to="/speelkaarten">
                     Kaarten trekken
                 </NavLink> */}
-            </OptionIconButton>
-        );
-    }
+      </OptionIconButton>
+    );
+  }
 
-    render() {
-        return (
-            <HashRouter>
-                <ScrollToTop>
-                    <div className="full-height">
-                        <div className="page-wrap">
-                            <header>
-                                <div className="wrapper">
-                                    <h1>
-                                        <svg id="logo" width="57" height="52">
-                                            <path d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z" strokeWidth="5" fill="#c33" stroke="#eee" />
-                                        </svg>
-                                        Spellenclub De Pietjesbak
-
-                                    </h1>
-                                </div>
-                            </header>
-                            <div className="wrapper">
-                                <nav className="menu">
-                                    <ul>
-                                        <li><IconLink icon="globe" to="/" text="Home" /></li>
-                                        <li><IconLink icon="megaphone" to="/info" text="Info" /></li>
-                                        <li><IconLink icon="puzzle" to="/games" text="Games" /></li>
-                                        <li className="right">
-                                            {this.renderLoginButton()}
-                                        </li>
-                                    </ul>
-                                </nav>
-                                {this.props.inventory.user !== null ? (
-                                    <div>
-                                        <div className="user-profile">
-                                            <Tooltip content={`Ingeloged als ${this.state.username}`} placement="left">
-                                                <img alt={this.state.username} src={this.props.inventory.user.photoURL} />
-                                            </Tooltip>
-                                        </div>
-                                    </div>
-                                ) : null}
-                                <Switch>
-                                    <Route exact={true} path="/" component={this.home} />
-                                    <Route path="/games" component={this.games} />
-                                    <Route path="/info" component={this.info} />
-                                    <Route path="/startspeler" component={this.touchDecider} />
-                                    <Route path="/speelkaarten" component={this.cardDeck} />
-                                    <Route path="/game" component={this.implodingPuppies} />
-                                    <Route render={this.noRoute} />
-                                </Switch>
-                            </div>
-                        </div>
-                        <footer>
-                            <ul className="wrapper">
-                                <li>
-                                    <a href="https://www.facebook.com/gezelschapsspellenpietjesbak/">
-                                        <i className="icon-facebook-squared" />
-                                        Like
-                                </a>
-                                </li>
-                                <li>
-                                    <a href="mailto:pietdecoensel@gmail.com">
-                                        <i className="icon-mail-alt" />
-                                        Contact
-                                </a>
-                                </li>
-                            </ul>
-                            <span>&copy; Spellenclub De Pietjesbak &#9679; Lennert Claeys</span>
-                        </footer>
+  render() {
+    return (
+      <HashRouter>
+        <ScrollToTop>
+          <div className="full-height">
+            <div className="page-wrap">
+              <header>
+                <div className="wrapper">
+                  <h1>
+                    <svg id="logo" width="57" height="52">
+                      <path
+                        d="M4 25.650635094610966L16.5 4L41.5 4L54 25.650635094610966L41.5 47.30127018922193L16.5 47.30127018922193Z"
+                        strokeWidth="5"
+                        fill="#c33"
+                        stroke="#eee"
+                      />
+                    </svg>
+                    Spellenclub De Pietjesbak
+                  </h1>
+                </div>
+              </header>
+              <div className="wrapper">
+                <nav className="menu">
+                  <ul>
+                    <li>
+                      <IconLink icon="globe" to="/" text="Home" />
+                    </li>
+                    <li>
+                      <IconLink icon="megaphone" to="/info" text="Info" />
+                    </li>
+                    <li>
+                      <IconLink icon="puzzle" to="/games" text="Games" />
+                    </li>
+                    <li className="right">{this.renderLoginButton()}</li>
+                  </ul>
+                </nav>
+                {this.props.inventory.user !== null ? (
+                  <div>
+                    <div className="user-profile">
+                      <Tooltip
+                        content={`Ingeloged als ${this.state.username}`}
+                        placement="left"
+                      >
+                        <img
+                          alt={this.state.username}
+                          src={this.props.inventory.user.photoURL}
+                        />
+                      </Tooltip>
                     </div>
-                </ScrollToTop>
-            </HashRouter>
-        );
-    }
+                  </div>
+                ) : null}
+                <Switch>
+                  <Route exact={true} path="/" component={this.home} />
+                  <Route path="/games" component={this.games} />
+                  <Route path="/info" component={this.info} />
+                  <Route path="/startspeler" component={this.touchDecider} />
+                  <Route path="/speelkaarten" component={this.cardDeck} />
+                  <Route path="/game" component={this.implodingPuppies} />
+                  <Route render={this.noRoute} />
+                </Switch>
+              </div>
+            </div>
+            <footer>
+              <ul className="wrapper">
+                <li>
+                  <a href="https://www.facebook.com/gezelschapsspellenpietjesbak/">
+                    <i className="icon-facebook-squared" />
+                    Like
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:pietdecoensel@gmail.com">
+                    <i className="icon-mail-alt" />
+                    Contact
+                  </a>
+                </li>
+              </ul>
+              <span>
+                &copy; Spellenclub De Pietjesbak &#9679; Lennert Claeys
+              </span>
+            </footer>
+          </div>
+        </ScrollToTop>
+      </HashRouter>
+    );
+  }
 }
 
 export default withInventory(App);

@@ -1,87 +1,97 @@
-import '../css/IconButton.css';
+import "../css/IconButton.css";
 
-import classNames from 'classnames';
-import * as React from 'react';
-import Tooltip from 'react-simple-tooltip';
-import { ICONBUTTON_MIN_SCREEN_WIDTH } from '../data/Constants';
+import classNames from "classnames";
+import * as React from "react";
+import Tooltip from "react-simple-tooltip";
+import { ICONBUTTON_MIN_SCREEN_WIDTH } from "../data/Constants";
 
-const debounce = require('debounce');
+const debounce = require("debounce");
 
 export interface State {
-    windowWidth: number;
-    active: boolean;
+  windowWidth: number;
+  active: boolean;
 }
 
 export enum IconButtonBehavour {
-    SMALL,
-    BIG,
-    AUTO
+  SMALL,
+  BIG,
+  AUTO,
 }
 
 export interface Props extends React.HTMLAttributes<IconButton> {
-    text: string | JSX.Element;
-    placement?: 'left' | 'top' | 'right' | 'bottom';
-    subClass?: string;
-    icon: string;
-    to?: string;
-    behaviour?: IconButtonBehavour
+  text: string | JSX.Element;
+  placement?: "left" | "top" | "right" | "bottom";
+  subClass?: string;
+  icon: string;
+  to?: string;
+  behaviour?: IconButtonBehavour;
 
-    action?: (e: React.SyntheticEvent) => void;
+  action?: (e: React.SyntheticEvent) => void;
 }
 
 export default class IconButton extends React.Component<Props, State> {
-    static defaultProps = {
-        behaviour: IconButtonBehavour.AUTO
+  static defaultProps = {
+    behaviour: IconButtonBehavour.AUTO,
+  };
+
+  handleResize = debounce(() => {
+    if (this.props.behaviour === IconButtonBehavour.AUTO) {
+      this.setState({
+        windowWidth: window.innerWidth,
+      });
     }
+  });
 
-    handleResize = debounce(() => {
-        if (this.props.behaviour === IconButtonBehavour.AUTO) {
-            this.setState({
-                windowWidth: window.innerWidth
-            });
-        }
-    });
+  constructor(props: Props) {
+    super(props);
 
-    constructor(props: Props) {
-        super(props);
+    this.state = {
+      windowWidth: window.innerWidth,
+      active: false,
+    };
+  }
 
-        this.state = {
-            windowWidth: window.innerWidth,
-            active: false
-        };
+  componentDidMount() {
+    window.addEventListener("resize", this.handleResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+  }
+
+  render() {
+    if (
+      (this.state.windowWidth <= ICONBUTTON_MIN_SCREEN_WIDTH ||
+        this.props.behaviour === IconButtonBehavour.SMALL) &&
+      this.props.behaviour !== IconButtonBehavour.BIG
+    ) {
+      return this.renderSmall();
+    } else {
+      return this.renderBig();
     }
+  }
 
-    componentDidMount() {
-        window.addEventListener('resize', this.handleResize);
-    }
+  renderBig() {
+    return (
+      <button
+        className={classNames("button", this.props.subClass)}
+        onClick={this.props.action}
+      >
+        <i className={"icon-" + this.props.icon} /> {this.props.text}
+      </button>
+    );
+  }
 
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.handleResize);
-    }
-
-    render() {
-        if ((this.state.windowWidth <= ICONBUTTON_MIN_SCREEN_WIDTH || this.props.behaviour === IconButtonBehavour.SMALL) && this.props.behaviour !== IconButtonBehavour.BIG) {
-            return this.renderSmall();
-        } else {
-            return this.renderBig();
-        }
-    }
-
-    renderBig() {
-        return (
-            <button className={classNames('button', this.props.subClass)} onClick={this.props.action}>
-                <i className={"icon-" + this.props.icon} /> {this.props.text}
-            </button>
-        );
-    }
-
-    renderSmall() {
-        return (
-            <Tooltip content={this.props.text} placement={this.props.placement}>
-                <button className={classNames('small-button', this.props.subClass)} onClick={this.props.action}>
-                    <i className={"icon-" + this.props.icon} />
-                </button>
-            </Tooltip>
-        );
-    }
+  renderSmall() {
+    return (
+      <Tooltip content={this.props.text} placement={this.props.placement}>
+        <button
+          className={classNames("small-button", this.props.subClass)}
+          onClick={this.props.action}
+        >
+          <i className={"icon-" + this.props.icon} />
+        </button>
+      </Tooltip>
+    );
+  }
 }
