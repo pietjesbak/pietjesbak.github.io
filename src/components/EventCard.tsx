@@ -1,7 +1,7 @@
 import "../css/EventCard.css";
 
 import classNames from "classnames";
-import * as React from "react";
+import React from "react";
 import { Inventory } from "../data/Inventory";
 import { readableDate } from "../Helpers";
 import { withInventory } from "../InventoryProvider";

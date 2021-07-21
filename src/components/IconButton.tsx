@@ -1,7 +1,7 @@
 import "../css/IconButton.css";
 
 import classNames from "classnames";
-import * as React from "react";
+import React from "react";
 import Tooltip from "react-simple-tooltip";
 import { ICONBUTTON_MIN_SCREEN_WIDTH } from "../data/Constants";
 

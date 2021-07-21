@@ -1,20 +1,17 @@
 import "./css/App.css";
 
-import * as React from "react";
-import { HashRouter, NavLink, Route, Switch } from "react-router-dom";
+import React from "react";
+import { HashRouter, Route, Switch } from "react-router-dom";
 import Tooltip from "react-simple-tooltip";
 import AsyncMap from "./components/AsyncMap";
 import BggList from "./components/BggList";
 import BggRequests from "./components/BggRequests";
-import CardDeck from "./components/CardDeck";
 import { Container } from "./components/Container";
 import EventCard from "./components/EventCard";
 import IconLink from "./components/IconLink";
-import OptionIconButton from "./components/OptionIconButton";
 import ScrollToTop from "./components/ScrollToTop";
 import TouchDecider from "./components/TouchDecider";
 import { ChangeEvent, Inventory } from "./data/Inventory";
-import Server from "./implodingPuppies/Server";
 import { withInventory } from "./InventoryProvider";
 
 export interface State {
@@ -114,22 +111,6 @@ export class App extends React.Component<
     );
   }
 
-  implodingPuppies() {
-    return (
-      <Container>
-        <Server />
-      </Container>
-    );
-  }
-
-  cardDeck() {
-    return (
-      <Container>
-        <CardDeck shuffle={true} />
-      </Container>
-    );
-  }
-
   noRoute() {
     return (
       <div className="center not-found">
@@ -138,31 +119,6 @@ export class App extends React.Component<
           ¯\_(ツ)_/¯
         </div>
       </div>
-    );
-  }
-
-  renderLoginButton() {
-    return (
-      <OptionIconButton text="menu" icon="menu" placement="left">
-        {this.props.inventory.user !== null ? (
-          <button onClick={this.logout}>
-            <i className="icon-logout" /> Log uit
-          </button>
-        ) : (
-          <button onClick={this.login}>
-            <i className="icon-login" /> Log in
-          </button>
-        )}
-        <NavLink exact={true} activeClassName="hidden" to="/startspeler">
-          Startspeler kiezen
-        </NavLink>
-        <NavLink exact={true} activeClassName="hidden" to="/game">
-          Imploding puppies
-        </NavLink>
-        {/* <NavLink exact={true} activeClassName="hidden" to="/speelkaarten">
-                    Kaarten trekken
-                </NavLink> */}
-      </OptionIconButton>
     );
   }
 
@@ -199,7 +155,17 @@ export class App extends React.Component<
                     <li>
                       <IconLink icon="puzzle" to="/games" text="Games" />
                     </li>
-                    <li className="right">{this.renderLoginButton()}</li>
+                    <li className="right">
+                      {this.props.inventory.user !== null ? (
+                        <button onClick={this.logout}>
+                          <i className="icon-logout" /> Log uit
+                        </button>
+                      ) : (
+                        <button onClick={this.login}>
+                          <i className="icon-login" /> Log in
+                        </button>
+                      )}
+                    </li>
                   </ul>
                 </nav>
                 {this.props.inventory.user !== null ? (
@@ -222,8 +188,6 @@ export class App extends React.Component<
                   <Route path="/games" component={this.games} />
                   <Route path="/info" component={this.info} />
                   <Route path="/startspeler" component={this.touchDecider} />
-                  <Route path="/speelkaarten" component={this.cardDeck} />
-                  <Route path="/game" component={this.implodingPuppies} />
                   <Route render={this.noRoute} />
                 </Switch>
               </div>

@@ -1,6 +1,6 @@
 import "../css/TouchDecider.css";
 
-import * as React from "react";
+import React from "react";
 import { shuffle } from "../Helpers";
 
 interface TouchObj {

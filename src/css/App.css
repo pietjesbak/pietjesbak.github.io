@@ -1,111 +1,113 @@
 .wrapper {
-    max-width: 1100px;
-    margin: 0 auto;
-    margin-bottom: 10px;
-    overflow-x: hidden;
+  max-width: 1100px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  overflow-x: hidden;
 }
 
 .page-wrap {
-    min-height: 100%;
-    margin-bottom: -100px;
-    /* equal to footer height */
+  min-height: 100%;
+  margin-bottom: -100px;
+  /* equal to footer height */
 }
 
 .page-wrap:after {
-    content: "";
-    display: block;
+  content: "";
+  display: block;
 }
 
-footer, .page-wrap:after {
-    height: 100px;
+footer,
+.page-wrap:after {
+  height: 100px;
 }
 
 footer {
-    background: #103D5D;
-    color: #fff;
+  background: #103d5d;
+  color: #fff;
 }
 
 footer ul {
-    list-style: none;
-    margin: 0;
+  list-style: none;
+  margin: 0;
 }
 
-footer ul>li {
-    display: inline-block;
-    width: 115px;
-    padding: 10px;
-    margin: 10px 0;
-    background: rgb(76, 109, 128);
+footer ul > li {
+  display: inline-block;
+  width: 115px;
+  padding: 10px;
+  margin: 10px 0;
+  background: rgb(76, 109, 128);
 }
 
-footer ul>li:first-child {
-    margin-right: 10px
+footer ul > li:first-child {
+  margin-right: 10px;
 }
 
-footer ul>li:hover {
-    background: rgb(93, 123, 139);
+footer ul > li:hover {
+  background: rgb(93, 123, 139);
 }
 
-footer ul>li a {
-    color: #fff!important;
-    text-decoration: none;
+footer ul > li a {
+  color: #fff !important;
+  text-decoration: none;
+  display: flex;
 }
 
-footer>span {
-    display: inline-block;
-    text-align: center;
-    width: 100%;
+footer > span {
+  display: inline-block;
+  text-align: center;
+  width: 100%;
 }
 
 nav.menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 20px 5px;
+  list-style: none;
+  padding: 0;
+  margin: 20px 5px;
 }
 
 nav.menu ul li {
-    display: inline-block;
+  display: inline-block;
 }
 
 nav.menu ul li:not(:last-child) {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 nav.menu ul li.right {
-    float: right;
+  float: right;
 }
 
 nav.menu ul li.right.small {
-    width: 40px;
+  width: 40px;
 }
 
 .user-profile {
-    position: fixed;
-    bottom: 20px;
-    right: 40px;
-    width: 100px;
-    height: 100px;
-    z-index: 2000;
+  position: fixed;
+  bottom: 20px;
+  right: 40px;
+  width: 100px;
+  height: 100px;
+  z-index: 2000;
 }
 
 .user-profile img {
-    border-radius: 50%;
-    max-width: 100%;
+  border-radius: 50%;
+  max-width: 100%;
 }
 
 .location {
-    padding: 10px 5px;
-    background: #fff;
-    margin: 10px 0;
-    display: inline-block;
-    border-radius: 5px;
+  padding: 10px 5px;
+  background: #fff;
+  margin: 10px 0;
+  display: inline-block;
+  border-radius: 5px;
 }
 
 @media screen and (max-width: 580px) {
-    .user-profile {
-        width: 60px;
-        height: 60px;
-        bottom: 10px;
-        right: 10px;
-    }
+  .user-profile {
+    width: 60px;
+    height: 60px;
+    bottom: 10px;
+    right: 10px;
+  }
 }

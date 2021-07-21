@@ -1,7 +1,7 @@
 import "../css/TextPlaceholder.css";
 
 import classNames from "classnames";
-import * as React from "react";
+import React from "react";
 
 type paragraphFnType = (index: number) => React.ReactNode;
 export interface Props {
@@ -54,7 +54,6 @@ function renderParagraph(
 export function TextPlaceholder<
   T extends React.HTMLAttributes<React.Component>
 >(props: T & Props) {
-  // @ts-ignore Spreading types with generics is not supported (yet).
   const {
     className,
     renderTitle,
@@ -62,7 +61,6 @@ export function TextPlaceholder<
     paragraphSize,
     paragraphFn,
     error,
-    ...rest
   } = props;
 
   return (

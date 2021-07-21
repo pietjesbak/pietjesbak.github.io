@@ -15,14 +15,14 @@
     "react-leaflet": "^3.2.0",
     "react-loadable": "^5.5.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts-ts": "^3.1.0",
+    "react-scripts": "^4.0.3",
     "react-simple-tooltip": "^2.3.2"
   },
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject",
+    "watch": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -b master -d build",
     "fix": "tslint -p tsconfig.json --fix"
@@ -50,7 +50,6 @@
     "enzyme-adapter-react-16": "^1.5.0",
     "enzyme-to-json": "^3.3.4",
     "gh-pages": "^3.2.3",
-    "jest": "^27.0.6",
     "react-test-renderer": "^17.0.2",
     "typescript": "^4.3.4"
   },
@@ -58,5 +57,11 @@
     ">0.2%",
     "not dead",
     "not op_mini all"
-  ]
+  ],
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  }
 }

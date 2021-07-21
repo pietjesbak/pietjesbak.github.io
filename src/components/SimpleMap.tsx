@@ -1,10 +1,10 @@
 import "leaflet/dist/leaflet.css";
 
 import { Icon } from "leaflet";
-import * as React from "react";
+import React from "react";
 import { MapContainer, Marker, TileLayer, Tooltip } from "react-leaflet";
 import { MAPBOX_KEY } from "../data/Constants";
-import * as img from "../Pietjesbak.png";
+import img from "../Pietjesbak.png";
 
 const logoIcon = new Icon({
   iconUrl: img,
@@ -34,9 +34,12 @@ class SimpleMap extends React.Component<Props> {
         zoom={this.props.zoom!}
       >
         <TileLayer
-          attribution='Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
-          url={`https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${MAPBOX_KEY}`}
-          id="mapbox.streets"
+          attribution='© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>'
+          url={`https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_KEY}`}
+          tileSize={512}
+          maxZoom={18}
+          zoomOffset={-1}
+          id="mapbox/streets-v11"
         />
         <Marker
           position={[this.props.center!.lat, this.props.center!.lng]}

@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import * as React from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import Tooltip from "react-simple-tooltip";
 import IconButton from "./IconButton";

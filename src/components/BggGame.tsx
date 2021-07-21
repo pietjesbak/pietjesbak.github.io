@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import Tooltip from "react-simple-tooltip";
 import { BggGameData } from "../data/BggData";
 import { Inventory } from "../data/Inventory";

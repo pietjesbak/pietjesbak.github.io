@@ -1,5 +1,5 @@
 import * as enzyme from "enzyme";
-import * as React from "react";
+import React from "react";
 
 import { App } from "./App";
 import { ChangeEvent, Inventory } from "./data/Inventory";

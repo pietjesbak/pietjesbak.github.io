@@ -2,7 +2,7 @@ import "../css/Games.css";
 
 // import Pager from 'react-pager';
 import escapeStringRegexp from "escape-string-regexp";
-import * as React from "react";
+import React from "react";
 import { BggGameData } from "../data/BggData";
 import { CORS_ANYWHERE_DYNO } from "../data/Constants";
 import { ChangeEvent, Inventory } from "../data/Inventory";
